@@ -1,0 +1,134 @@
+{
+  "app": {
+    "name": "Supplier Carbon",
+    "tagline": "メールを転送し、請求書を撮影するだけで、記入済みの質問票が戻ってきます。",
+    "signOut": "サインアウト",
+    "language": "言語"
+  },
+  "steps": {
+    "setup": "設定",
+    "documents": "請求書",
+    "reconcile": "確認",
+    "inventory": "インベントリ",
+    "questionnaire": "質問票"
+  },
+  "signIn": {
+    "title": "電話番号でサインイン",
+    "lede": "SMSで確認コードを送ります。他の情報は保存しません。",
+    "phoneLabel": "携帯電話番号",
+    "phonePlaceholder": "+81 90 1234 5678",
+    "sendCode": "コードを送信",
+    "codeLabel": "確認コード",
+    "verify": "続ける",
+    "back": "別の番号を使う",
+    "emailLabel": "またはメールリンクでサインイン",
+    "emailPlaceholder": "you@company.co.jp",
+    "sendLink": "リンクを送信",
+    "linkSent": "メールを確認し、この端末でリンクを開いてください。",
+    "error": "うまくいきませんでした。番号を確認して再試行してください。",
+    "devHint": "ローカルエミュレータ: 任意の番号で動作し、コードはエミュレータのログに表示されます。"
+  },
+  "setup": {
+    "title": "会社について",
+    "lede": "所在地、顧客が求める対象年度、対象拠点の3点で算定方法が決まります。",
+    "name": "会社名",
+    "country": "国",
+    "language": "使用言語",
+    "fyStart": "報告年度の開始日",
+    "fyEnd": "報告年度の終了日",
+    "sites": "拠点",
+    "siteName": "拠点名",
+    "siteRegion": "都道府県 / 電力エリア（わかれば）",
+    "addSite": "拠点を追加",
+    "revenue": "年間売上（任意、原単位算出用）",
+    "currency": "通貨",
+    "save": "保存して次へ",
+    "saved": "保存しました。"
+  },
+  "documents": {
+    "title": "請求書",
+    "lede": "電気料金、燃料の納品書、LPガス、冷媒補充の作業票。写真でもPDFでも、順不同で構いません。",
+    "pick": "請求書を追加",
+    "camera": "写真を撮る",
+    "uploading": "{count}件を読み取り中…",
+    "empty": "まだアップロードされていません。",
+    "status": {
+      "uploaded": "アップロード済み",
+      "extracting": "読み取り中…",
+      "extracted": "読み取り完了",
+      "failed": "読み取れませんでした"
+    },
+    "read": "{quantity} {unit} · {start} → {end}",
+    "confidence": "信頼度 {pct}%",
+    "next": "確認へ進む",
+    "needMore": "続けるには請求書を1件以上追加してください。"
+  },
+  "reconcile": {
+    "title": "いくつか確認します",
+    "lede": "請求書を報告年度と照合しました。不足や不明点があればここでお尋ねします。",
+    "start": "請求書を確認",
+    "checking": "確認中…",
+    "placeholder": "回答を入力",
+    "send": "送信",
+    "done": "記録はすべて揃いました。",
+    "computed": "算定しました。",
+    "issues": "未解決 {count}件",
+    "next": "インベントリを見る"
+  },
+  "inventory": {
+    "title": "インベントリ",
+    "lede": "すべての数値は、請求書、公表された排出係数、そして記録した前提条件まで遡れます。",
+    "scope1": "スコープ1 — 燃料・冷媒",
+    "scope2loc": "スコープ2 — 電力（ロケーション基準）",
+    "scope2mkt": "スコープ2 — 電力（マーケット基準）",
+    "total": "スコープ1+2",
+    "tonnes": "tCO2e",
+    "tierMix": "データ品質",
+    "tier": {
+      "primary": "一次",
+      "secondary": "二次",
+      "estimated": "推計"
+    },
+    "columns": {
+      "period": "期間",
+      "type": "エネルギー",
+      "quantity": "数量",
+      "factor": "係数",
+      "emissions": "tCO2e",
+      "tier": "品質"
+    },
+    "lineage": "この数値の根拠",
+    "document": "書類",
+    "factor": "排出係数",
+    "assumptions": "前提条件",
+    "correct": "数量を修正",
+    "save": "保存",
+    "cancel": "取消",
+    "recomputed": "再算定しました。",
+    "notComputed": "まだ算定されていません。",
+    "compute": "算定する",
+    "skipped": "算定対象外",
+    "next": "質問票に記入"
+  },
+  "questionnaire": {
+    "title": "顧客の質問票",
+    "lede": "顧客から届いたExcelをアップロードしてください。インベントリから記入できる欄をすべて埋め、残りはフラグを付けます。",
+    "pick": "Excelファイルを選択",
+    "share": "この顧客への出荷比率（任意、配分用）",
+    "sharePlaceholder": "例: 20 は 20%",
+    "fill": "記入する",
+    "filling": "記入中…",
+    "answered": "{n}件回答 · {flagged}件は要確認",
+    "flagged": "ご記入いただく項目",
+    "download": "記入済み質問票をダウンロード",
+    "methodology": "算定方法書をダウンロード",
+    "generating": "作成中…",
+    "source": "出典",
+    "needInventory": "先にインベントリを算定してください。"
+  },
+  "common": {
+    "loading": "読み込み中…",
+    "error": "問題が発生しました。",
+    "retry": "再試行"
+  }
+}

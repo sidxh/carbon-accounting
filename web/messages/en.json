@@ -1,0 +1,134 @@
+{
+  "app": {
+    "name": "Supplier Carbon",
+    "tagline": "Forward the email. Photograph the bills. Get back the completed questionnaire.",
+    "signOut": "Sign out",
+    "language": "Language"
+  },
+  "steps": {
+    "setup": "Setup",
+    "documents": "Bills",
+    "reconcile": "Questions",
+    "inventory": "Inventory",
+    "questionnaire": "Questionnaire"
+  },
+  "signIn": {
+    "title": "Sign in with your phone",
+    "lede": "We will text you a code. Nothing else is stored about you.",
+    "phoneLabel": "Mobile number",
+    "phonePlaceholder": "+84 90 123 4567",
+    "sendCode": "Send code",
+    "codeLabel": "Verification code",
+    "verify": "Continue",
+    "back": "Use a different number",
+    "emailLabel": "Or sign in with an email link",
+    "emailPlaceholder": "you@company.com",
+    "sendLink": "Send link",
+    "linkSent": "Check your email and open the link on this device.",
+    "error": "That did not work. Check the number and try again.",
+    "devHint": "Local emulator: any number works and the code is printed in the emulator log."
+  },
+  "setup": {
+    "title": "About your company",
+    "lede": "Three things decide how your figures are calculated: where you are, which year your customer asked for, and which sites count.",
+    "name": "Company name",
+    "country": "Country",
+    "language": "Your language",
+    "fyStart": "Reporting year starts",
+    "fyEnd": "Reporting year ends",
+    "sites": "Sites",
+    "siteName": "Site name",
+    "siteRegion": "State / grid region (if known)",
+    "addSite": "Add another site",
+    "revenue": "Annual revenue (optional, for intensity)",
+    "currency": "Currency",
+    "save": "Save and continue",
+    "saved": "Saved."
+  },
+  "documents": {
+    "title": "Your bills",
+    "lede": "Electricity bills, fuel invoices, LPG deliveries, refrigerant service slips. Photos or PDFs, any order, any language.",
+    "pick": "Add bills",
+    "camera": "Take a photo",
+    "uploading": "Reading {count} document(s)…",
+    "empty": "Nothing uploaded yet.",
+    "status": {
+      "uploaded": "Uploaded",
+      "extracting": "Reading…",
+      "extracted": "Read",
+      "failed": "Could not read"
+    },
+    "read": "{quantity} {unit} · {start} → {end}",
+    "confidence": "confidence {pct}%",
+    "next": "Continue to questions",
+    "needMore": "Add at least one bill to continue."
+  },
+  "reconcile": {
+    "title": "A few questions",
+    "lede": "We compared your bills against the reporting year. Anything missing or unclear, we ask you here.",
+    "start": "Check my bills",
+    "checking": "Checking…",
+    "placeholder": "Type your answer",
+    "send": "Send",
+    "done": "All records are complete.",
+    "computed": "Figures calculated.",
+    "issues": "{count} item(s) to resolve",
+    "next": "See the inventory"
+  },
+  "inventory": {
+    "title": "Your inventory",
+    "lede": "Every number traces back to a bill, a published emission factor and, where you told us something, the assumption we recorded.",
+    "scope1": "Scope 1 — fuels and refrigerants",
+    "scope2loc": "Scope 2 — electricity (location-based)",
+    "scope2mkt": "Scope 2 — electricity (market-based)",
+    "total": "Scope 1 + 2",
+    "tonnes": "tCO2e",
+    "tierMix": "Data quality",
+    "tier": {
+      "primary": "primary",
+      "secondary": "secondary",
+      "estimated": "estimated"
+    },
+    "columns": {
+      "period": "Period",
+      "type": "Energy",
+      "quantity": "Quantity",
+      "factor": "Factor",
+      "emissions": "tCO2e",
+      "tier": "Quality"
+    },
+    "lineage": "Where this number comes from",
+    "document": "Document",
+    "factor": "Emission factor",
+    "assumptions": "Assumptions",
+    "correct": "Correct quantity",
+    "save": "Save",
+    "cancel": "Cancel",
+    "recomputed": "Recalculated.",
+    "notComputed": "Not yet calculated.",
+    "compute": "Calculate",
+    "skipped": "Not computed",
+    "next": "Fill the questionnaire"
+  },
+  "questionnaire": {
+    "title": "Your customer's questionnaire",
+    "lede": "Upload the Excel your customer sent. We fill every cell we can from your inventory and flag the rest.",
+    "pick": "Choose the Excel file",
+    "share": "Share of your output this customer buys (optional, for allocation)",
+    "sharePlaceholder": "e.g. 20 for 20%",
+    "fill": "Fill it in",
+    "filling": "Filling…",
+    "answered": "{n} answered · {flagged} flagged for you",
+    "flagged": "For you to complete",
+    "download": "Download filled questionnaire",
+    "methodology": "Download methodology note",
+    "generating": "Generating…",
+    "source": "Source",
+    "needInventory": "Calculate your inventory first."
+  },
+  "common": {
+    "loading": "Loading…",
+    "error": "Something went wrong.",
+    "retry": "Try again"
+  }
+}

@@ -1,0 +1,134 @@
+{
+  "app": {
+    "name": "Supplier Carbon",
+    "tagline": "Chuyển tiếp email. Chụp ảnh hóa đơn. Nhận lại bảng câu hỏi đã điền.",
+    "signOut": "Đăng xuất",
+    "language": "Ngôn ngữ"
+  },
+  "steps": {
+    "setup": "Thiết lập",
+    "documents": "Hóa đơn",
+    "reconcile": "Câu hỏi",
+    "inventory": "Kiểm kê",
+    "questionnaire": "Bảng câu hỏi"
+  },
+  "signIn": {
+    "title": "Đăng nhập bằng số điện thoại",
+    "lede": "Chúng tôi sẽ gửi mã qua tin nhắn. Không lưu gì khác về bạn.",
+    "phoneLabel": "Số điện thoại",
+    "phonePlaceholder": "+84 90 123 4567",
+    "sendCode": "Gửi mã",
+    "codeLabel": "Mã xác nhận",
+    "verify": "Tiếp tục",
+    "back": "Dùng số khác",
+    "emailLabel": "Hoặc đăng nhập bằng liên kết email",
+    "emailPlaceholder": "ban@congty.com",
+    "sendLink": "Gửi liên kết",
+    "linkSent": "Kiểm tra email và mở liên kết trên thiết bị này.",
+    "error": "Không thành công. Kiểm tra số và thử lại.",
+    "devHint": "Môi trường thử nghiệm: số nào cũng được, mã hiển thị trong log của emulator."
+  },
+  "setup": {
+    "title": "Về công ty của bạn",
+    "lede": "Ba điều quyết định cách tính: bạn ở đâu, khách hàng hỏi năm nào, và những cơ sở nào được tính.",
+    "name": "Tên công ty",
+    "country": "Quốc gia",
+    "language": "Ngôn ngữ của bạn",
+    "fyStart": "Kỳ báo cáo bắt đầu",
+    "fyEnd": "Kỳ báo cáo kết thúc",
+    "sites": "Cơ sở",
+    "siteName": "Tên cơ sở",
+    "siteRegion": "Tỉnh / vùng lưới điện (nếu biết)",
+    "addSite": "Thêm cơ sở",
+    "revenue": "Doanh thu năm (tùy chọn, để tính cường độ)",
+    "currency": "Đơn vị tiền",
+    "save": "Lưu và tiếp tục",
+    "saved": "Đã lưu."
+  },
+  "documents": {
+    "title": "Hóa đơn của bạn",
+    "lede": "Hóa đơn điện, hóa đơn dầu, giao gas LPG, phiếu nạp gas lạnh. Ảnh hoặc PDF, thứ tự nào cũng được.",
+    "pick": "Thêm hóa đơn",
+    "camera": "Chụp ảnh",
+    "uploading": "Đang đọc {count} tài liệu…",
+    "empty": "Chưa có tài liệu nào.",
+    "status": {
+      "uploaded": "Đã tải lên",
+      "extracting": "Đang đọc…",
+      "extracted": "Đã đọc",
+      "failed": "Không đọc được"
+    },
+    "read": "{quantity} {unit} · {start} → {end}",
+    "confidence": "độ tin cậy {pct}%",
+    "next": "Tiếp tục đến câu hỏi",
+    "needMore": "Thêm ít nhất một hóa đơn để tiếp tục."
+  },
+  "reconcile": {
+    "title": "Vài câu hỏi",
+    "lede": "Chúng tôi đã so hóa đơn với kỳ báo cáo. Có gì thiếu hoặc chưa rõ, chúng tôi hỏi bạn ở đây.",
+    "start": "Kiểm tra hóa đơn",
+    "checking": "Đang kiểm tra…",
+    "placeholder": "Nhập câu trả lời",
+    "send": "Gửi",
+    "done": "Hồ sơ đã đầy đủ.",
+    "computed": "Đã tính xong.",
+    "issues": "{count} mục cần giải quyết",
+    "next": "Xem bảng kiểm kê"
+  },
+  "inventory": {
+    "title": "Bảng kiểm kê",
+    "lede": "Mỗi con số đều truy ngược được về một hóa đơn, một hệ số phát thải đã công bố và giả định đã ghi nhận nếu có.",
+    "scope1": "Phạm vi 1 — nhiên liệu và gas lạnh",
+    "scope2loc": "Phạm vi 2 — điện (theo vị trí)",
+    "scope2mkt": "Phạm vi 2 — điện (theo thị trường)",
+    "total": "Phạm vi 1 + 2",
+    "tonnes": "tCO2e",
+    "tierMix": "Chất lượng dữ liệu",
+    "tier": {
+      "primary": "sơ cấp",
+      "secondary": "thứ cấp",
+      "estimated": "ước tính"
+    },
+    "columns": {
+      "period": "Kỳ",
+      "type": "Năng lượng",
+      "quantity": "Số lượng",
+      "factor": "Hệ số",
+      "emissions": "tCO2e",
+      "tier": "Chất lượng"
+    },
+    "lineage": "Con số này từ đâu ra",
+    "document": "Tài liệu",
+    "factor": "Hệ số phát thải",
+    "assumptions": "Giả định",
+    "correct": "Sửa số lượng",
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "recomputed": "Đã tính lại.",
+    "notComputed": "Chưa tính.",
+    "compute": "Tính",
+    "skipped": "Chưa tính được",
+    "next": "Điền bảng câu hỏi"
+  },
+  "questionnaire": {
+    "title": "Bảng câu hỏi của khách hàng",
+    "lede": "Tải lên file Excel khách hàng gửi. Chúng tôi điền mọi ô có thể từ bảng kiểm kê và đánh dấu phần còn lại.",
+    "pick": "Chọn file Excel",
+    "share": "Tỷ lệ sản lượng khách hàng này mua (tùy chọn, để phân bổ)",
+    "sharePlaceholder": "vd. 20 nghĩa là 20%",
+    "fill": "Điền",
+    "filling": "Đang điền…",
+    "answered": "{n} đã trả lời · {flagged} cần bạn bổ sung",
+    "flagged": "Phần bạn cần bổ sung",
+    "download": "Tải bảng câu hỏi đã điền",
+    "methodology": "Tải bản ghi phương pháp",
+    "generating": "Đang tạo…",
+    "source": "Nguồn",
+    "needInventory": "Hãy tính bảng kiểm kê trước."
+  },
+  "common": {
+    "loading": "Đang tải…",
+    "error": "Có lỗi xảy ra.",
+    "retry": "Thử lại"
+  }
+}
