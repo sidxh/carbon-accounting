@@ -1,0 +1,5 @@
+id,country,region,year,energy_type,method,value,unit,source_name,source_url,vintage,gas,notes
+SG-grid-2021-loc,SG,,2021,electricity,location,0.4057,kWh,"Energy Market Authority Singapore — Grid Emission Factor",https://www.ema.gov.sg/resources/singapore-energy-statistics/chapter2,2023,,"Average Operating Margin GEF 2021"
+SG-grid-2022-loc,SG,,2022,electricity,location,0.4168,kWh,"Energy Market Authority Singapore — Grid Emission Factor",https://www.ema.gov.sg/resources/singapore-energy-statistics/chapter2,2024,,"Average Operating Margin GEF 2022"
+SG-grid-2023-loc,SG,,2023,electricity,location,0.4168,kWh,"Energy Market Authority Singapore — Grid Emission Factor",https://www.ema.gov.sg/resources/singapore-energy-statistics/chapter2,2025,,"VERIFY 2023 published value"
+SG-grid-2024-loc,SG,,2024,electricity,location,0.4168,kWh,"Energy Market Authority Singapore — Grid Emission Factor",https://www.ema.gov.sg/resources/singapore-energy-statistics/chapter2,2025,,"Carried pending publication. VERIFY"

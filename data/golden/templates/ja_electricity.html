@@ -1,0 +1,36 @@
+{% extends "_base.html" %}
+{% block body %}
+<div class="row">
+  <div class="logo"><div class="mark" style="background:#0a5c36">電</div><div><div style="font-weight:700">{{ vendor }}</div><div class="small">{{ vendor_address }}</div></div></div>
+  <div class="kv" style="text-align:right"><div><b>お客さま番号</b> <span class="mono">{{ customer_code }}</span></div><div><b>発行日</b> {{ issue_date.strftime('%Y年%m月%d日') }}</div></div>
+</div>
+
+<h1 style="text-align:center;margin-top:24px">電気ご使用量のお知らせ（請求書）</h1>
+<div style="text-align:center" class="small">{{ period_end.year }}年{{ period_end.month }}月分</div>
+
+<h2>ご契約情報</h2>
+<div class="kv">
+  <div><b>ご契約者名</b> {{ customer }}</div>
+  <div><b>ご使用場所</b> {{ address }}</div>
+  <div><b>契約種別</b> 高圧電力（業務用）</div>
+  <div><b>ご使用期間</b> {{ period_start.strftime('%Y年%m月%d日') }} 〜 {{ period_end.strftime('%Y年%m月%d日') }}（{{ days }}日間）</div>
+</div>
+
+<h2>ご使用量</h2>
+<table>
+  <tr><th>区分</th><th class="num">前回指示数</th><th class="num">今回指示数</th><th class="num">ご使用量</th></tr>
+  <tr><td>昼間</td><td class="num mono">{{ '{:,}'.format(old_day) }}</td><td class="num mono">{{ '{:,}'.format(new_day) }}</td><td class="num mono">{{ '{:,}'.format(kwh_day) }} kWh</td></tr>
+  <tr><td>夜間</td><td class="num mono">{{ '{:,}'.format(old_night) }}</td><td class="num mono">{{ '{:,}'.format(new_night) }}</td><td class="num mono">{{ '{:,}'.format(kwh_night) }} kWh</td></tr>
+  <tr><td colspan="3"><b>ご使用量合計</b></td><td class="num mono total">{{ '{:,}'.format(kwh_total) }} kWh</td></tr>
+</table>
+
+<h2>ご請求金額</h2>
+<table>
+  <tr><td>基本料金</td><td class="num mono">{{ '{:,}'.format(basic) }} 円</td></tr>
+  <tr><td>電力量料金</td><td class="num mono">{{ '{:,}'.format(energy_charge) }} 円</td></tr>
+  <tr><td>燃料費調整額</td><td class="num mono">{{ '{:,}'.format(fuel_adj) }} 円</td></tr>
+  <tr><td>再生可能エネルギー発電促進賦課金</td><td class="num mono">{{ '{:,}'.format(renewable_levy) }} 円</td></tr>
+  <tr><td class="total">ご請求金額合計（税込）</td><td class="num mono total">{{ '{:,}'.format(total) }} 円</td></tr>
+</table>
+<div class="foot">お支払期限 {{ due_date.strftime('%Y年%m月%d日') }} · お問い合わせ {{ vendor_phone }} · 排出係数はご契約小売電気事業者の公表値をご確認ください。</div>
+{% endblock %}

@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="{{ lang }}">
+<head>
+<meta charset="utf-8">
+<style>
+  :root { --ink:#1b1b1b; --muted:#555; --rule:#999; --accent:{{ accent | default('#0b4f8a') }}; }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; background:#e9e6df; }
+  body { font-family: "Noto Sans", "Noto Sans CJK JP", "Helvetica Neue", Arial, sans-serif; color:var(--ink); }
+  .sheet {
+    width: 794px; min-height: 1000px; margin: 24px auto; padding: 44px 52px; background:#fff;
+    box-shadow: 0 6px 24px rgba(0,0,0,.18);
+    {% if photo %}transform: rotate({{ photo.rotate }}deg) skew({{ photo.skew }}deg, 0); filter: contrast({{ photo.contrast }}) brightness({{ photo.brightness }}) sepia({{ photo.sepia }});{% endif %}
+  }
+  .mono { font-family: "Courier New", monospace; }
+  h1 { font-size: 20px; letter-spacing: .04em; margin: 0 0 4px; color: var(--accent); }
+  h2 { font-size: 13px; font-weight: 600; margin: 18px 0 6px; text-transform: uppercase; letter-spacing:.08em; color: var(--muted); }
+  .row { display:flex; justify-content:space-between; gap: 24px; }
+  .col { flex:1; }
+  .kv { font-size: 12.5px; line-height: 1.55; }
+  .kv b { display:inline-block; min-width: 150px; color:var(--muted); font-weight:500; }
+  table { width:100%; border-collapse: collapse; font-size: 12.5px; margin-top: 8px; }
+  th, td { padding: 6px 8px; border-bottom: 1px solid #ddd; text-align: left; }
+  th { background:#f3f3f0; font-weight:600; }
+  td.num, th.num { text-align:right; font-variant-numeric: tabular-nums; }
+  .total { font-size: 15px; font-weight: 700; }
+  .stamp { position:absolute; right: 70px; top: 120px; border: 2px solid #b3261e; color:#b3261e; padding: 6px 12px; transform: rotate(-8deg); font-weight:700; opacity:.8; font-size: 13px; }
+  .foot { margin-top: 28px; font-size: 10.5px; color: var(--muted); border-top: 1px dashed var(--rule); padding-top: 8px; }
+  .logo { display:flex; align-items:center; gap:10px; }
+  .logo .mark { width: 34px; height: 34px; border-radius: 6px; background: var(--accent); color:#fff; display:grid; place-items:center; font-weight:800; }
+  .small { font-size: 11px; color: var(--muted); }
+  .hand { font-family: "Bradley Hand", "Segoe Print", "Comic Sans MS", cursive; color:#1a3a8a; }
+</style>
+</head>
+<body>
+<div class="sheet" style="position:relative">
+{% block body %}{% endblock %}
+</div>
+</body>
+</html>

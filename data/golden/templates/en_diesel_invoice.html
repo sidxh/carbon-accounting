@@ -1,0 +1,18 @@
+{% extends "_base.html" %}
+{% block body %}
+<div class="row">
+  <div class="logo"><div class="mark" style="background:#333">F</div><div><div style="font-weight:700">{{ vendor }}</div><div class="small">{{ vendor_address }} · ABN {{ vendor_tax }}</div></div></div>
+  <div class="kv" style="text-align:right"><div><b>Tax invoice</b> <span class="mono">{{ invoice_no }}</span></div><div><b>Date</b> {{ issue_date.strftime('%d %b %Y') }}</div></div>
+</div>
+<h1 style="text-align:center;margin-top:24px">TAX INVOICE — BULK FUEL DELIVERY</h1>
+<h2>Bill to</h2>
+<div class="kv"><div><b>Customer</b> {{ customer }}</div><div><b>Delivery site</b> {{ address }}</div><div><b>Delivered</b> {{ delivery_date.strftime('%d %b %Y') }} by tanker {{ truck }}</div></div>
+<table style="margin-top:16px">
+  <tr><th>Description</th><th>Unit</th><th class="num">Qty</th><th class="num">Unit price</th><th class="num">Amount</th></tr>
+  <tr><td>Diesel (ULSD 10ppm) delivered to site tank</td><td>litres</td><td class="num mono">{{ '{:,}'.format(litres) }}</td><td class="num mono">{{ price }}</td><td class="num mono">{{ '{:,.2f}'.format(litres*price) }}</td></tr>
+  <tr><td colspan="4">Subtotal</td><td class="num mono">{{ '{:,.2f}'.format(subtotal) }}</td></tr>
+  <tr><td colspan="4">GST 10%</td><td class="num mono">{{ '{:,.2f}'.format(vat) }}</td></tr>
+  <tr><td colspan="4" class="total">Total</td><td class="num mono total">{{ currency }} {{ '{:,.2f}'.format(total) }}</td></tr>
+</table>
+<div class="foot">Payment terms 30 days. Fuel tax credits may apply.</div>
+{% endblock %}

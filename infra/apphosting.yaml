@@ -1,0 +1,25 @@
+# Firebase App Hosting config for web/. Copy to web/apphosting.yaml (App Hosting
+# reads it from the app root) or point the backend's root directory at web/.
+runConfig:
+  minInstances: 0
+  maxInstances: 2
+  concurrency: 80
+  cpu: 1
+  memoryMiB: 512
+
+env:
+  - variable: NEXT_PUBLIC_AGENT_URL
+    value: https://REPLACE_WITH_CLOUD_RUN_URL
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: REPLACE_WITH_PROJECT_ID
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    secret: firebase-web-api-key
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: REPLACE_WITH_PROJECT_ID.firebaseapp.com
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    value: REPLACE_WITH_PROJECT_ID.firebasestorage.app
+    availability: [BUILD, RUNTIME]

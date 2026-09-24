@@ -1,0 +1,41 @@
+# secrets
+.env
+.env.*
+!.env.example
+*-service-account*.json
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# python
+agent/.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+agent/.cache/
+agent/.local_storage/
+
+# node
+web/node_modules/
+web/.next/
+web/out/
+web/.firebase/
+*.tsbuildinfo
+next-env.d.ts
+
+# emulators
+.firebase/
+emulator-data/
+
+# generated artefacts (rebuilt by scripts; keep templates and labels)
+data/golden/rendered/*.png
+data/golden/rendered/*.pdf
+
+# os / editor
+.DS_Store
+.idea/
+.vscode/
+
+# playwright browsers (project-local, see data/golden/render.py)
+agent/.playwright/

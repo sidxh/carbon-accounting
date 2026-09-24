@@ -1,0 +1,32 @@
+{% extends "_base.html" %}
+{% block body %}
+<div class="row">
+  <div class="logo"><div class="mark" style="background:#f28c00">GAS</div><div><div style="font-weight:700">{{ vendor }}</div><div class="small">{{ vendor_address }} · MST {{ vendor_tax }}</div></div></div>
+  <div class="kv" style="text-align:right"><div><b>Ký hiệu</b> {{ series }}</div><div><b>Số</b> <span class="mono">{{ invoice_no }}</span></div></div>
+</div>
+
+<h1 style="text-align:center;margin-top:24px">HÓA ĐƠN GIÁ TRỊ GIA TĂNG</h1>
+<div style="text-align:center" class="small">Ngày {{ issue_date.day }} tháng {{ issue_date.month }} năm {{ issue_date.year }}</div>
+
+<h2>Khách hàng</h2>
+<div class="kv">
+  <div><b>Tên đơn vị</b> {{ customer }}</div>
+  <div><b>Mã số thuế</b> {{ customer_tax }}</div>
+  <div><b>Địa chỉ giao</b> {{ address }}</div>
+</div>
+
+<table style="margin-top:16px">
+  <tr><th>STT</th><th>Tên hàng hóa</th><th>ĐVT</th><th class="num">Số lượng</th><th class="num">Đơn giá (đ/kg)</th><th class="num">Thành tiền</th></tr>
+  <tr><td>1</td><td>Khí hóa lỏng LPG công nghiệp (bình {{ cyl_kg }} kg × {{ cylinders }} bình)</td><td>kg</td><td class="num mono">{{ '{:,}'.format(kg) }}</td><td class="num mono">{{ '{:,}'.format(price) }}</td><td class="num mono">{{ '{:,}'.format(kg*price) }}</td></tr>
+  <tr><td colspan="5">Cộng tiền hàng</td><td class="num mono">{{ '{:,}'.format(subtotal) }}</td></tr>
+  <tr><td colspan="5">Thuế GTGT 10%</td><td class="num mono">{{ '{:,}'.format(vat) }}</td></tr>
+  <tr><td colspan="5" class="total">Tổng cộng</td><td class="num mono total">{{ '{:,}'.format(total) }} đ</td></tr>
+</table>
+<div class="small" style="margin-top:6px">Ghi chú: giao {{ cylinders }} bình đầy, thu {{ cylinders }} bình rỗng. Kỳ sử dụng: tháng {{ period_start.month }}/{{ period_start.year }}.</div>
+
+<div class="row" style="margin-top:36px;font-size:12px;text-align:center">
+  <div class="col"><div>Người nhận</div><div class="hand" style="margin-top:22px">{{ buyer_sign }}</div></div>
+  <div class="col"><div>Người giao</div><div class="hand" style="margin-top:22px">{{ seller_sign }}</div></div>
+</div>
+<div class="foot">Hóa đơn điện tử · Mã tra cứu {{ lookup_code }}</div>
+{% endblock %}

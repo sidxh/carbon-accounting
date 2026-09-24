@@ -1,0 +1,1256 @@
+[
+  {
+    "name": "vn_evn_2025-01",
+    "files": {
+      "png": "vn_evn_2025-01.png",
+      "pdf": "vn_evn_2025-01.pdf"
+    },
+    "template": "vi_evn_electricity.html",
+    "lang": "vi",
+    "doc_type": "electricity_bill",
+    "vendor": "EVN SPC",
+    "customer": "CÔNG TY TNHH CƠ KHÍ MINH PHÁT",
+    "site_hint": "Nhơn Trạch",
+    "lines": [
+      {
+        "energy_type": "electricity",
+        "quantity": 42569,
+        "unit": "kWh",
+        "period_start": "2025-01-05",
+        "period_end": "2025-02-04",
+        "gas": null
+      }
+    ],
+    "amount": 97084063,
+    "currency": "VND",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "vn_evn_2025-02",
+    "files": {
+      "png": "vn_evn_2025-02.png"
+    },
+    "template": "vi_evn_electricity.html",
+    "lang": "vi",
+    "doc_type": "electricity_bill",
+    "vendor": "EVN SPC",
+    "customer": "CÔNG TY TNHH CƠ KHÍ MINH PHÁT",
+    "site_hint": "Nhơn Trạch",
+    "lines": [
+      {
+        "energy_type": "electricity",
+        "quantity": 46136,
+        "unit": "kWh",
+        "period_start": "2025-02-05",
+        "period_end": "2025-03-04",
+        "gas": null
+      }
+    ],
+    "amount": 105734623,
+    "currency": "VND",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "vn_evn_2025-03",
+    "files": {
+      "png": "vn_evn_2025-03.png"
+    },
+    "template": "vi_evn_electricity.html",
+    "lang": "vi",
+    "doc_type": "electricity_bill",
+    "vendor": "EVN SPC",
+    "customer": "CÔNG TY TNHH CƠ KHÍ MINH PHÁT",
+    "site_hint": "Nhơn Trạch",
+    "lines": [
+      {
+        "energy_type": "electricity",
+        "quantity": 47386,
+        "unit": "kWh",
+        "period_start": "2025-03-05",
+        "period_end": "2025-04-04",
+        "gas": null
+      }
+    ],
+    "amount": 105648601,
+    "currency": "VND",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "vn_evn_2025-04",
+    "files": {
+      "png": "vn_evn_2025-04.png"
+    },
+    "template": "vi_evn_electricity.html",
+    "lang": "vi",
+    "doc_type": "electricity_bill",
+    "vendor": "EVN SPC",
+    "customer": "CÔNG TY TNHH CƠ KHÍ MINH PHÁT",
+    "site_hint": "Nhơn Trạch",
+    "lines": [
+      {
+        "energy_type": "electricity",
+        "quantity": 46157,
+        "unit": "kWh",
+        "period_start": "2025-04-05",
+        "period_end": "2025-05-04",
+        "gas": null
+      }
+    ],
+    "amount": 100551718,
+    "currency": "VND",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "vn_evn_2025-05",
+    "files": {
+      "png": "vn_evn_2025-05.png"
+    },
+    "template": "vi_evn_electricity.html",
+    "lang": "vi",
+    "doc_type": "electricity_bill",
+    "vendor": "EVN SPC",
+    "customer": "CÔNG TY TNHH CƠ KHÍ MINH PHÁT",
+    "site_hint": "Nhơn Trạch",
+    "lines": [
+      {
+        "energy_type": "electricity",
+        "quantity": 43951,
+        "unit": "kWh",
+        "period_start": "2025-05-05",
+        "period_end": "2025-06-04",
+        "gas": null
+      }
+    ],
+    "amount": 97565547,
+    "currency": "VND",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "vn_evn_2025-06",
+    "files": {
+      "png": "vn_evn_2025-06.png"
+    },
+    "template": "vi_evn_electricity.html",
+    "lang": "vi",
+    "doc_type": "electricity_bill",
+    "vendor": "EVN SPC",
+    "customer": "CÔNG TY TNHH CƠ KHÍ MINH PHÁT",
+    "site_hint": "Nhơn Trạch",
+    "lines": [
+      {
+        "energy_type": "electricity",
+        "quantity": 44699,
+        "unit": "kWh",
+        "period_start": "2025-06-05",
+        "period_end": "2025-07-04",
+        "gas": null
+      }
+    ],
+    "amount": 101173866,
+    "currency": "VND",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "vn_evn_2025-07",
+    "files": {
+      "png": "vn_evn_2025-07.png",
+      "pdf": "vn_evn_2025-07.pdf"
+    },
+    "template": "vi_evn_electricity.html",
+    "lang": "vi",
+    "doc_type": "electricity_bill",
+    "vendor": "EVN SPC",
+    "customer": "CÔNG TY TNHH CƠ KHÍ MINH PHÁT",
+    "site_hint": "Nhơn Trạch",
+    "lines": [
+      {
+        "energy_type": "electricity",
+        "quantity": 44348,
+        "unit": "kWh",
+        "period_start": "2025-07-05",
+        "period_end": "2025-08-04",
+        "gas": null
+      }
+    ],
+    "amount": 99194427,
+    "currency": "VND",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "vn_evn_2025-08",
+    "files": {
+      "png": "vn_evn_2025-08.png"
+    },
+    "template": "vi_evn_electricity.html",
+    "lang": "vi",
+    "doc_type": "electricity_bill",
+    "vendor": "EVN SPC",
+    "customer": "CÔNG TY TNHH CƠ KHÍ MINH PHÁT",
+    "site_hint": "Nhơn Trạch",
+    "lines": [
+      {
+        "energy_type": "electricity",
+        "quantity": 42686,
+        "unit": "kWh",
+        "period_start": "2025-08-05",
+        "period_end": "2025-09-04",
+        "gas": null
+      }
+    ],
+    "amount": 99149631,
+    "currency": "VND",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "vn_evn_2025-09",
+    "files": {
+      "png": "vn_evn_2025-09.png"
+    },
+    "template": "vi_evn_electricity.html",
+    "lang": "vi",
+    "doc_type": "electricity_bill",
+    "vendor": "EVN SPC",
+    "customer": "CÔNG TY TNHH CƠ KHÍ MINH PHÁT",
+    "site_hint": "Nhơn Trạch",
+    "lines": [
+      {
+        "energy_type": "electricity",
+        "quantity": 41592,
+        "unit": "kWh",
+        "period_start": "2025-09-05",
+        "period_end": "2025-10-04",
+        "gas": null
+      }
+    ],
+    "amount": 92824756,
+    "currency": "VND",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "vn_evn_2025-10",
+    "files": {
+      "png": "vn_evn_2025-10.png"
+    },
+    "template": "vi_evn_electricity.html",
+    "lang": "vi",
+    "doc_type": "electricity_bill",
+    "vendor": "EVN SPC",
+    "customer": "CÔNG TY TNHH CƠ KHÍ MINH PHÁT",
+    "site_hint": "Nhơn Trạch",
+    "lines": [
+      {
+        "energy_type": "electricity",
+        "quantity": 44883,
+        "unit": "kWh",
+        "period_start": "2025-10-05",
+        "period_end": "2025-11-04",
+        "gas": null
+      }
+    ],
+    "amount": 98827886,
+    "currency": "VND",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "vn_evn_2025-11",
+    "files": {
+      "png": "vn_evn_2025-11.png"
+    },
+    "template": "vi_evn_electricity.html",
+    "lang": "vi",
+    "doc_type": "electricity_bill",
+    "vendor": "EVN SPC",
+    "customer": "CÔNG TY TNHH CƠ KHÍ MINH PHÁT",
+    "site_hint": "Nhơn Trạch",
+    "lines": [
+      {
+        "energy_type": "electricity",
+        "quantity": 45796,
+        "unit": "kWh",
+        "period_start": "2025-11-05",
+        "period_end": "2025-12-04",
+        "gas": null
+      }
+    ],
+    "amount": 101829581,
+    "currency": "VND",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "vn_evn_2025-12",
+    "files": {
+      "png": "vn_evn_2025-12.png"
+    },
+    "template": "vi_evn_electricity.html",
+    "lang": "vi",
+    "doc_type": "electricity_bill",
+    "vendor": "EVN SPC",
+    "customer": "CÔNG TY TNHH CƠ KHÍ MINH PHÁT",
+    "site_hint": "Nhơn Trạch",
+    "lines": [
+      {
+        "energy_type": "electricity",
+        "quantity": 45336,
+        "unit": "kWh",
+        "period_start": "2025-12-05",
+        "period_end": "2026-01-04",
+        "gas": null
+      }
+    ],
+    "amount": 101746637,
+    "currency": "VND",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "vn_evn_2025-03_photo_dup",
+    "files": {
+      "png": "vn_evn_2025-03_photo_dup.png"
+    },
+    "template": "vi_evn_electricity.html",
+    "lang": "vi",
+    "doc_type": "electricity_bill",
+    "vendor": "EVN SPC",
+    "customer": "CÔNG TY TNHH CƠ KHÍ MINH PHÁT",
+    "site_hint": "Nhơn Trạch",
+    "lines": [
+      {
+        "energy_type": "electricity",
+        "quantity": 47386,
+        "unit": "kWh",
+        "period_start": "2025-03-05",
+        "period_end": "2025-04-04",
+        "gas": null
+      }
+    ],
+    "amount": 105648601,
+    "currency": "VND",
+    "duplicate_of": "vn_evn_2025-03",
+    "photo": true
+  },
+  {
+    "name": "vn_diesel_2025-01",
+    "files": {
+      "png": "vn_diesel_2025-01.png",
+      "pdf": "vn_diesel_2025-01.pdf"
+    },
+    "template": "vi_diesel_receipt.html",
+    "lang": "vi",
+    "doc_type": "fuel_invoice",
+    "vendor": "CÔNG TY XĂNG DẦU ĐỒNG NAI",
+    "customer": "CÔNG TY TNHH CƠ KHÍ MINH PHÁT",
+    "site_hint": "Nhơn Trạch",
+    "lines": [
+      {
+        "energy_type": "diesel",
+        "quantity": 3400,
+        "unit": "L",
+        "period_start": "2025-01-19",
+        "period_end": "2025-01-19",
+        "gas": null
+      }
+    ],
+    "amount": 77530200,
+    "currency": "VND",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "vn_diesel_2025-03",
+    "files": {
+      "png": "vn_diesel_2025-03.png"
+    },
+    "template": "vi_diesel_receipt.html",
+    "lang": "vi",
+    "doc_type": "fuel_invoice",
+    "vendor": "CÔNG TY XĂNG DẦU ĐỒNG NAI",
+    "customer": "CÔNG TY TNHH CƠ KHÍ MINH PHÁT",
+    "site_hint": "Nhơn Trạch",
+    "lines": [
+      {
+        "energy_type": "diesel",
+        "quantity": 3250,
+        "unit": "L",
+        "period_start": "2025-03-23",
+        "period_end": "2025-03-23",
+        "gas": null
+      }
+    ],
+    "amount": 71214000,
+    "currency": "VND",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "vn_diesel_2025-05",
+    "files": {
+      "png": "vn_diesel_2025-05.png"
+    },
+    "template": "vi_diesel_receipt.html",
+    "lang": "vi",
+    "doc_type": "fuel_invoice",
+    "vendor": "CÔNG TY XĂNG DẦU ĐỒNG NAI",
+    "customer": "CÔNG TY TNHH CƠ KHÍ MINH PHÁT",
+    "site_hint": "Nhơn Trạch",
+    "lines": [
+      {
+        "energy_type": "diesel",
+        "quantity": 3450,
+        "unit": "L",
+        "period_start": "2025-05-11",
+        "period_end": "2025-05-11",
+        "gas": null
+      }
+    ],
+    "amount": 76531400,
+    "currency": "VND",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "vn_diesel_2025-07",
+    "files": {
+      "png": "vn_diesel_2025-07.png"
+    },
+    "template": "vi_diesel_receipt.html",
+    "lang": "vi",
+    "doc_type": "fuel_invoice",
+    "vendor": "CÔNG TY XĂNG DẦU ĐỒNG NAI",
+    "customer": "CÔNG TY TNHH CƠ KHÍ MINH PHÁT",
+    "site_hint": "Nhơn Trạch",
+    "lines": [
+      {
+        "energy_type": "diesel",
+        "quantity": 3550,
+        "unit": "L",
+        "period_start": "2025-07-06",
+        "period_end": "2025-07-06",
+        "gas": null
+      }
+    ],
+    "amount": 78490500,
+    "currency": "VND",
+    "duplicate_of": null,
+    "photo": true
+  },
+  {
+    "name": "vn_diesel_2025-09",
+    "files": {
+      "png": "vn_diesel_2025-09.png"
+    },
+    "template": "vi_diesel_receipt.html",
+    "lang": "vi",
+    "doc_type": "fuel_invoice",
+    "vendor": "CÔNG TY XĂNG DẦU ĐỒNG NAI",
+    "customer": "CÔNG TY TNHH CƠ KHÍ MINH PHÁT",
+    "site_hint": "Nhơn Trạch",
+    "lines": [
+      {
+        "energy_type": "diesel",
+        "quantity": 3750,
+        "unit": "L",
+        "period_start": "2025-09-18",
+        "period_end": "2025-09-18",
+        "gas": null
+      }
+    ],
+    "amount": 85415000,
+    "currency": "VND",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "vn_diesel_2025-11",
+    "files": {
+      "png": "vn_diesel_2025-11.png"
+    },
+    "template": "vi_diesel_receipt.html",
+    "lang": "vi",
+    "doc_type": "fuel_invoice",
+    "vendor": "CÔNG TY XĂNG DẦU ĐỒNG NAI",
+    "customer": "CÔNG TY TNHH CƠ KHÍ MINH PHÁT",
+    "site_hint": "Nhơn Trạch",
+    "lines": [
+      {
+        "energy_type": "diesel",
+        "quantity": 2700,
+        "unit": "L",
+        "period_start": "2025-11-21",
+        "period_end": "2025-11-21",
+        "gas": null
+      }
+    ],
+    "amount": 60825600,
+    "currency": "VND",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "vn_lpg_2025-01",
+    "files": {
+      "png": "vn_lpg_2025-01.png"
+    },
+    "template": "vi_lpg_invoice.html",
+    "lang": "vi",
+    "doc_type": "fuel_invoice",
+    "vendor": "CÔNG TY CP GAS PETROLIMEX SÀI GÒN",
+    "customer": "CÔNG TY TNHH CƠ KHÍ MINH PHÁT",
+    "site_hint": "Nhơn Trạch",
+    "lines": [
+      {
+        "energy_type": "lpg",
+        "quantity": 630,
+        "unit": "kg",
+        "period_start": "2025-01-01",
+        "period_end": "2025-01-31",
+        "gas": null
+      }
+    ],
+    "amount": 17532900,
+    "currency": "VND",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "vn_lpg_2025-02",
+    "files": {
+      "png": "vn_lpg_2025-02.png"
+    },
+    "template": "vi_lpg_invoice.html",
+    "lang": "vi",
+    "doc_type": "fuel_invoice",
+    "vendor": "CÔNG TY CP GAS PETROLIMEX SÀI GÒN",
+    "customer": "CÔNG TY TNHH CƠ KHÍ MINH PHÁT",
+    "site_hint": "Nhơn Trạch",
+    "lines": [
+      {
+        "energy_type": "lpg",
+        "quantity": 855,
+        "unit": "kg",
+        "period_start": "2025-02-01",
+        "period_end": "2025-02-28",
+        "gas": null
+      }
+    ],
+    "amount": 22477950,
+    "currency": "VND",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "vn_lpg_2025-03",
+    "files": {
+      "png": "vn_lpg_2025-03.png"
+    },
+    "template": "vi_lpg_invoice.html",
+    "lang": "vi",
+    "doc_type": "fuel_invoice",
+    "vendor": "CÔNG TY CP GAS PETROLIMEX SÀI GÒN",
+    "customer": "CÔNG TY TNHH CƠ KHÍ MINH PHÁT",
+    "site_hint": "Nhơn Trạch",
+    "lines": [
+      {
+        "energy_type": "lpg",
+        "quantity": 675,
+        "unit": "kg",
+        "period_start": "2025-03-01",
+        "period_end": "2025-03-31",
+        "gas": null
+      }
+    ],
+    "amount": 17745750,
+    "currency": "VND",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "vn_lpg_2025-04",
+    "files": {
+      "png": "vn_lpg_2025-04.png"
+    },
+    "template": "vi_lpg_invoice.html",
+    "lang": "vi",
+    "doc_type": "fuel_invoice",
+    "vendor": "CÔNG TY CP GAS PETROLIMEX SÀI GÒN",
+    "customer": "CÔNG TY TNHH CƠ KHÍ MINH PHÁT",
+    "site_hint": "Nhơn Trạch",
+    "lines": [
+      {
+        "energy_type": "lpg",
+        "quantity": 810,
+        "unit": "kg",
+        "period_start": "2025-04-01",
+        "period_end": "2025-04-30",
+        "gas": null
+      }
+    ],
+    "amount": 22096800,
+    "currency": "VND",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "vn_lpg_2025-05",
+    "files": {
+      "png": "vn_lpg_2025-05.png"
+    },
+    "template": "vi_lpg_invoice.html",
+    "lang": "vi",
+    "doc_type": "fuel_invoice",
+    "vendor": "CÔNG TY CP GAS PETROLIMEX SÀI GÒN",
+    "customer": "CÔNG TY TNHH CƠ KHÍ MINH PHÁT",
+    "site_hint": "Nhơn Trạch",
+    "lines": [
+      {
+        "energy_type": "lpg",
+        "quantity": 450,
+        "unit": "kg",
+        "period_start": "2025-05-01",
+        "period_end": "2025-05-31",
+        "gas": null
+      }
+    ],
+    "amount": 12276000,
+    "currency": "VND",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "vn_lpg_2025-06",
+    "files": {
+      "png": "vn_lpg_2025-06.png"
+    },
+    "template": "vi_lpg_invoice.html",
+    "lang": "vi",
+    "doc_type": "fuel_invoice",
+    "vendor": "CÔNG TY CP GAS PETROLIMEX SÀI GÒN",
+    "customer": "CÔNG TY TNHH CƠ KHÍ MINH PHÁT",
+    "site_hint": "Nhơn Trạch",
+    "lines": [
+      {
+        "energy_type": "lpg",
+        "quantity": 585,
+        "unit": "kg",
+        "period_start": "2025-06-01",
+        "period_end": "2025-06-30",
+        "gas": null
+      }
+    ],
+    "amount": 15379650,
+    "currency": "VND",
+    "duplicate_of": null,
+    "photo": true
+  },
+  {
+    "name": "vn_lpg_2025-10",
+    "files": {
+      "png": "vn_lpg_2025-10.png"
+    },
+    "template": "vi_lpg_invoice.html",
+    "lang": "vi",
+    "doc_type": "fuel_invoice",
+    "vendor": "CÔNG TY CP GAS PETROLIMEX SÀI GÒN",
+    "customer": "CÔNG TY TNHH CƠ KHÍ MINH PHÁT",
+    "site_hint": "Nhơn Trạch",
+    "lines": [
+      {
+        "energy_type": "lpg",
+        "quantity": 675,
+        "unit": "kg",
+        "period_start": "2025-10-01",
+        "period_end": "2025-10-31",
+        "gas": null
+      }
+    ],
+    "amount": 18414000,
+    "currency": "VND",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "vn_lpg_2025-11",
+    "files": {
+      "png": "vn_lpg_2025-11.png"
+    },
+    "template": "vi_lpg_invoice.html",
+    "lang": "vi",
+    "doc_type": "fuel_invoice",
+    "vendor": "CÔNG TY CP GAS PETROLIMEX SÀI GÒN",
+    "customer": "CÔNG TY TNHH CƠ KHÍ MINH PHÁT",
+    "site_hint": "Nhơn Trạch",
+    "lines": [
+      {
+        "energy_type": "lpg",
+        "quantity": 495,
+        "unit": "kg",
+        "period_start": "2025-11-01",
+        "period_end": "2025-11-30",
+        "gas": null
+      }
+    ],
+    "amount": 13503600,
+    "currency": "VND",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "vn_lpg_2025-12",
+    "files": {
+      "png": "vn_lpg_2025-12.png"
+    },
+    "template": "vi_lpg_invoice.html",
+    "lang": "vi",
+    "doc_type": "fuel_invoice",
+    "vendor": "CÔNG TY CP GAS PETROLIMEX SÀI GÒN",
+    "customer": "CÔNG TY TNHH CƠ KHÍ MINH PHÁT",
+    "site_hint": "Nhơn Trạch",
+    "lines": [
+      {
+        "energy_type": "lpg",
+        "quantity": 585,
+        "unit": "kg",
+        "period_start": "2025-12-01",
+        "period_end": "2025-12-31",
+        "gas": null
+      }
+    ],
+    "amount": 15958800,
+    "currency": "VND",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "vn_refrigerant_2025-04",
+    "files": {
+      "png": "vn_refrigerant_2025-04.png",
+      "pdf": "vn_refrigerant_2025-04.pdf"
+    },
+    "template": "vi_refrigerant_slip.html",
+    "lang": "vi",
+    "doc_type": "refrigerant_service",
+    "vendor": "ĐIỆN LẠNH HOÀNG PHÁT",
+    "customer": "CÔNG TY TNHH CƠ KHÍ MINH PHÁT",
+    "site_hint": "Nhơn Trạch",
+    "lines": [
+      {
+        "energy_type": "refrigerant",
+        "quantity": 3.5,
+        "unit": "kg",
+        "period_start": "2025-04-26",
+        "period_end": "2025-04-26",
+        "gas": "R-410A"
+      }
+    ],
+    "amount": 3670000,
+    "currency": "VND",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "vn_refrigerant_2025-09",
+    "files": {
+      "png": "vn_refrigerant_2025-09.png"
+    },
+    "template": "vi_refrigerant_slip.html",
+    "lang": "vi",
+    "doc_type": "refrigerant_service",
+    "vendor": "ĐIỆN LẠNH HOÀNG PHÁT",
+    "customer": "CÔNG TY TNHH CƠ KHÍ MINH PHÁT",
+    "site_hint": "Nhơn Trạch",
+    "lines": [
+      {
+        "energy_type": "refrigerant",
+        "quantity": 6.0,
+        "unit": "kg",
+        "period_start": "2025-09-17",
+        "period_end": "2025-09-17",
+        "gas": "R-22"
+      }
+    ],
+    "amount": 3780000,
+    "currency": "VND",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "jp_elec_2025-04",
+    "files": {
+      "png": "jp_elec_2025-04.png",
+      "pdf": "jp_elec_2025-04.pdf"
+    },
+    "template": "ja_electricity.html",
+    "lang": "ja",
+    "doc_type": "electricity_bill",
+    "vendor": "中部電力ミライズ株式会社",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "electricity",
+        "quantity": 70420,
+        "unit": "kWh",
+        "period_start": "2025-04-01",
+        "period_end": "2025-04-30",
+        "gas": null
+      }
+    ],
+    "amount": 1769820,
+    "currency": "JPY",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "jp_elec_2025-05",
+    "files": {
+      "png": "jp_elec_2025-05.png"
+    },
+    "template": "ja_electricity.html",
+    "lang": "ja",
+    "doc_type": "electricity_bill",
+    "vendor": "中部電力ミライズ株式会社",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "electricity",
+        "quantity": 64961,
+        "unit": "kWh",
+        "period_start": "2025-05-01",
+        "period_end": "2025-05-31",
+        "gas": null
+      }
+    ],
+    "amount": 1651843,
+    "currency": "JPY",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "jp_elec_2025-06",
+    "files": {
+      "png": "jp_elec_2025-06.png"
+    },
+    "template": "ja_electricity.html",
+    "lang": "ja",
+    "doc_type": "electricity_bill",
+    "vendor": "中部電力ミライズ株式会社",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "electricity",
+        "quantity": 65037,
+        "unit": "kWh",
+        "period_start": "2025-06-01",
+        "period_end": "2025-06-30",
+        "gas": null
+      }
+    ],
+    "amount": 1644125,
+    "currency": "JPY",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "jp_elec_2025-07",
+    "files": {
+      "png": "jp_elec_2025-07.png"
+    },
+    "template": "ja_electricity.html",
+    "lang": "ja",
+    "doc_type": "electricity_bill",
+    "vendor": "中部電力ミライズ株式会社",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "electricity",
+        "quantity": 69530,
+        "unit": "kWh",
+        "period_start": "2025-07-01",
+        "period_end": "2025-07-31",
+        "gas": null
+      }
+    ],
+    "amount": 1752005,
+    "currency": "JPY",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "jp_elec_2025-08",
+    "files": {
+      "png": "jp_elec_2025-08.png"
+    },
+    "template": "ja_electricity.html",
+    "lang": "ja",
+    "doc_type": "electricity_bill",
+    "vendor": "中部電力ミライズ株式会社",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "electricity",
+        "quantity": 61235,
+        "unit": "kWh",
+        "period_start": "2025-08-01",
+        "period_end": "2025-08-31",
+        "gas": null
+      }
+    ],
+    "amount": 1579083,
+    "currency": "JPY",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "jp_elec_2025-09",
+    "files": {
+      "png": "jp_elec_2025-09.png"
+    },
+    "template": "ja_electricity.html",
+    "lang": "ja",
+    "doc_type": "electricity_bill",
+    "vendor": "中部電力ミライズ株式会社",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "electricity",
+        "quantity": 69922,
+        "unit": "kWh",
+        "period_start": "2025-09-01",
+        "period_end": "2025-09-30",
+        "gas": null
+      }
+    ],
+    "amount": 1776558,
+    "currency": "JPY",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "jp_diesel_2025-04",
+    "files": {
+      "png": "jp_diesel_2025-04.png"
+    },
+    "template": "ja_diesel_delivery.html",
+    "lang": "ja",
+    "doc_type": "fuel_invoice",
+    "vendor": "東海石油販売株式会社",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "diesel",
+        "quantity": 1700,
+        "unit": "L",
+        "period_start": "2025-04-07",
+        "period_end": "2025-04-07",
+        "gas": null
+      }
+    ],
+    "amount": 282370,
+    "currency": "JPY",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "jp_diesel_2025-06",
+    "files": {
+      "png": "jp_diesel_2025-06.png"
+    },
+    "template": "ja_diesel_delivery.html",
+    "lang": "ja",
+    "doc_type": "fuel_invoice",
+    "vendor": "東海石油販売株式会社",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "diesel",
+        "quantity": 2100,
+        "unit": "L",
+        "period_start": "2025-06-14",
+        "period_end": "2025-06-14",
+        "gas": null
+      }
+    ],
+    "amount": 348810,
+    "currency": "JPY",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "jp_diesel_2025-08",
+    "files": {
+      "png": "jp_diesel_2025-08.png"
+    },
+    "template": "ja_diesel_delivery.html",
+    "lang": "ja",
+    "doc_type": "fuel_invoice",
+    "vendor": "東海石油販売株式会社",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "diesel",
+        "quantity": 2500,
+        "unit": "L",
+        "period_start": "2025-08-09",
+        "period_end": "2025-08-09",
+        "gas": null
+      }
+    ],
+    "amount": 401500,
+    "currency": "JPY",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "jp_lpg_2025-05",
+    "files": {
+      "png": "jp_lpg_2025-05.png"
+    },
+    "template": "ja_lpg_invoice.html",
+    "lang": "ja",
+    "doc_type": "fuel_invoice",
+    "vendor": "愛知プロパン株式会社",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "lpg",
+        "quantity": 574,
+        "unit": "kg",
+        "period_start": "2025-05-01",
+        "period_end": "2025-05-31",
+        "gas": null
+      }
+    ],
+    "amount": 221197,
+    "currency": "JPY",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "jp_lpg_2025-08",
+    "files": {
+      "png": "jp_lpg_2025-08.png"
+    },
+    "template": "ja_lpg_invoice.html",
+    "lang": "ja",
+    "doc_type": "fuel_invoice",
+    "vendor": "愛知プロパン株式会社",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "lpg",
+        "quantity": 523,
+        "unit": "kg",
+        "period_start": "2025-08-01",
+        "period_end": "2025-08-31",
+        "gas": null
+      }
+    ],
+    "amount": 203694,
+    "currency": "JPY",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "au_elec_FY25-Q1",
+    "files": {
+      "png": "au_elec_FY25-Q1.png",
+      "pdf": "au_elec_FY25-Q1.pdf"
+    },
+    "template": "en_electricity.html",
+    "lang": "en",
+    "doc_type": "electricity_bill",
+    "vendor": "SA Power Retail",
+    "customer": "Riverside Fabrication Pty Ltd",
+    "site_hint": "Wingfield",
+    "lines": [
+      {
+        "energy_type": "electricity",
+        "quantity": 82377,
+        "unit": "kWh",
+        "period_start": "2024-07-01",
+        "period_end": "2024-09-30",
+        "gas": null
+      }
+    ],
+    "amount": 25995.75,
+    "currency": "AUD",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "au_elec_FY25-Q2",
+    "files": {
+      "png": "au_elec_FY25-Q2.png"
+    },
+    "template": "en_electricity.html",
+    "lang": "en",
+    "doc_type": "electricity_bill",
+    "vendor": "SA Power Retail",
+    "customer": "Riverside Fabrication Pty Ltd",
+    "site_hint": "Wingfield",
+    "lines": [
+      {
+        "energy_type": "electricity",
+        "quantity": 90951,
+        "unit": "kWh",
+        "period_start": "2024-10-01",
+        "period_end": "2024-12-31",
+        "gas": null
+      }
+    ],
+    "amount": 28138.68,
+    "currency": "AUD",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "au_elec_FY25-Q3",
+    "files": {
+      "png": "au_elec_FY25-Q3.png"
+    },
+    "template": "en_electricity.html",
+    "lang": "en",
+    "doc_type": "electricity_bill",
+    "vendor": "SA Power Retail",
+    "customer": "Riverside Fabrication Pty Ltd",
+    "site_hint": "Wingfield",
+    "lines": [
+      {
+        "energy_type": "electricity",
+        "quantity": 84705,
+        "unit": "kWh",
+        "period_start": "2025-01-01",
+        "period_end": "2025-03-31",
+        "gas": null
+      }
+    ],
+    "amount": 26509.15,
+    "currency": "AUD",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "au_elec_FY25-Q4",
+    "files": {
+      "png": "au_elec_FY25-Q4.png"
+    },
+    "template": "en_electricity.html",
+    "lang": "en",
+    "doc_type": "electricity_bill",
+    "vendor": "SA Power Retail",
+    "customer": "Riverside Fabrication Pty Ltd",
+    "site_hint": "Wingfield",
+    "lines": [
+      {
+        "energy_type": "electricity",
+        "quantity": 94073,
+        "unit": "kWh",
+        "period_start": "2025-04-01",
+        "period_end": "2025-06-30",
+        "gas": null
+      }
+    ],
+    "amount": 29862.05,
+    "currency": "AUD",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "au_diesel_2024-08-14",
+    "files": {
+      "png": "au_diesel_2024-08-14.png"
+    },
+    "template": "en_diesel_invoice.html",
+    "lang": "en",
+    "doc_type": "fuel_invoice",
+    "vendor": "Southern Fuel Distributors",
+    "customer": "Riverside Fabrication Pty Ltd",
+    "site_hint": "Wingfield",
+    "lines": [
+      {
+        "energy_type": "diesel",
+        "quantity": 5900,
+        "unit": "L",
+        "period_start": "2024-08-14",
+        "period_end": "2024-08-14",
+        "gas": null
+      }
+    ],
+    "amount": 11649.55,
+    "currency": "AUD",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "au_diesel_2024-12-03",
+    "files": {
+      "png": "au_diesel_2024-12-03.png"
+    },
+    "template": "en_diesel_invoice.html",
+    "lang": "en",
+    "doc_type": "fuel_invoice",
+    "vendor": "Southern Fuel Distributors",
+    "customer": "Riverside Fabrication Pty Ltd",
+    "site_hint": "Wingfield",
+    "lines": [
+      {
+        "energy_type": "diesel",
+        "quantity": 4000,
+        "unit": "L",
+        "period_start": "2024-12-03",
+        "period_end": "2024-12-03",
+        "gas": null
+      }
+    ],
+    "amount": 8408.4,
+    "currency": "AUD",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "au_diesel_2025-04-22",
+    "files": {
+      "png": "au_diesel_2025-04-22.png"
+    },
+    "template": "en_diesel_invoice.html",
+    "lang": "en",
+    "doc_type": "fuel_invoice",
+    "vendor": "Southern Fuel Distributors",
+    "customer": "Riverside Fabrication Pty Ltd",
+    "site_hint": "Wingfield",
+    "lines": [
+      {
+        "energy_type": "diesel",
+        "quantity": 3600,
+        "unit": "L",
+        "period_start": "2025-04-22",
+        "period_end": "2025-04-22",
+        "gas": null
+      }
+    ],
+    "amount": 7294.32,
+    "currency": "AUD",
+    "duplicate_of": null,
+    "photo": false
+  }
+]

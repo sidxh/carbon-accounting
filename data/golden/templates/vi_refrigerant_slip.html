@@ -1,0 +1,33 @@
+{% extends "_base.html" %}
+{% block body %}
+<div class="row">
+  <div class="logo"><div class="mark" style="background:#1a7f5a">❄</div><div><div style="font-weight:700">{{ vendor }}</div><div class="small">Dịch vụ điện lạnh công nghiệp · {{ vendor_phone }}</div></div></div>
+  <div class="kv" style="text-align:right"><div><b>Phiếu số</b> <span class="mono">{{ slip_no }}</span></div><div><b>Ngày</b> {{ service_date.strftime('%d/%m/%Y') }}</div></div>
+</div>
+
+<h1 style="text-align:center;margin-top:24px">PHIẾU BẢO TRÌ – NẠP GAS HỆ THỐNG LẠNH</h1>
+
+<h2>Khách hàng</h2>
+<div class="kv">
+  <div><b>Đơn vị</b> {{ customer }}</div>
+  <div><b>Địa điểm</b> {{ address }}</div>
+  <div><b>Thiết bị</b> {{ equipment }}</div>
+  <div><b>Loại gas</b> <span class="mono" style="font-weight:700">{{ gas }}</span></div>
+</div>
+
+<h2>Nội dung công việc</h2>
+<table>
+  <tr><th>Hạng mục</th><th>ĐVT</th><th class="num">Số lượng</th><th class="num">Đơn giá</th><th class="num">Thành tiền</th></tr>
+  <tr><td>Kiểm tra rò rỉ, vệ sinh dàn nóng/dàn lạnh</td><td>Lần</td><td class="num">1</td><td class="num mono">{{ '{:,}'.format(labour) }}</td><td class="num mono">{{ '{:,}'.format(labour) }}</td></tr>
+  <tr><td>Nạp bổ sung gas lạnh {{ gas }}</td><td>kg</td><td class="num mono" style="font-weight:700">{{ kg }}</td><td class="num mono">{{ '{:,}'.format(gas_price) }}</td><td class="num mono">{{ '{:,}'.format((kg*gas_price)|int) }}</td></tr>
+  <tr><td colspan="4" class="total">Tổng cộng (đã gồm VAT)</td><td class="num mono total">{{ '{:,}'.format(total) }} đ</td></tr>
+</table>
+
+<div class="kv" style="margin-top:14px"><div><b>Áp suất sau nạp</b> {{ pressure }} psi</div><div><b>Ghi chú kỹ thuật</b> <span class="hand">{{ note }}</span></div></div>
+
+<div class="row" style="margin-top:36px;font-size:12px;text-align:center">
+  <div class="col"><div>Kỹ thuật viên</div><div class="hand" style="margin-top:22px">{{ tech_sign }}</div></div>
+  <div class="col"><div>Đại diện khách hàng</div><div class="hand" style="margin-top:22px">{{ buyer_sign }}</div></div>
+</div>
+<div class="foot">Bảo hành nạp gas 6 tháng. Liên hệ {{ vendor_phone }}.</div>
+{% endblock %}

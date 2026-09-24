@@ -1,0 +1,178 @@
+"""Domain models shared by every stage of the pipeline.
+
+The shapes here are deliberately boring: they are what an auditor expects to
+see. Every number that reaches a questionnaire is an `InventoryLine`, and an
+`InventoryLine` always names the document, the factor and the assumptions it
+came from.
+"""
+
+from __future__ import annotations
+
+from datetime import date, datetime
+from enum import StrEnum
+from typing import Literal
+
+from pydantic import BaseModel, Field
+
+
+class EnergyType(StrEnum):
+    ELECTRICITY = "electricity"
+    DIESEL = "diesel"
+    PETROL = "petrol"
+    LPG = "lpg"
+    NATURAL_GAS = "natural_gas"
+    KEROSENE = "kerosene"
+    COAL = "coal"
+    BIOMASS = "biomass"
+    REFRIGERANT = "refrigerant"
+    PURCHASED_STEAM = "purchased_steam"
+    PURCHASED_COOLING = "purchased_cooling"
+    OTHER = "other"
+
+
+SCOPE_OF: dict[EnergyType, int] = {
+    EnergyType.ELECTRICITY: 2,
+    EnergyType.PURCHASED_STEAM: 2,
+    EnergyType.PURCHASED_COOLING: 2,
+    EnergyType.DIESEL: 1,
+    EnergyType.PETROL: 1,
+    EnergyType.LPG: 1,
+    EnergyType.NATURAL_GAS: 1,
+    EnergyType.KEROSENE: 1,
+    EnergyType.COAL: 1,
+    EnergyType.BIOMASS: 1,
+    EnergyType.REFRIGERANT: 1,
+    EnergyType.OTHER: 1,
+}
+
+
+class Unit(StrEnum):
+    KWH = "kWh"
+    MWH = "MWh"
+    LITRE = "L"
+    KG = "kg"
+    TONNE = "t"
+    M3 = "m3"
+    GJ = "GJ"
+    HOUR = "h"  # generator runtime; converted with a rated consumption assumption
+
+
+Tier = Literal["primary", "secondary", "estimated"]
+FactorMethod = Literal["location", "market", "residual_mix", "supplier_specific", "fuel", "gwp", "biogenic"]
+
+
+class Factor(BaseModel):
+    id: str
+    country: str = Field(description="ISO 3166-1 alpha-2, or 'GLOBAL' for IPCC/DEFRA defaults")
+    region: str | None = Field(default=None, description="Sub-national grid region, e.g. AU-NSW")
+    year: int
+    energy_type: EnergyType
+    method: FactorMethod
+    value: float = Field(description="kgCO2e per `unit` (or biogenic kgCO2 for method=biogenic)")
+    unit: Unit
+    source_name: str
+    source_url: str
+    vintage: str = Field(description="Publication or dataset year as printed by the source")
+    gas: str | None = Field(default=None, description="Refrigerant blend for gwp rows, e.g. R-410A")
+    notes: str = ""
+
+    def citation(self) -> str:
+        where = self.region or self.country
+        return (
+            f"{self.value:g} kgCO2e/{self.unit} — {self.source_name} ({self.vintage}), "
+            f"{where} {self.year}, {self.method}. {self.source_url}"
+        )
+
+
+class Site(BaseModel):
+    id: str
+    name: str
+    country: str
+    region: str | None = None
+    address: str | None = None
+
+
+class SupplierProfile(BaseModel):
+    id: str
+    name: str = ""
+    country: str = "VN"
+    language: str = "vi"
+    fiscal_year_start: date
+    fiscal_year_end: date
+    sites: list[Site] = Field(default_factory=list)
+    sector: str = ""
+    revenue: float | None = None
+    revenue_currency: str | None = None
+    created_at: datetime | None = None
+
+
+class ActivityLine(BaseModel):
+    """One consumption record read from one document, before reconciliation."""
+
+    id: str
+    supplier_id: str
+    source_doc_id: str
+    site_id: str | None = None
+    energy_type: EnergyType
+    quantity: float
+    unit: Unit
+    period_start: date
+    period_end: date
+    gas: str | None = None  # refrigerant blend
+    vendor: str | None = None
+    amount: float | None = None
+    currency: str | None = None
+    confidence: float = 1.0
+    tier: Tier = "primary"
+    assumption_ids: list[str] = Field(default_factory=list)
+    notes: str = ""
+
+
+class Assumption(BaseModel):
+    id: str
+    supplier_id: str
+    question: str
+    answer: str
+    applied_to: list[str] = Field(default_factory=list, description="activity line ids")
+    method: str = ""
+    created_at: datetime | None = None
+
+
+class InventoryLine(BaseModel):
+    """One computed line: activity × factor, with full lineage."""
+
+    id: str
+    supplier_id: str
+    site_id: str | None
+    scope: int
+    energy_type: EnergyType
+    quantity: float
+    unit: Unit
+    factor_id: str
+    factor_value: float
+    factor_citation: str
+    method: FactorMethod
+    basis: Literal["location", "market"] | None = Field(
+        default=None,
+        description="For Scope 2: which reporting basis this row feeds. `method` is the factor "
+        "actually used, which can be `location` on a market row when the hierarchy fell back.",
+    )
+    kg_co2e: float
+    biogenic_kg_co2: float = 0.0
+    tier: Tier
+    source_doc_id: str
+    activity_line_id: str
+    assumption_ids: list[str] = Field(default_factory=list)
+    period_start: date
+    period_end: date
+
+
+class InventoryTotals(BaseModel):
+    scope1_kg: float
+    scope2_location_kg: float
+    scope2_market_kg: float
+    biogenic_kg: float
+    by_site: dict[str, dict[str, float]]
+    by_energy_type: dict[str, float]
+    tier_mix: dict[str, float] = Field(description="share of kgCO2e by tier")
+    line_count: int

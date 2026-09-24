@@ -1,0 +1,49 @@
+[project]
+name = "supplier-carbon-agent"
+version = "0.1.0"
+description = "Turns a supplier's photographed bills into a cited Scope 1 and 2 inventory and a filled buyer questionnaire."
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "python-multipart>=0.0.9",
+    "pydantic>=2.8",
+    "pydantic-settings>=2.4",
+    "google-genai>=1.20",
+    "google-adk>=2.0",
+    "firebase-admin>=6.5",
+    "google-cloud-firestore>=2.16",
+    "google-cloud-storage>=2.18",
+    "openpyxl>=3.1",
+    "jinja2>=3.1",
+    "xhtml2pdf>=0.2.16",
+    "pillow>=10.4",
+    "python-dateutil>=2.9",
+    "httpx>=0.27",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.6",
+    "playwright>=1.47",
+]
+# WeasyPrint gives nicer PDFs but needs pango/cairo on the host; the exporter
+# falls back to xhtml2pdf when it is not importable.
+pdf = ["weasyprint>=62"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"

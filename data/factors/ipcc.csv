@@ -1,0 +1,6 @@
+id,country,region,year,energy_type,method,value,unit,source_name,source_url,vintage,gas,notes
+GL-ipcc-diesel-GJ,GLOBAL,,2006,diesel,fuel,74.1,GJ,"IPCC 2006 Guidelines Vol.2 Ch.2 Table 2.2 — Gas/Diesel Oil default CO2 EF",https://www.ipcc-nggip.iges.or.jp/public/2006gl/vol2.html,2006,,"kgCO2/GJ net calorific; CO2 only"
+GL-ipcc-lpg-GJ,GLOBAL,,2006,lpg,fuel,63.1,GJ,"IPCC 2006 Guidelines Vol.2 Ch.2 Table 2.2 — LPG default CO2 EF",https://www.ipcc-nggip.iges.or.jp/public/2006gl/vol2.html,2006,,"kgCO2/GJ"
+GL-ipcc-natgas-GJ,GLOBAL,,2006,natural_gas,fuel,56.1,GJ,"IPCC 2006 Guidelines Vol.2 Ch.2 Table 2.2 — Natural Gas default CO2 EF",https://www.ipcc-nggip.iges.or.jp/public/2006gl/vol2.html,2006,,"kgCO2/GJ"
+GL-ipcc-petrol-GJ,GLOBAL,,2006,petrol,fuel,69.3,GJ,"IPCC 2006 Guidelines Vol.2 Ch.2 Table 2.2 — Motor Gasoline default CO2 EF",https://www.ipcc-nggip.iges.or.jp/public/2006gl/vol2.html,2006,,"kgCO2/GJ"
+GL-ipcc-coal-GJ,GLOBAL,,2006,coal,fuel,94.6,GJ,"IPCC 2006 Guidelines Vol.2 Ch.2 Table 2.2 — Other Bituminous Coal default CO2 EF",https://www.ipcc-nggip.iges.or.jp/public/2006gl/vol2.html,2006,,"kgCO2/GJ"

@@ -1,0 +1,46 @@
+{% extends "_base.html" %}
+{% block body %}
+<div class="row">
+  <div class="logo"><div class="mark">EVN</div><div><div style="font-weight:700">TỔNG CÔNG TY ĐIỆN LỰC MIỀN NAM</div><div class="small">Công ty Điện lực {{ province }} · Điện lực {{ district }}</div></div></div>
+  <div class="kv" style="text-align:right">
+    <div><b>Mã số thuế</b> 0300942001</div>
+    <div><b>Số hóa đơn</b> <span class="mono">{{ invoice_no }}</span></div>
+  </div>
+</div>
+
+<h1 style="text-align:center;margin-top:26px">HÓA ĐƠN GIÁ TRỊ GIA TĂNG (TIỀN ĐIỆN)</h1>
+<div style="text-align:center" class="small">Kỳ {{ period_no }} tháng {{ period_end.month }} năm {{ period_end.year }} · Ngày lập: {{ issue_date.strftime('%d/%m/%Y') }}</div>
+
+<h2>Thông tin khách hàng</h2>
+<div class="kv">
+  <div><b>Tên khách hàng</b> {{ customer }}</div>
+  <div><b>Địa chỉ</b> {{ address }}</div>
+  <div><b>Mã khách hàng</b> <span class="mono">{{ customer_code }}</span></div>
+  <div><b>Mã công tơ</b> <span class="mono">{{ meter_no }}</span> · 3 pha</div>
+  <div><b>Kỳ hóa đơn</b> từ ngày <b style="min-width:0;color:var(--ink)">{{ period_start.strftime('%d/%m/%Y') }}</b> đến ngày <b style="min-width:0;color:var(--ink)">{{ period_end.strftime('%d/%m/%Y') }}</b></div>
+</div>
+
+<h2>Chỉ số công tơ và điện năng tiêu thụ</h2>
+<table>
+  <tr><th>Bộ chỉ số</th><th class="num">Chỉ số cũ</th><th class="num">Chỉ số mới</th><th class="num">Hệ số nhân</th><th class="num">Điện năng tiêu thụ (kWh)</th></tr>
+  <tr><td>Giờ bình thường</td><td class="num mono">{{ '{:,}'.format(old_normal) }}</td><td class="num mono">{{ '{:,}'.format(new_normal) }}</td><td class="num">1</td><td class="num mono">{{ '{:,}'.format(kwh_normal) }}</td></tr>
+  <tr><td>Giờ cao điểm</td><td class="num mono">{{ '{:,}'.format(old_peak) }}</td><td class="num mono">{{ '{:,}'.format(new_peak) }}</td><td class="num">1</td><td class="num mono">{{ '{:,}'.format(kwh_peak) }}</td></tr>
+  <tr><td>Giờ thấp điểm</td><td class="num mono">{{ '{:,}'.format(old_low) }}</td><td class="num mono">{{ '{:,}'.format(new_low) }}</td><td class="num">1</td><td class="num mono">{{ '{:,}'.format(kwh_low) }}</td></tr>
+  <tr><td colspan="4"><b>Tổng điện năng tiêu thụ</b></td><td class="num mono total">{{ '{:,}'.format(kwh_total) }} kWh</td></tr>
+</table>
+
+<h2>Thành tiền</h2>
+<table>
+  <tr><th>Khoản mục</th><th class="num">Số lượng (kWh)</th><th class="num">Đơn giá (đ/kWh)</th><th class="num">Thành tiền (đ)</th></tr>
+  <tr><td>Giờ bình thường (sản xuất, cấp điện áp dưới 6 kV)</td><td class="num mono">{{ '{:,}'.format(kwh_normal) }}</td><td class="num mono">{{ '{:,}'.format(price_normal) }}</td><td class="num mono">{{ '{:,}'.format(kwh_normal*price_normal) }}</td></tr>
+  <tr><td>Giờ cao điểm</td><td class="num mono">{{ '{:,}'.format(kwh_peak) }}</td><td class="num mono">{{ '{:,}'.format(price_peak) }}</td><td class="num mono">{{ '{:,}'.format(kwh_peak*price_peak) }}</td></tr>
+  <tr><td>Giờ thấp điểm</td><td class="num mono">{{ '{:,}'.format(kwh_low) }}</td><td class="num mono">{{ '{:,}'.format(price_low) }}</td><td class="num mono">{{ '{:,}'.format(kwh_low*price_low) }}</td></tr>
+  <tr><td colspan="3">Cộng tiền điện</td><td class="num mono">{{ '{:,}'.format(subtotal) }}</td></tr>
+  <tr><td colspan="3">Thuế GTGT (8%)</td><td class="num mono">{{ '{:,}'.format(vat) }}</td></tr>
+  <tr><td colspan="3" class="total">TỔNG CỘNG TIỀN THANH TOÁN</td><td class="num mono total">{{ '{:,}'.format(total) }} đ</td></tr>
+</table>
+<div class="small" style="margin-top:6px">Số tiền bằng chữ: <i>{{ amount_words }}</i></div>
+
+<div class="stamp">ĐÃ THANH TOÁN</div>
+<div class="foot">Hóa đơn điện tử. Tra cứu tại cskh.evnspc.vn · Tổng đài 19001006 · Ký bởi: TỔNG CÔNG TY ĐIỆN LỰC MIỀN NAM · Ký ngày {{ issue_date.strftime('%d/%m/%Y') }}</div>
+{% endblock %}

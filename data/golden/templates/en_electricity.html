@@ -1,0 +1,26 @@
+{% extends "_base.html" %}
+{% block body %}
+<div class="row">
+  <div class="logo"><div class="mark">{{ vendor_short }}</div><div><div style="font-weight:700">{{ vendor }}</div><div class="small">{{ vendor_address }}</div></div></div>
+  <div class="kv" style="text-align:right"><div><b>Account no.</b> <span class="mono">{{ customer_code }}</span></div><div><b>Invoice no.</b> <span class="mono">{{ invoice_no }}</span></div><div><b>Issue date</b> {{ issue_date.strftime('%d %b %Y') }}</div></div>
+</div>
+<h1 style="text-align:center;margin-top:24px">ELECTRICITY BILL</h1>
+<h2>Customer</h2>
+<div class="kv"><div><b>Name</b> {{ customer }}</div><div><b>Supply address</b> {{ address }}</div><div><b>Tariff</b> Commercial / Industrial LV</div><div><b>Billing period</b> {{ period_start.strftime('%d %b %Y') }} – {{ period_end.strftime('%d %b %Y') }}</div><div><b>NMI / Meter</b> <span class="mono">{{ meter_no }}</span></div></div>
+<h2>Usage</h2>
+<table>
+  <tr><th>Register</th><th class="num">Previous</th><th class="num">Current</th><th class="num">Usage (kWh)</th></tr>
+  <tr><td>Peak</td><td class="num mono">{{ '{:,}'.format(old_peak) }}</td><td class="num mono">{{ '{:,}'.format(new_peak) }}</td><td class="num mono">{{ '{:,}'.format(kwh_peak) }}</td></tr>
+  <tr><td>Off-peak</td><td class="num mono">{{ '{:,}'.format(old_off) }}</td><td class="num mono">{{ '{:,}'.format(new_off) }}</td><td class="num mono">{{ '{:,}'.format(kwh_off) }}</td></tr>
+  <tr><td colspan="3"><b>Total usage</b></td><td class="num mono total">{{ '{:,}'.format(kwh_total) }} kWh</td></tr>
+</table>
+<h2>Charges</h2>
+<table>
+  <tr><td>Peak energy {{ '{:,}'.format(kwh_peak) }} kWh @ {{ price_peak }} {{ currency }}/kWh</td><td class="num mono">{{ '{:,.2f}'.format(kwh_peak*price_peak) }}</td></tr>
+  <tr><td>Off-peak energy {{ '{:,}'.format(kwh_off) }} kWh @ {{ price_off }} {{ currency }}/kWh</td><td class="num mono">{{ '{:,.2f}'.format(kwh_off*price_off) }}</td></tr>
+  <tr><td>Supply charge {{ days }} days</td><td class="num mono">{{ '{:,.2f}'.format(supply) }}</td></tr>
+  <tr><td>GST</td><td class="num mono">{{ '{:,.2f}'.format(gst) }}</td></tr>
+  <tr><td class="total">Total due</td><td class="num mono total">{{ currency }} {{ '{:,.2f}'.format(total) }}</td></tr>
+</table>
+<div class="foot">Due {{ due_date.strftime('%d %b %Y') }}. Greenhouse gas emissions for this bill are not shown; use the published grid factor for your state.</div>
+{% endblock %}

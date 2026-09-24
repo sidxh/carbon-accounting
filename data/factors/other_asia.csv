@@ -1,0 +1,3 @@
+id,country,region,year,energy_type,method,value,unit,source_name,source_url,vintage,gas,notes
+ID-grid-2022-loc,ID,,2022,electricity,location,0.79,kWh,"Indonesia MEMR — national grid emission factor (national indicative)",https://gatrik.esdm.go.id,2023,,"Indonesia publishes per grid system (Jamali, Sumatra, ...); national indicative used. VERIFY"
+IN-grid-2022-loc,IN,,2022,electricity,location,0.716,kWh,"India Central Electricity Authority — CO2 Baseline Database v19, weighted average",https://cea.nic.in/cdm-co2-baseline-database/,2023,,"FY2022-23 weighted average 0.716 tCO2/MWh"

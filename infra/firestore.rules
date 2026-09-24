@@ -1,0 +1,38 @@
+rules_version = '2';
+
+// The browser only ever reads. Every write goes through the agent service,
+// which uses the Admin SDK and bypasses these rules. That keeps the invariant
+// that inventory numbers are produced by the calculator and nothing else.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // A supplier document is keyed by the Firebase Auth uid of its owner.
+    function ownsSupplier(supplierId) {
+      return signedIn() && request.auth.uid == supplierId;
+    }
+
+    match /suppliers/{supplierId} {
+      allow read: if ownsSupplier(supplierId);
+      allow write: if false;
+
+      match /{sub=**} {
+        allow read: if ownsSupplier(supplierId);
+        allow write: if false;
+      }
+    }
+
+    // Emission factors are public reference data.
+    match /factors/{factorId} {
+      allow read: if signedIn();
+      allow write: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

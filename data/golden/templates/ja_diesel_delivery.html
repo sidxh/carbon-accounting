@@ -1,0 +1,26 @@
+{% extends "_base.html" %}
+{% block body %}
+<div class="row">
+  <div class="logo"><div class="mark" style="background:#b3261e">油</div><div><div style="font-weight:700">{{ vendor }}</div><div class="small">{{ vendor_address }} · 登録番号 {{ vendor_tax }}</div></div></div>
+  <div class="kv" style="text-align:right"><div><b>伝票番号</b> <span class="mono">{{ invoice_no }}</span></div><div><b>納品日</b> {{ delivery_date.strftime('%Y年%m月%d日') }}</div></div>
+</div>
+
+<h1 style="text-align:center;margin-top:24px">納品書 兼 請求書</h1>
+
+<h2>お届け先</h2>
+<div class="kv"><div><b>御中</b> {{ customer }}</div><div><b>住所</b> {{ address }}</div></div>
+
+<table style="margin-top:16px">
+  <tr><th>品名</th><th>単位</th><th class="num">数量</th><th class="num">単価</th><th class="num">金額</th></tr>
+  <tr><td>軽油（JIS 2号）ローリー配送</td><td>L</td><td class="num mono">{{ '{:,}'.format(litres) }}</td><td class="num mono">{{ price }}</td><td class="num mono">{{ '{:,}'.format((litres*price)|int) }}</td></tr>
+  <tr><td colspan="4">小計</td><td class="num mono">{{ '{:,}'.format(subtotal) }}</td></tr>
+  <tr><td colspan="4">消費税（10%）</td><td class="num mono">{{ '{:,}'.format(vat) }}</td></tr>
+  <tr><td colspan="4" class="total">合計金額</td><td class="num mono total">{{ '{:,}'.format(total) }} 円</td></tr>
+</table>
+<div class="small" style="margin-top:6px">軽油引取税を含む。タンク残量 {{ tank_before }} L → {{ tank_after }} L。</div>
+<div class="row" style="margin-top:36px;font-size:12px;text-align:center">
+  <div class="col"><div>受領印</div><div class="hand" style="margin-top:22px">{{ buyer_sign }}</div></div>
+  <div class="col"><div>配送担当</div><div class="hand" style="margin-top:22px">{{ seller_sign }}</div></div>
+</div>
+<div class="foot">お支払いは翌月末までにお願いいたします。</div>
+{% endblock %}
