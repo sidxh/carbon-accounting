@@ -105,6 +105,9 @@ class Repo(ABC):
     def get_document(self, uid: str, doc_id: str) -> DocumentRecord | None: ...
     @abstractmethod
     def list_documents(self, uid: str) -> list[DocumentRecord]: ...
+    @abstractmethod
+    def delete_document(self, uid: str, doc_id: str) -> None:
+        """Remove the document and every activity line that came from it."""
 
     # activity lines (raw from extraction, then replaced by reconciled set)
     @abstractmethod
@@ -133,6 +136,8 @@ class Repo(ABC):
     def replace_inventory(self, uid: str, lines: list[InventoryLine], snap: InventorySnapshot) -> None: ...
     @abstractmethod
     def list_inventory(self, uid: str) -> tuple[list[InventoryLine], InventorySnapshot | None]: ...
+    @abstractmethod
+    def clear_inventory(self, uid: str) -> None: ...
 
     # questionnaires
     @abstractmethod
@@ -182,6 +187,13 @@ class FirestoreRepo(Repo):
 
     def list_documents(self, uid):
         return [DocumentRecord.model_validate(s.to_dict()) for s in self._sup(uid).collection("documents").stream()]
+
+    def delete_document(self, uid, doc_id):
+        batch = self.db.batch()
+        batch.delete(self._sup(uid).collection("documents").document(doc_id))
+        for s in self._sup(uid).collection("activityLines").where("source_doc_id", "==", doc_id).stream():
+            batch.delete(s.reference)
+        batch.commit()
 
     def list_activity_lines(self, uid):
         return [ActivityLine.model_validate(s.to_dict()) for s in self._sup(uid).collection("activityLines").stream()]
@@ -256,6 +268,9 @@ class FirestoreRepo(Repo):
         if n:
             batch.commit()
 
+    def clear_inventory(self, uid):
+        self._delete_collections(uid, ["inventoryLines", "inventory"])
+
     def clear_derived(self, uid):
         self._delete_collections(uid, ["reconcile", "assumptions", "inventoryLines", "inventory"])
 
@@ -291,6 +306,10 @@ class MemoryRepo(Repo):
 
     def list_documents(self, uid):
         return list(self.documents.get(uid, {}).values())
+
+    def delete_document(self, uid, doc_id):
+        self.documents.get(uid, {}).pop(doc_id, None)
+        self.lines[uid] = {k: v for k, v in self.lines.get(uid, {}).items() if v.source_doc_id != doc_id}
 
     def list_activity_lines(self, uid):
         return list(self.lines.get(uid, {}).values())
@@ -330,6 +349,9 @@ class MemoryRepo(Repo):
 
     def list_questionnaires(self, uid):
         return list(self.questionnaires.get(uid, {}).values())
+
+    def clear_inventory(self, uid):
+        self.inventory.pop(uid, None)
 
     def clear_derived(self, uid):
         self.reconcile.pop(uid, None)

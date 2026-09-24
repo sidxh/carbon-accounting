@@ -68,6 +68,55 @@ def compute_inventory(repo: Repo, profile: SupplierProfile) -> InventorySnapshot
     return snap
 
 
+def retry_extraction(repo: Repo, profile: SupplierProfile, doc_id: str) -> DocumentRecord | None:
+    """Read a stored bill again after a failed or empty extraction."""
+    rec = repo.get_document(profile.id, doc_id)
+    if rec is None:
+        return None
+    storage = get_storage()
+    if not storage.exists(rec.storage_key):
+        return None
+    data = storage.get(rec.storage_key)
+    # Drop whatever the previous attempt produced so lines are never doubled.
+    repo.delete_document(profile.id, doc_id)
+    rec.status, rec.error, rec.extraction = "extracting", None, None
+    repo.put_document(rec)
+    try:
+        extracted = extract(data, rec.mime_type)
+        lines = to_activity_lines(extracted, supplier_id=profile.id, source_doc_id=doc_id, site_id=rec.site_id)
+        repo.add_activity_lines(profile.id, lines)
+        rec.status = "extracted"
+        rec.extraction = extracted.model_dump()
+    except Exception as exc:
+        rec.status = "failed"
+        rec.error = str(exc)[:500]
+    repo.put_document(rec)
+    return rec
+
+
+def remove_document(repo: Repo, profile: SupplierProfile, doc_id: str) -> bool:
+    """Take a bill out again.
+
+    Its lines go with it, the inventory snapshot is dropped because it no
+    longer matches the lines, and the conversation goes back to idle so the
+    next "Check my bills" re-runs the gap analysis. Chat history and answered
+    assumptions are kept: the supplier's words are still true.
+    """
+    rec = repo.get_document(profile.id, doc_id)
+    if rec is None:
+        return False
+    repo.delete_document(profile.id, doc_id)
+    get_storage().delete_prefix(f"suppliers/{profile.id}/uploads/{doc_id}/")
+    lines, snap = repo.list_inventory(profile.id)
+    if snap is not None:
+        repo.clear_inventory(profile.id)
+    state = repo.get_reconcile(profile.id)
+    if state is not None and state.status != "idle":
+        state.status, state.pending_issue_id = "idle", None
+        repo.put_reconcile(state)
+    return True
+
+
 def reset_questions(repo: Repo, profile: SupplierProfile) -> int:
     """Back to the moment the bills were read.
 

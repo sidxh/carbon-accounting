@@ -144,6 +144,27 @@ def test_reset_chat_rebuilds_lines_from_extraction_and_keeps_documents(client):
     assert client.get("/suppliers/sup-1", headers=_auth()).status_code == 200
 
 
+def test_delete_document_removes_lines_and_resets_inventory(client, tmp_path):
+    from app import storage as st
+
+    st._storage = st.LocalStorage(tmp_path)
+    _seed_reconciled_supplier(client)
+    st._storage.put("suppliers/sup-1/uploads/doc-1/a.png", b"png")
+    assert client.get("/suppliers/sup-1/inventory", headers=_auth()).json()["snapshot"] is not None
+
+    r = client.delete("/suppliers/sup-1/documents/doc-1", headers=_auth())
+    assert r.status_code == 204
+    assert client.get("/suppliers/sup-1/documents", headers=_auth()).json()["documents"] == []
+    # The bill's own line is gone; the estimated line from the chat answer stays.
+    ids = {l.source_doc_id for l in client.repo.list_activity_lines("sup-1")}
+    assert ids == {"assumption:asm-1"}
+    assert not st._storage.exists("suppliers/sup-1/uploads/doc-1/a.png")
+    assert client.get("/suppliers/sup-1/inventory", headers=_auth()).json()["snapshot"] is None
+    assert client.get("/suppliers/sup-1/reconcile", headers=_auth()).json()["status"] == "idle"
+    assert client.delete("/suppliers/sup-1/documents/doc-1", headers=_auth()).status_code == 404
+    assert client.delete("/suppliers/sup-1/documents/doc-1", headers=_auth("sup-2")).status_code == 403
+
+
 def test_reset_all_keeps_only_profile(client):
     _seed_reconciled_supplier(client)
     r = client.delete("/suppliers/sup-1/data?scope=all", headers=_auth())

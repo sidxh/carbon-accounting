@@ -197,6 +197,8 @@ export const api = {
     if (siteId) fd.append("site_id", siteId);
     return request<{ documents: DocumentRecord[] }>(`/suppliers/${uid}/documents`, { method: "POST", body: fd });
   },
+  deleteDocument: (uid: string, docId: string) => request<void>(`/suppliers/${uid}/documents/${docId}`, { method: "DELETE" }),
+  retryDocument: (uid: string, docId: string) => json<{ document: DocumentRecord }>(`/suppliers/${uid}/documents/${docId}/retry`, "POST"),
   documentFileUrl: async (uid: string, docId: string) => {
     const t = await token();
     // Local storage is served by the API with the token in a header; for a

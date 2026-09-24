@@ -24,7 +24,7 @@ from .auth import Caller, current_caller, require_supplier
 from .exporters.methodology import build_pdf
 from .models import ActivityLine, Site, SupplierProfile
 from .repo import QuestionnaireRecord, ReconcileState, get_repo
-from .services import compute_inventory, register_and_extract, reset_all, reset_questions
+from .services import compute_inventory, register_and_extract, remove_document, reset_all, reset_questions, retry_extraction
 from .settings import get_settings
 from .storage import LocalStorage, get_storage
 
@@ -171,6 +171,23 @@ def upload_documents(
 @app.get("/suppliers/{supplier_id}/documents")
 def list_documents(supplier_id: str, caller: Caller = Depends(require_supplier)):
     return {"documents": get_repo().list_documents(supplier_id)}
+
+
+@app.delete("/suppliers/{supplier_id}/documents/{doc_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_document(supplier_id: str, doc_id: str, caller: Caller = Depends(require_supplier)):
+    profile = _profile_or_404(supplier_id)
+    if not remove_document(get_repo(), profile, doc_id):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Document not found.")
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@app.post("/suppliers/{supplier_id}/documents/{doc_id}/retry")
+def retry_document(supplier_id: str, doc_id: str, caller: Caller = Depends(require_supplier)):
+    profile = _profile_or_404(supplier_id)
+    rec = retry_extraction(get_repo(), profile, doc_id)
+    if rec is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Document not found.")
+    return {"document": rec}
 
 
 @app.get("/suppliers/{supplier_id}/documents/{doc_id}/file")
