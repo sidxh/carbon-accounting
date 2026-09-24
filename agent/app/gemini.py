@@ -133,6 +133,26 @@ class GeminiClient:
 
     # -- calls -------------------------------------------------------------
 
+    def _generate(self, **kwargs: Any):
+        """One generate_content call with a single retry on the free tier's
+        transient refusals (503 high demand, 429 burst). The SDK already retries
+        internally with backoff; stacking more on top turns an outage into
+        minutes of spinner, and each attempt costs a request against the daily
+        budget. One more try after a pause, then surface the error."""
+        from google.genai import errors as genai_errors
+
+        delays = (4.0,)
+        for attempt, delay in enumerate((*delays, None)):
+            try:
+                return self.client.models.generate_content(**kwargs)
+            except genai_errors.APIError as exc:
+                code = getattr(exc, "code", None) or getattr(exc, "status_code", None)
+                if code not in (429, 503) or delay is None:
+                    raise
+                time.sleep(delay)
+                self.limiter.acquire()
+        raise RuntimeError("unreachable")
+
     def _contents(self, prompt: str, images: list[ImagePart]) -> list[Any]:
         parts: list[Any] = [types.Part.from_bytes(data=im.data, mime_type=im.mime_type) for im in images]
         parts.append(types.Part.from_text(text=prompt))
@@ -154,7 +174,7 @@ class GeminiClient:
         if use_cache and (hit := self._cache_get(key)) is not None:
             return hit
         self.limiter.acquire()
-        resp = self.client.models.generate_content(
+        resp = self._generate(
             model=model,
             contents=self._contents(prompt, images),
             config=types.GenerateContentConfig(system_instruction=system) if system else None,
@@ -182,7 +202,7 @@ class GeminiClient:
         if use_cache and (hit := self._cache_get(key)) is not None:
             return schema.model_validate_json(hit)
         self.limiter.acquire()
-        resp = self.client.models.generate_content(
+        resp = self._generate(
             model=model,
             contents=self._contents(prompt, images),
             config=types.GenerateContentConfig(

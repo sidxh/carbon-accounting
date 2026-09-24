@@ -81,13 +81,26 @@ Each loop costs two or three Gemini calls and about 30 seconds.
 `+84901234567` is the account the automated e2e scripts use and carries days
 of their runs. Either *Start over* on it or pick any other number.
 
+### A0. Landing page
+
+- Steps: open http://localhost:3000 signed out. Expect the floating nav
+  (mark, language, Sign in), the serif hero, an expanded inventory-row mock
+  showing document → quantity → factor → calculation, four how-it-works
+  cards, a trust row and a footer that says the bills are synthetic. Switch
+  language in the nav; every string changes. Signed-in users are redirected
+  to `/documents`.
+
 ### A. Sign-in (Auth emulator)
 
-- Steps: `/sign-in`, enter any Vietnamese number such as `+84901234567`, Send
-code. Get the code from Emulator UI > Authentication, or
-`curl 127.0.0.1:9099/emulator/v1/projects/fir-testing-f96b1/verificationCodes`.
-First enter `000000`: expect an inline error and you stay on the code step.
-Then enter the real code: a fresh user lands on `/setup`.
+- Steps: `/sign-in`. The number field has a country-code chip (+84 default)
+  and a local-number input; a pasted full number such as `+84901234567` also
+  works. Send code. Get the code from Emulator UI > Authentication, or
+  `curl 127.0.0.1:9099/emulator/v1/projects/fir-testing-f96b1/verificationCodes`.
+  Type `000000` into the six boxes: the sixth digit submits automatically,
+  expect an inline error and the boxes clear. Type the real code: a fresh
+  user lands on `/setup`. Pasting a six-digit code fills all boxes. "Send
+  again" is disabled for 30 s. "Other ways to sign in" folds out the email
+  link.
 - Background: the browser talks to the Auth emulator directly
 (`web/src/lib/firebase.ts`, reCAPTCHA disabled for testing). Every API
 request carries the ID token; `agent/app/auth.py` verifies it and uses the
@@ -103,13 +116,28 @@ empty for now (scenario J tests the flagged intensity answer). Save.
 
 ### C. Upload, happy path
 
-- Steps: on `/documents` pick all 12 `vn_evn_2025-MM.png`, the 9
-`vn_lpg_*.png` (there is no Jul, Aug, Sep LPG file; that is deliberate), the
-6 `vn_diesel_*.png` and the 2 `vn_refrigerant_*.png`. 29 files.
-- Observe: each card goes "Reading" then "Read" with one line: energy type,
-quantity, unit, period, confidence. Compare a few against `labels.json`
-(`vn_evn_2025-01` = 42,569 kWh, 2025-01-05 to 2025-02-04). Thumbnails
-render.
+- Steps: on `/documents` drop or choose all 12 `vn_evn_2025-MM.png`, the 9
+  `vn_lpg_*.png` (there is no Jul, Aug, Sep LPG file; that is deliberate), the
+  6 `vn_diesel_*.png` and the 2 `vn_refrigerant_*.png`. 29 files.
+- **Staging**: nothing uploads yet. A list shows every chosen file with a
+  thumbnail and a × to remove it; "Clear list" empties it. Remove one, then
+  press "Upload 28 files". Each row shows Waiting → Reading… → Read as the
+  model gets to it; the list disappears when done and a toast reports the
+  count.
+- Observe: each card shows one line: energy type, quantity, unit, period,
+  confidence. Compare a few against `labels.json` (`vn_evn_2025-01` = 42,569
+  kWh, 2025-01-05 to 2025-02-04). Thumbnails render. Cards are grouped by
+  energy type with collapsible headers.
+- **Summary card**: "What you have uploaded · 28 bills" lists each energy
+  type with bill count, total quantity and, for monthly carriers
+  (electricity, LPG), a twelve-cell coverage strip. LPG shows three dashed
+  cells (Jul–Sep) and "3 months missing" before you ever reach the chat.
+  Diesel and refrigerant say "Deliveries, no monthly coverage".
+- **Remove / Read again**: every card has Remove (a confirm dialog, then the
+  card animates out, its lines are deleted, the inventory snapshot is dropped
+  and the chat goes back to idle). Failed or empty cards also offer "Read
+  again", which re-runs extraction on the stored file. Upload the file you
+  removed at staging to get back to 29.
 - Background: one `POST /suppliers/{uid}/documents` per file. The file is
 written to `agent/.local_storage/suppliers/{uid}/uploads/{docId}/`.
 `agent/app/agents/extractor.py` sends the image with a Pydantic
@@ -146,6 +174,15 @@ Over 20 MB gives 413.
 
 ### H. Reconciler chat
 
+- **Before pressing anything**: the Questions page opens with "What we
+  found · 29 bills, 29 records": one row per energy type with the same
+  coverage strips as the documents page, totals, and a legend. After "Check
+  my bills" the card gains a footnote line such as "1 duplicate photo dropped
+  · 1 bill straddling the year apportioned by days", an "Open items" list
+  (LPG Jul–Sep · Asking you now) that ticks off as you answer, and the chat
+  opens with a system card "Checked 29 bills · 1 thing to ask you" before the
+  first question. This is the deterministic pass made visible; the data
+  comes from `summarise()` in `agent/app/reconcile_tools.py`.
 - Steps: "Continue to questions", then "Check my bills". Because LPG bills
 exist for Jan–Jun and Oct–Dec only, the first (and with the full set, only)
 question is in Vietnamese about LPG for 2025-07, 2025-08, 2025-09.
@@ -184,8 +221,21 @@ apportioned 27/31; the inventory note says so.
 
 ### I. Inventory
 
+- **Layout**: four headline stats with share of total and a data-quality
+  bar; a monthly chart (Scope 1 black, Scope 2 teal, estimated months amber,
+  bills spread over the months they cover by days); a collapsible "How these
+  figures were calculated" card with standard, boundary, period, Scope 2
+  dual-reporting sentence, tier legend, every emission factor used (value,
+  source, geography, vintage, link) and the assumptions; then the table
+  grouped by scope and energy type with subtotals, filter chips (energy type,
+  tier) and a period/emissions sort. Rows open with a keyboard-operable
+  button into a four-step calculation card: source document (thumbnail,
+  notes such as "duplicate dropped" or "27/31 days apportioned"), activity
+  quantity with tier and why, the factor card (with explicit sentences for
+  nearest-vintage, national-fallback and market-fallback), and the
+  arithmetic `quantity × factor = kgCO2e = tCO2e`.
 - Arriving from a finished chat, compute has already run. Check the four
-headline cards. Location-based Scope 2 for the full EVN set is about
+  headline cards. Location-based Scope 2 for the full EVN set is about
 349 tCO2e (529,690 kWh after the December apportionment × 0.6592 kg/kWh, the
 VN 2023 grid factor carried to 2025 in `data/factors/vietnam.csv`).
 Market-based equals location-based for Vietnam because no residual mix is
@@ -199,8 +249,9 @@ calculator.
 estimated lines) with filename and id, factor with source and vintage,
 market figure, assumptions Q/A with method.
 - Inline correction: expand a refrigerant row, "Correct quantity", enter `4`,
-Save. Expect the Scope 1 headline to change, the row's tier to become
-`secondary`, and the note "corrected by supplier from 3.5 to 4".
+  Save, confirm in the dialog (it states old → new and that the tier changes).
+  Expect a toast, the Scope 1 headline to change, the row's tier to become
+  `secondary`, and the note "corrected by supplier from 3.5 to 4".
 Background: `PATCH /activity-lines/{id}` updates the activity line and
 re-runs `compute_inventory`, which deletes and rewrites all
 `inventoryLines` so totals can never drift from lines.
@@ -272,8 +323,9 @@ xhtml2pdf (WeasyPrint if installed). Stored at
 
 ### L. Language
 
-Switch the header dropdown to Tiếng Việt and 日本語; all strings change, data
-does not. Chat language stays whatever the profile says. Create a second
+Open the account menu (top right, shows your number) and switch to Tiếng
+Việt and 日本語; all strings change, data does not. The same menu holds Sign
+out. Chat language stays whatever the profile says. Create a second
 profile with language `ja` to see Japanese questions.
 
 ### M. Persistence
@@ -303,11 +355,23 @@ The Network URL printed by Next.js loads, but the app fails because
 IP; simpler is Chrome device mode at 430 px, which is what the e2e scripts
 use.
 
-### Q. Quota
+### Q. Quota and outages
 
 `agent/.cache/gemini/_quota.json` shows today's request count against 500.
 Past that, uploads show as "failed" with a QuotaExhausted message rather than
-hanging.
+hanging. The free tier also returns `503 UNAVAILABLE ("high demand")` for
+stretches of an evening; the client retries once after 4 s and then surfaces
+the error on the page (red alert on Questions, "Could not read" with "Read
+again" on a bill). Extraction of the golden set is cached, so uploads keep
+working during an outage; the chat and a first questionnaire fill do not.
+
+### Q2. Keyboard and screen reader
+
+Tab through any page: every control shows a teal focus ring; inventory rows
+open with Enter/Space on the period button (`aria-expanded`); dialogs trap
+focus and close on Escape, returning focus to the trigger; toasts are
+announced via `aria-live`; coverage strips and charts carry text labels so
+colour is never the only signal.
 
 ### R. Automated checks to run alongside
 
@@ -315,7 +379,8 @@ hanging.
 cd agent
 .venv/bin/pytest                                  # calculator, factors, reconcile tools, API; offline
 .venv/bin/python -m scripts.eval_extraction       # golden-set accuracy, cached
-.venv/bin/python -m scripts.e2e_local             # browser: the whole journey (needs the 3 terminals)
+.venv/bin/python -m scripts.e2e_local             # browser: the whole journey on a fresh supplier (needs the 3 terminals)
+.venv/bin/python -m scripts.e2e_local --resume --phone +84XXXXXXXXX   # from the inventory step on an existing supplier (useful when Gemini is flaky)
 .venv/bin/python -m scripts.e2e_edge              # browser: edge cases above
 ```
 

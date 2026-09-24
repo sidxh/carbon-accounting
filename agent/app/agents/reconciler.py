@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+import time
 import uuid
 from datetime import datetime, timezone
 
@@ -260,7 +261,18 @@ def reply(repo: Repo, profile: SupplierProfile, message: str) -> ReconcileState:
     ctx = _TurnContext(repo, profile, state, issue, question, message)
     agent = _build_agent(ctx)
     get_gemini().limiter.acquire()  # the agent turn costs at least one request
-    agent_text = asyncio.run(_run_agent(agent, message))
+    try:
+        agent_text = asyncio.run(_run_agent(agent, message))
+    except Exception as exc:  # ADK has its own client; give the free tier one more chance on a 503/429
+        from google.genai import errors as genai_errors
+
+        if not (isinstance(exc, genai_errors.APIError) and getattr(exc, "code", None) in (429, 503)):
+            raise
+        time.sleep(4)
+        ctx = _TurnContext(repo, profile, state, issue, question, message)
+        agent = _build_agent(ctx)
+        get_gemini().limiter.acquire()
+        agent_text = asyncio.run(_run_agent(agent, message))
 
     if ctx.recorded is not None:
         if ctx.replaced_all:
