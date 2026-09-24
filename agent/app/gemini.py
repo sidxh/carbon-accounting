@@ -189,6 +189,7 @@ class GeminiClient:
                 system_instruction=system,
                 response_mime_type="application/json",
                 response_schema=schema,
+                automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
             ),
         )
         text = resp.text or "{}"
