@@ -101,6 +101,7 @@ body {
   border-radius: var(--radius-sm);
 }
 
+@layer components {
 /* ---- primitives ------------------------------------------------------------ */
 
 .card {
@@ -297,6 +298,7 @@ textarea.input {
   border: 1px dashed var(--line-strong);
 }
 .coverage > .cov-na { background: transparent; }
+}
 
 @keyframes shimmer {
   from { background-position: -200% 0; }

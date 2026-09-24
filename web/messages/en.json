@@ -16,20 +16,36 @@
     "questionnaire": "Questionnaire"
   },
   "signIn": {
-    "title": "Sign in with your phone",
-    "lede": "We will text you a code. Nothing else is stored about you.",
+    "title": "Sign in with your phone.",
+    "lede": "We text you a six-digit code. No password, no account to create, nothing else stored about you.",
     "phoneLabel": "Mobile number",
-    "phonePlaceholder": "+84 90 123 4567",
+    "phonePlaceholder": "90 123 4567",
     "sendCode": "Send code",
     "codeLabel": "Verification code",
     "verify": "Continue",
-    "back": "Use a different number",
+    "back": "Change number",
     "emailLabel": "Or sign in with an email link",
     "emailPlaceholder": "you@company.com",
     "sendLink": "Send link",
     "linkSent": "Check your email and open the link on this device.",
     "error": "That did not work. Check the number and try again.",
-    "devHint": "Local emulator: any number works and the code is printed in the emulator log."
+    "devHint": "Local emulator: any number works and the code is printed in the emulator log.",
+    "eyebrow": "For suppliers asked for carbon data",
+    "points": {
+      "p1": "Your bills stay yours: only you can read your account.",
+      "p2": "Works on a phone camera; no scanner or spreadsheet needed.",
+      "p3": "Available in Vietnamese, Japanese and English."
+    },
+    "countryCode": "Country code",
+    "sending": "Sending…",
+    "smsNote": "Standard SMS rates may apply. Used only to sign you in.",
+    "codeSentTo": "Sent to {phone}",
+    "verifying": "Checking…",
+    "wrongCode": "That code did not match. Try again or request a new one.",
+    "noCode": "No code yet?",
+    "resend": "Send again",
+    "resendIn": "Send again in {s}s",
+    "otherWays": "Other ways to sign in"
   },
   "setup": {
     "title": "About your company",
@@ -282,5 +298,73 @@
     "loading": "Loading…",
     "error": "Something went wrong.",
     "retry": "Try again"
+  },
+  "landing": {
+    "navLabel": "Main",
+    "continue": "Continue",
+    "eyebrow": "For suppliers asked for carbon data",
+    "h1a": "Photograph the bills.",
+    "h1b": "Get the questionnaire back.",
+    "sub": "Your customer sent an emissions questionnaire. Upload your electricity, fuel and refrigerant bills; we read them, ask only what the bills cannot tell us, and hand back a Scope 1 and 2 inventory with every number traced to a document and a published factor.",
+    "cta": "Start with your bills",
+    "ctaSub": "No account to create. Works on a phone. Vietnamese, Japanese, English.",
+    "mock": {
+      "header": "Inventory · Jan 05 – Feb 04",
+      "tier": "primary",
+      "row": "Electricity · 42,569 kWh",
+      "rowSub": "EVN bill, Nhơn Trạch site",
+      "s1": "Source document",
+      "s1b": "vn_evn_2025-01.png, read with 100% confidence",
+      "s2": "Activity quantity",
+      "s2b": "42,569 kWh, as printed on the bill",
+      "s3": "Emission factor",
+      "s3b": "0.6592 kgCO2e/kWh — MONRE Vietnam grid factor, 2025 vintage",
+      "s4": "Calculation"
+    },
+    "howEyebrow": "How it works",
+    "howTitle": "Four steps, one afternoon.",
+    "steps": {
+      "bills": {
+        "title": "Bills",
+        "body": "Photograph or upload electricity bills, fuel invoices, LPG deliveries and refrigerant slips. Any language, any order."
+      },
+      "questions": {
+        "title": "Questions",
+        "body": "We drop duplicates, cut periods to your reporting year and find the months with nothing. Then we ask you, one question at a time."
+      },
+      "inventory": {
+        "title": "Inventory",
+        "body": "Scope 1 and 2 by month, site and fuel. Every line opens into the bill, the factor with its source, and the arithmetic."
+      },
+      "questionnaire": {
+        "title": "Questionnaire",
+        "body": "Upload your customer's Excel. We fill what the inventory can answer, flag what only you can, and give you the file back."
+      }
+    },
+    "trustEyebrow": "What you can check",
+    "trustTitle": "Nothing is a black box.",
+    "trustBody": "Carbon numbers get audited. So every figure here can be opened, followed back to its source and, where we had to assume something, read in your own words.",
+    "trust": {
+      "factors": {
+        "title": "Published factors, cited",
+        "body": "National grid factors, IPCC and DEFRA values, each with its source, vintage and link."
+      },
+      "lineage": {
+        "title": "Every number has a trail",
+        "body": "Document → quantity → factor → result. Rendered on screen and in the methodology PDF."
+      },
+      "honest": {
+        "title": "Honest about gaps",
+        "body": "Cells we cannot answer are flagged for you, never guessed. Estimated months are marked as such."
+      },
+      "outputs": {
+        "title": "Files your buyer accepts",
+        "body": "The filled workbook, colour-coded by source, and an auditor-readable methodology note."
+      }
+    },
+    "finalTitle": "Your bills already hold the answer.",
+    "finalBody": "Sign in with your phone and upload the first one.",
+    "footerNote": "Demo build. Bills shown are synthetic; emission factors are real and cited.",
+    "footerLangs": "Language"
   }
 }
