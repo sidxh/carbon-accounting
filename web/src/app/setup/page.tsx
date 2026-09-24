@@ -49,7 +49,7 @@ function Form({ profile, uid }: { profile: SupplierProfile | null; uid: string }
         sites: f.sites.filter((s) => s.name.trim()).map((s) => ({ name: s.name, country: s.country || f.country, region: s.region || null })),
       });
       toast(t("saved"));
-      router.push("/documents");
+      router.push("/home");
     } catch (err) {
       toast((err as Error).message, "danger");
     } finally {
@@ -60,9 +60,9 @@ function Form({ profile, uid }: { profile: SupplierProfile | null; uid: string }
   async function startOver() {
     setBusy(true);
     try {
-      await api.resetData(uid, "all");
+      await api.resetAll(uid);
       toast(t("startedOver"));
-      router.push("/documents");
+      router.push("/home");
     } catch (err) {
       toast((err as Error).message, "danger");
     } finally {

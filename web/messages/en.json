@@ -6,10 +6,13 @@
     "language": "Language",
     "signedInAs": "Signed in as",
     "steps": "Steps",
-    "signIn": "Sign in"
+    "signIn": "Sign in",
+    "company": "Company details",
+    "home": "Home",
+    "sharedWith": "shared with {n} other request(s)",
+    "sharedNotice": "{year} is shared. Bills, questions and the inventory here also serve: {names}."
   },
   "steps": {
-    "setup": "Setup",
     "documents": "Bills",
     "reconcile": "Questions",
     "inventory": "Inventory",
@@ -114,7 +117,8 @@
     "fullYear": "Full year",
     "otherGroup": "Not yet read",
     "next": "Continue to questions",
-    "needMore": "Add at least one bill to continue."
+    "needMore": "Add at least one bill to continue.",
+    "removeShared": "This year is shared with {names}: their figures change too."
   },
   "reconcile": {
     "title": "A few questions",
@@ -167,7 +171,8 @@
       "gap": "No {energy} records for {months} ({n} month(s))",
       "unitHours": "{energy} recorded in running hours; litres per hour needed",
       "lowConfidence": "A {energy} value was hard to read; please confirm"
-    }
+    },
+    "resetShared": "This year is shared with {names}: their figures will be recalculated too."
   },
   "inventory": {
     "title": "Your inventory",
@@ -310,7 +315,9 @@
     "sections": {
       "label": "Section {key}",
       "other": "Other"
-    }
+    },
+    "attachedTemplate": "Attached to this request: {name}. Fill it, or choose a different file.",
+    "fillAttached": "Fill the attached questionnaire"
   },
   "common": {
     "loading": "Loading…",
@@ -383,6 +390,84 @@
     "finalTitle": "Your bills already hold the answer.",
     "finalBody": "Sign in with your phone and upload the first one.",
     "footerNote": "Demo build. Bills shown are synthetic; emission factors are real and cited.",
-    "footerLangs": "Language"
+    "footerLangs": "Language",
+    "dashboard": "Go to your dashboard"
+  },
+  "stepLock": {
+    "documents": "",
+    "reconcile": "Unlocks once at least one bill has been read",
+    "inventory": "Unlocks once the questions are answered",
+    "questionnaire": "Unlocks once the inventory is calculated"
+  },
+  "home": {
+    "greeting": "{n, plural, =0 {No requests yet} =1 {One request} other {# requests}}",
+    "ledeSome": "Each card is a customer who asked for your numbers. Bills and figures belong to the reporting year and are shared between requests for the same year.",
+    "ledeNone": "Start with the customer who asked. Bills and figures are collected per reporting year and reused for every request on that year.",
+    "newRequest": "New request",
+    "requests": "Requests",
+    "years": "Reporting years",
+    "yearsLede": "The substance behind the cards",
+    "noYears": "No reporting year yet. It is created with your first request.",
+    "status": {
+      "new": "New",
+      "bills": "Bills in",
+      "questions": "Questions done",
+      "inventory": "Inventory ready",
+      "filled": "Filled"
+    },
+    "seg": {
+      "bills": "Bills",
+      "questions": "Questions",
+      "inventory": "Inventory",
+      "filled": "Filled",
+      "documents": "Bills",
+      "reconcile": "Questions"
+    },
+    "done": "done",
+    "todo": "to do",
+    "nextUp": "next",
+    "start": "Start",
+    "continue": "Continue",
+    "due": "due {date}",
+    "overdue": "overdue since {date}",
+    "sharesYear": "shares the year with {n}",
+    "deleteRequest": "Delete request {name}",
+    "sample": "Example",
+    "sampleCustomer": "Aiko Corp (example)",
+    "emptyTitle": "Add your first request",
+    "emptyBody": "Name the customer and the year they asked about. You can attach their Excel now or later.",
+    "bills": "{n} bill(s)",
+    "usedBy": "used by {n}: {names}",
+    "scope1": "Scope 1",
+    "scope2": "Scope 2",
+    "notComputed": "Not calculated yet",
+    "noBills": "No bills yet",
+    "deleted": "{name} removed.",
+    "deleteTitle": "Delete this request?",
+    "deleteBody": "{name} and its filled questionnaire will be removed. The bills and inventory for {year} stay, since other requests may use them.",
+    "deleteConfirm": "Delete",
+    "cancel": "Cancel",
+    "new": {
+      "title": "New request",
+      "lede": "Who asked, and for which year.",
+      "customer": "Customer",
+      "customerPlaceholder": "e.g. Aiko Corp",
+      "nameRequired": "Give the customer a name.",
+      "year": "Reporting year",
+      "yearHint": "Bills and figures already on this year are reused.",
+      "newYear": "New year…",
+      "start": "Starts",
+      "end": "Ends",
+      "due": "Due date (optional)",
+      "share": "Share of your output they buy, % (optional)",
+      "template": "Their questionnaire (optional)",
+      "chooseTemplate": "Choose .xlsx",
+      "changeTemplate": "Change",
+      "templateOptional": "You can also attach it at the last step.",
+      "create": "Create request",
+      "creating": "Creating…",
+      "cancel": "Cancel",
+      "created": "Request for {name} created."
+    }
   }
 }

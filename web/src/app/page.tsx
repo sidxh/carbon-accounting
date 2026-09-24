@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { motion, useInView } from "motion/react";
 import NumberFlow from "@number-flow/react";
@@ -97,14 +96,14 @@ const TRUST: { icon: LucideIcon; key: string }[] = [
 ];
 
 export default function Home() {
-  const { user, loading } = useAuth();
-  const router = useRouter();
+  const { user } = useAuth();
   const t = useTranslations("landing");
   const tc = useTranslations();
+  // Signed-in visitors are not redirected: the landing stays readable, and the
+  // nav and both calls to action lead to the dashboard instead of sign-in.
+  const go = user ? "/home" : "/sign-in";
+  const cta = user ? t("dashboard") : t("cta");
 
-  useEffect(() => {
-    if (!loading && user) router.replace("/documents");
-  }, [user, loading, router]);
 
   return (
     <div className="min-h-dvh overflow-x-clip">
@@ -114,8 +113,8 @@ export default function Home() {
           <Link href="/" className="rounded-lg"><Wordmark /></Link>
           <div className="flex items-center gap-2">
             <LanguageSwitcher className="hidden sm:inline-flex" />
-            <Link href={user ? "/documents" : "/sign-in"} className="btn btn-sm">
-              {user ? t("continue") : tc("app.signIn")}<ArrowRight className="size-4" aria-hidden />
+            <Link href={user ? "/home" : "/sign-in"} className="btn btn-sm">
+              {user ? t("dashboard") : tc("app.signIn")}<ArrowRight className="size-4" aria-hidden />
             </Link>
           </div>
         </nav>
@@ -132,7 +131,7 @@ export default function Home() {
             {t("sub")}
           </motion.p>
           <motion.div initial={{ opacity: 0, transform: "translateY(12px)" }} animate={{ opacity: 1, transform: "translateY(0px)" }} transition={{ duration: REVEAL, delay: 0.25, ease: EASE }} className="mt-8 flex flex-col items-center gap-3">
-            <Link href="/sign-in" className="btn px-6 text-base">{t("cta")}<ArrowRight className="size-4" aria-hidden /></Link>
+            <Link href={go} className="btn px-6 text-base">{cta}<ArrowRight className="size-4" aria-hidden /></Link>
             <span className="text-sm text-muted">{t("ctaSub")}</span>
           </motion.div>
 
@@ -189,7 +188,7 @@ export default function Home() {
           <Reveal>
             <h2 className="font-display text-3xl text-balance sm:text-4xl">{t("finalTitle")}</h2>
             <p className="mt-3 text-muted">{t("finalBody")}</p>
-            <Link href="/sign-in" className="btn mt-6 px-6 text-base">{t("cta")}<ArrowRight className="size-4" aria-hidden /></Link>
+            <Link href={go} className="btn mt-6 px-6 text-base">{cta}<ArrowRight className="size-4" aria-hidden /></Link>
           </Reveal>
         </section>
       </main>

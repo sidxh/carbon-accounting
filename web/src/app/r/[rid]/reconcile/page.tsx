@@ -6,12 +6,12 @@ import { useLocale, useTranslations } from "next-intl";
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowRight, Check, CircleDashed, MessageSquareText, RotateCcw, ScanSearch, Send } from "lucide-react";
 import { cn as clsx } from "@/lib/cn";
-import { RequireAuth } from "@/components/require-auth";
-import { Shell } from "@/components/shell";
+import { useRequest } from "@/components/request-context";
+import { SharedNotice } from "@/components/shared-notice";
 import { CoverageStrip, PageTitle, SkeletonList } from "@/components/ui/bits";
 import { Dialog } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/toast";
-import { api, type Issue, type ReconcileState, type SupplierProfile } from "@/lib/api";
+import { api, type Issue, type ReconcileState } from "@/lib/api";
 import { energyLabel, shortMonth } from "@/lib/coverage";
 
 const ASKABLE = new Set(["gap", "unit_hours", "low_confidence"]);
@@ -121,7 +121,9 @@ function OpenItems({ state }: { state: ReconcileState }) {
   );
 }
 
-function Chat({ profile, uid }: { profile: SupplierProfile | null; uid: string }) {
+function Chat() {
+  const { uid, period, request, view, reload } = useRequest();
+  const pid = period.id;
   const t = useTranslations("reconcile");
   const toast = useToast();
   const [state, setState] = useState<ReconcileState | null>(null);
@@ -134,8 +136,8 @@ function Chat({ profile, uid }: { profile: SupplierProfile | null; uid: string }
   const input = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    api.reconcileState(uid).then(setState).catch((e) => setError((e as Error).message));
-  }, [uid]);
+    api.reconcileState(uid, pid).then(setState).catch((e) => setError((e as Error).message));
+  }, [uid, pid]);
 
   useEffect(() => {
     bottom.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -145,15 +147,15 @@ function Chat({ profile, uid }: { profile: SupplierProfile | null; uid: string }
   // page is ready when they get there.
   useEffect(() => {
     if (state?.status === "done" && !computed) {
-      api.compute(uid).then(() => setComputed(true)).catch(() => {});
+      api.compute(uid, pid).then(() => { setComputed(true); reload(); }).catch(() => {});
     }
-  }, [state?.status, computed, uid]);
+  }, [state?.status, computed, uid, pid, reload]);
 
   async function start() {
     setBusy(true);
     setError("");
     try {
-      setState(await api.reconcileStart(uid));
+      setState(await api.reconcileStart(uid, pid));
       setComputed(false);
     } catch (e) {
       setError((e as Error).message);
@@ -166,9 +168,10 @@ function Chat({ profile, uid }: { profile: SupplierProfile | null; uid: string }
     setBusy(true);
     setError("");
     try {
-      await api.resetData(uid, "chat");
-      setState(await api.reconcileState(uid));
+      await api.resetPeriod(uid, pid, "chat");
+      setState(await api.reconcileState(uid, pid));
       setComputed(false);
+      await reload();
       toast(t("resetDone"));
     } catch (e) {
       setError((e as Error).message);
@@ -186,7 +189,7 @@ function Chat({ profile, uid }: { profile: SupplierProfile | null; uid: string }
     setBusy(true);
     setState((s) => s && { ...s, history: [...s.history, { role: "user", text: msg, at: new Date().toISOString() }] });
     try {
-      setState(await api.reconcileReply(uid, msg));
+      setState(await api.reconcileReply(uid, pid, msg));
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -197,7 +200,7 @@ function Chat({ profile, uid }: { profile: SupplierProfile | null; uid: string }
 
   if (!state) return <SkeletonList rows={3} />;
 
-  const fy: [string, string] = [profile?.fiscal_year_start ?? "", profile?.fiscal_year_end ?? ""];
+  const fy: [string, string] = [period.start, period.end];
   const open = state.issues.filter((i) => !i.resolved && ASKABLE.has(i.kind)).length;
   const started = state.status !== "idle";
   const askable = state.issues.filter((i) => ASKABLE.has(i.kind)).length;
@@ -205,6 +208,7 @@ function Chat({ profile, uid }: { profile: SupplierProfile | null; uid: string }
   return (
     <div className="space-y-5">
       <PageTitle title={t("title")} lede={t("lede")} />
+      <SharedNotice sharedWith={view.shared_with} periodLabel={period.label} />
 
       <Found state={state} fy={fy} />
 
@@ -267,7 +271,7 @@ function Chat({ profile, uid }: { profile: SupplierProfile | null; uid: string }
 
           <div className="flex flex-wrap items-center gap-2">
             {state.status === "done" && (
-              <Link href="/inventory" className="btn">{t("next")}<ArrowRight className="size-4" aria-hidden /></Link>
+              <Link href={`/r/${request.id}/inventory`} className="btn">{t("next")}<ArrowRight className="size-4" aria-hidden /></Link>
             )}
             {computed && <span className="text-sm text-signal-ink">{t("computed")}</span>}
             <span className="flex-1" />
@@ -282,7 +286,7 @@ function Chat({ profile, uid }: { profile: SupplierProfile | null; uid: string }
       <Dialog
         open={confirmReset}
         title={t("reset")}
-        description={t("resetConfirm")}
+        description={t("resetConfirm") + (view.shared_with.length ? " " + t("resetShared", { n: view.shared_with.length, names: view.shared_with.join(", ") }) : "")}
         confirmLabel={t("reset")}
         cancelLabel={t("cancel")}
         tone="danger"
@@ -295,9 +299,5 @@ function Chat({ profile, uid }: { profile: SupplierProfile | null; uid: string }
 }
 
 export default function ReconcilePage() {
-  return (
-    <Shell>
-      <RequireAuth>{(profile, uid) => <Chat profile={profile} uid={uid} />}</RequireAuth>
-    </Shell>
-  );
+  return <Chat />;
 }

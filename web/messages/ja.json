@@ -6,10 +6,13 @@
     "language": "言語",
     "signedInAs": "サインイン中",
     "steps": "ステップ",
-    "signIn": "サインイン"
+    "signIn": "サインイン",
+    "company": "会社情報",
+    "home": "ホーム",
+    "sharedWith": "他{n}件の依頼と共有",
+    "sharedNotice": "{year}は共有されています。ここでの請求書・質問・インベントリは次の依頼にも使われます: {names}。"
   },
   "steps": {
-    "setup": "設定",
     "documents": "請求書",
     "reconcile": "確認",
     "inventory": "インベントリ",
@@ -114,7 +117,8 @@
     "notPeriodic": "納品のため月次カバレッジなし",
     "monthsMissing": "{n}か月不足",
     "fullYear": "通年",
-    "otherGroup": "未読み取り"
+    "otherGroup": "未読み取り",
+    "removeShared": "この年度は{names}と共有中です。相手の数値も変わります。"
   },
   "reconcile": {
     "title": "いくつか確認します",
@@ -167,7 +171,8 @@
       "gap": "{months}の{energy}記録なし（{n}か月）",
       "unitHours": "{energy}が運転時間で記録。L/hが必要",
       "lowConfidence": "{energy}の値が読み取りづらい。確認をお願いします"
-    }
+    },
+    "resetShared": "この年度は{names}と共有中です。相手の数値も再計算されます。"
   },
   "inventory": {
     "title": "インベントリ",
@@ -310,7 +315,9 @@
     "sections": {
       "label": "セクション {key}",
       "other": "その他"
-    }
+    },
+    "attachedTemplate": "この依頼に添付済み: {name}。これを記入するか、別のファイルを選択。",
+    "fillAttached": "添付の質問票を記入"
   },
   "common": {
     "loading": "読み込み中…",
@@ -383,6 +390,84 @@
     "finalTitle": "答えはもう請求書の中に。",
     "finalBody": "電話番号でサインインし、最初の1枚をアップロード。",
     "footerNote": "デモ版。表示している請求書は合成データ。排出係数は実データで出典付き。",
-    "footerLangs": "言語"
+    "footerLangs": "言語",
+    "dashboard": "ダッシュボードへ"
+  },
+  "stepLock": {
+    "documents": "",
+    "reconcile": "請求書を1件以上読み取ると開きます",
+    "inventory": "質問に回答すると開きます",
+    "questionnaire": "インベントリを算定すると開きます"
+  },
+  "home": {
+    "greeting": "{n, plural, =0 {依頼はまだありません} other {依頼 #件}}",
+    "ledeSome": "各カードは数値を求めてきた取引先です。請求書と数値は報告年度に属し、同じ年度の依頼間で共有されます。",
+    "ledeNone": "まず依頼してきた取引先から。請求書と数値は報告年度ごとに集め、その年度のすべての依頼で再利用します。",
+    "newRequest": "新しい依頼",
+    "requests": "依頼",
+    "years": "報告年度",
+    "yearsLede": "カードの裏にある実体",
+    "noYears": "報告年度はまだありません。最初の依頼と一緒に作成されます。",
+    "status": {
+      "new": "新規",
+      "bills": "請求書あり",
+      "questions": "質問完了",
+      "inventory": "インベントリ完了",
+      "filled": "記入済み"
+    },
+    "seg": {
+      "bills": "請求書",
+      "questions": "質問",
+      "inventory": "インベントリ",
+      "filled": "記入",
+      "documents": "請求書",
+      "reconcile": "質問"
+    },
+    "done": "完了",
+    "todo": "未着手",
+    "nextUp": "次",
+    "start": "開始",
+    "continue": "続ける",
+    "due": "期限 {date}",
+    "overdue": "{date} から期限超過",
+    "sharesYear": "{n}件と年度を共有",
+    "deleteRequest": "依頼 {name} を削除",
+    "sample": "例",
+    "sampleCustomer": "Aiko Corp（例）",
+    "emptyTitle": "最初の依頼を追加",
+    "emptyBody": "取引先名と対象年度を入力。Excelは今でも後でも添付できます。",
+    "bills": "{n}件",
+    "usedBy": "{n}件で使用: {names}",
+    "scope1": "スコープ1",
+    "scope2": "スコープ2",
+    "notComputed": "未算定",
+    "noBills": "請求書なし",
+    "deleted": "{name} を削除しました。",
+    "deleteTitle": "この依頼を削除しますか？",
+    "deleteBody": "{name} と記入済み質問票を削除します。{year} の請求書とインベントリは他の依頼が使う可能性があるため残ります。",
+    "deleteConfirm": "削除",
+    "cancel": "キャンセル",
+    "new": {
+      "title": "新しい依頼",
+      "lede": "誰が、どの年度について。",
+      "customer": "取引先",
+      "customerPlaceholder": "例: Aiko Corp",
+      "nameRequired": "取引先名を入力してください。",
+      "year": "報告年度",
+      "yearHint": "この年度にある請求書と数値を再利用します。",
+      "newYear": "新しい年度…",
+      "start": "開始",
+      "end": "終了",
+      "due": "期限（任意）",
+      "share": "購入シェア %（任意）",
+      "template": "相手の質問票（任意）",
+      "chooseTemplate": ".xlsxを選択",
+      "changeTemplate": "変更",
+      "templateOptional": "最後のステップで添付することもできます。",
+      "create": "依頼を作成",
+      "creating": "作成中…",
+      "cancel": "キャンセル",
+      "created": "{name} の依頼を作成しました。"
+    }
   }
 }

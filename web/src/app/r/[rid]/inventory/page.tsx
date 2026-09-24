@@ -6,12 +6,12 @@ import { useLocale, useTranslations } from "next-intl";
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowRight, ArrowUpDown, Calculator, ChevronDown, ExternalLink, FileText, Info, Pencil, RefreshCw } from "lucide-react";
 import { cn as clsx } from "@/lib/cn";
-import { RequireAuth } from "@/components/require-auth";
-import { Shell } from "@/components/shell";
+import { useRequest } from "@/components/request-context";
+import { SharedNotice } from "@/components/shared-notice";
 import { EmptyState, MixBar, PageTitle, SkeletonList, Stat, TIER_BAR, TIER_PILL } from "@/components/ui/bits";
 import { Dialog } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/toast";
-import { api, type ActivityLine, type Assumption, type DocumentRecord, type InventoryLine, type Snapshot, type SupplierProfile } from "@/lib/api";
+import { api, type ActivityLine, type Assumption, type DocumentRecord, type InventoryLine, type Snapshot } from "@/lib/api";
 import { ENERGY_ORDER, energyLabel, shortMonth } from "@/lib/coverage";
 
 const t1 = (kg: number, d = 2) => (kg / 1000).toLocaleString(undefined, { maximumFractionDigits: d });
@@ -21,16 +21,16 @@ const shortDate = (iso: string, locale?: string) => new Date(iso + "T00:00:00").
 
 // --- lineage pieces -------------------------------------------------------------
 
-function SourceThumb({ uid, docId, doc }: { uid: string; docId: string; doc?: DocumentRecord }) {
+function SourceThumb({ uid, pid, docId, doc }: { uid: string; pid: string; docId: string; doc?: DocumentRecord }) {
   const t = useTranslations("inventory");
   const [src, setSrc] = useState<string | null>(null);
   const isImage = !!doc && doc.mime_type.startsWith("image/");
   useEffect(() => {
     if (!isImage) return;
     let url: string | null = null;
-    api.documentFileUrl(uid, docId).then((u) => { url = u; setSrc(u); }).catch(() => {});
+    api.documentFileUrl(uid, pid, docId).then((u) => { url = u; setSrc(u); }).catch(() => {});
     return () => { if (url) URL.revokeObjectURL(url); };
-  }, [uid, docId, isImage]);
+  }, [uid, pid, docId, isImage]);
 
   if (docId.startsWith("assumption:")) {
     return <div className="grid h-24 w-20 shrink-0 place-items-center rounded-lg bg-attention-bg px-1 text-center text-[11px] leading-tight text-attention">{t("fromAssumption")}</div>;
@@ -54,7 +54,7 @@ function Step({ n, title, children }: { n: number; title: string; children: Reac
   );
 }
 
-function Calculation({ uid, line, market, activity, doc, assumptions, onChanged }: { uid: string; line: InventoryLine; market?: InventoryLine; activity?: ActivityLine; doc?: DocumentRecord; assumptions: Assumption[]; onChanged: () => void }) {
+function Calculation({ uid, pid, line, market, activity, doc, assumptions, onChanged }: { uid: string; pid: string; line: InventoryLine; market?: InventoryLine; activity?: ActivityLine; doc?: DocumentRecord; assumptions: Assumption[]; onChanged: () => void }) {
   const t = useTranslations("inventory");
   const toast = useToast();
   const [editing, setEditing] = useState(false);
@@ -68,7 +68,7 @@ function Calculation({ uid, line, market, activity, doc, assumptions, onChanged 
   async function save() {
     setBusy(true);
     try {
-      await api.patchLine(uid, line.activity_line_id, { quantity: Number(qty) });
+      await api.patchLine(uid, pid, line.activity_line_id, { quantity: Number(qty) });
       setEditing(false);
       onChanged();
       toast(t("recomputed"));
@@ -87,7 +87,7 @@ function Calculation({ uid, line, market, activity, doc, assumptions, onChanged 
       <ol className="space-y-4">
         <Step n={1} title={t("step.document")}>
           <div className="flex items-start gap-3">
-            <SourceThumb uid={uid} docId={line.source_doc_id} doc={doc} />
+            <SourceThumb uid={uid} pid={pid} docId={line.source_doc_id} doc={doc} />
             <div className="min-w-0">
               {doc?.filename && <div className="font-medium">{doc.filename}</div>}
               <div className="font-mono text-xs text-muted">{line.source_doc_id}</div>
@@ -204,7 +204,7 @@ function Calculation({ uid, line, market, activity, doc, assumptions, onChanged 
 
 // --- table -----------------------------------------------------------------------
 
-function Row({ uid, line, market, activity, doc, assumptions, onChanged, open, onToggle }: { uid: string; line: InventoryLine; market?: InventoryLine; activity?: ActivityLine; doc?: DocumentRecord; assumptions: Assumption[]; onChanged: () => void; open: boolean; onToggle: () => void }) {
+function Row({ uid, pid, line, market, activity, doc, assumptions, onChanged, open, onToggle }: { uid: string; pid: string; line: InventoryLine; market?: InventoryLine; activity?: ActivityLine; doc?: DocumentRecord; assumptions: Assumption[]; onChanged: () => void; open: boolean; onToggle: () => void }) {
   const t = useTranslations("inventory");
   const locale = useLocale();
   const id = `calc-${line.id.replace(/[^a-z0-9]/gi, "")}`;
@@ -228,7 +228,7 @@ function Row({ uid, line, market, activity, doc, assumptions, onChanged, open, o
           <tr id={id} className="bg-sunken/60">
             <td colSpan={6} className="px-4 pb-5 pt-1">
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}>
-                <Calculation uid={uid} line={line} market={market} activity={activity} doc={doc} assumptions={assumptions} onChanged={onChanged} />
+                <Calculation uid={uid} pid={pid} line={line} market={market} activity={activity} doc={doc} assumptions={assumptions} onChanged={onChanged} />
               </motion.div>
             </td>
           </tr>
@@ -281,7 +281,9 @@ function MonthlyChart({ byMonth }: { byMonth: Record<string, { scope1: number; s
 
 type SortKey = "period" | "emissions";
 
-function Inventory({ profile, uid }: { profile: SupplierProfile | null; uid: string }) {
+function Inventory() {
+  const { uid, profile, period, request, view: rv, reload } = useRequest();
+  const pid = period.id;
   const t = useTranslations("inventory");
   const toast = useToast();
   const [data, setData] = useState<{ lines: InventoryLine[]; snapshot: Snapshot | null; assumptions: Assumption[]; activityLines: ActivityLine[] } | null>(null);
@@ -293,17 +295,18 @@ function Inventory({ profile, uid }: { profile: SupplierProfile | null; uid: str
   const [sort, setSort] = useState<SortKey>("period");
   const [methodOpen, setMethodOpen] = useState(false);
 
-  const load = useCallback(() => api.inventory(uid).then(setData), [uid]);
+  const load = useCallback(() => api.inventory(uid, pid).then(setData), [uid, pid]);
   useEffect(() => { load(); }, [load]);
   useEffect(() => {
-    api.listDocuments(uid).then((r) => setDocs(Object.fromEntries(r.documents.map((d) => [d.id, d])))).catch(() => {});
-  }, [uid]);
+    api.listDocuments(uid, pid).then((r) => setDocs(Object.fromEntries(r.documents.map((d) => [d.id, d])))).catch(() => {});
+  }, [uid, pid]);
 
   async function compute() {
     setBusy(true);
     try {
-      await api.compute(uid);
+      await api.compute(uid, pid);
       await load();
+      await reload();
       toast(t("recomputed"));
     } catch (e) {
       toast((e as Error).message, "danger");
@@ -342,6 +345,7 @@ function Inventory({ profile, uid }: { profile: SupplierProfile | null; uid: str
     return (
       <div className="space-y-6">
         <PageTitle title={t("title")} lede={t("lede")} />
+        <SharedNotice sharedWith={rv.shared_with} periodLabel={period.label} />
         <EmptyState icon={Calculator} title={t("notComputed")} body={t("notComputedBody")} action={<button className="btn" onClick={compute} disabled={busy}><Calculator className="size-4" aria-hidden />{t("compute")}</button>} />
       </div>
     );
@@ -351,7 +355,7 @@ function Inventory({ profile, uid }: { profile: SupplierProfile | null; uid: str
   const total = tot.scope1_kg + tot.scope2_location_kg;
   const share = (kg: number) => (total ? `${((kg / total) * 100).toFixed(0)}%` : "—");
   const tierSegs = Object.entries(tot.tier_mix).map(([k, v]) => ({ key: k, share: v, className: TIER_BAR[k] ?? "bg-muted", label: t(`tier.${k}`) }));
-  const sites = profile?.sites ?? [];
+  const sites = profile.sites;
   const siteName = (id: string) => sites.find((s) => s.id === id)?.name ?? id;
 
   return (
@@ -361,6 +365,7 @@ function Inventory({ profile, uid }: { profile: SupplierProfile | null; uid: str
         lede={t("lede")}
         aside={<button className="btn btn-secondary btn-sm gap-1.5" onClick={compute} disabled={busy}><RefreshCw className={clsx("size-3.5", busy && "animate-spin")} aria-hidden />{t("compute")}</button>}
       />
+      <SharedNotice sharedWith={rv.shared_with} periodLabel={period.label} />
 
       {/* Headline band --------------------------------------------------------------- */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -386,8 +391,8 @@ function Inventory({ profile, uid }: { profile: SupplierProfile | null; uid: str
             <dl className="grid gap-x-4 gap-y-2 sm:grid-cols-[150px_1fr]">
               <dt className="text-muted">{t("method.standard")}</dt><dd>{t("method.standardValue")}</dd>
               <dt className="text-muted">{t("method.boundary")}</dt><dd>{t("method.boundaryValue", { n: sites.length })}{sites.length > 0 && <span className="text-muted"> · {sites.map((s) => s.name).join(", ")}</span>}</dd>
-              <dt className="text-muted">{t("method.period")}</dt><dd>{profile?.fiscal_year_start} → {profile?.fiscal_year_end}</dd>
-              <dt className="text-muted">{t("method.country")}</dt><dd>{profile?.country}</dd>
+              <dt className="text-muted">{t("method.period")}</dt><dd>{period.label} · {period.start} → {period.end}</dd>
+              <dt className="text-muted">{t("method.country")}</dt><dd>{profile.country}</dd>
               <dt className="text-muted">{t("method.scope2")}</dt><dd>{t("method.scope2Value")}</dd>
               <dt className="text-muted">{t("tierMix")}</dt>
               <dd>
@@ -472,6 +477,7 @@ function Inventory({ profile, uid }: { profile: SupplierProfile | null; uid: str
                   <Row
                     key={l.id}
                     uid={uid}
+                    pid={pid}
                     line={l}
                     market={view.marketByActivity[l.activity_line_id]}
                     activity={view.byActivity[l.activity_line_id]}
@@ -508,21 +514,17 @@ function Inventory({ profile, uid }: { profile: SupplierProfile | null; uid: str
         <section className="card p-4 text-sm" aria-labelledby="skipped-h">
           <h2 id="skipped-h" className="flex items-center gap-2 font-medium">{t("skipped")}<span className="pill pill-attention tabular">{snapshot.skipped.length}</span></h2>
           <ul className="mt-1 list-disc pl-5 text-muted">{snapshot.skipped.map(([id, why]) => <li key={id}>{why}</li>)}</ul>
-          <Link href="/reconcile" className="btn btn-secondary btn-sm mt-3">{t("fixInQuestions")}</Link>
+          <Link href={`/r/${request.id}/reconcile`} className="btn btn-secondary btn-sm mt-3">{t("fixInQuestions")}</Link>
         </section>
       )}
 
       <div className="fixed inset-x-0 bottom-0 z-bar border-t hairline bg-paper/95 p-3 pb-[max(12px,env(safe-area-inset-bottom))] sm:static sm:border-0 sm:bg-transparent sm:p-0">
-        <Link href="/questionnaire" className="btn w-full sm:w-auto">{t("next")}<ArrowRight className="size-4" aria-hidden /></Link>
+        <Link href={`/r/${request.id}/questionnaire`} className="btn w-full sm:w-auto">{t("next")}<ArrowRight className="size-4" aria-hidden /></Link>
       </div>
     </div>
   );
 }
 
 export default function InventoryPage() {
-  return (
-    <Shell wide>
-      <RequireAuth>{(profile, uid) => <Inventory profile={profile} uid={uid} />}</RequireAuth>
-    </Shell>
-  );
+  return <Inventory />;
 }

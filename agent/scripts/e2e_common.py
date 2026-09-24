@@ -41,8 +41,8 @@ def sign_in(page, phone: str, wrong_first: bool = False) -> None:
         type_code(page, "000000")
         page.locator("p[role=alert]").wait_for(timeout=15000)
     type_code(page, emulator_code(phone))
-    page.wait_for_url(re.compile(r"/(setup|documents)"), timeout=30000)
-    # A fresh user is bounced from /documents to /setup once the profile 404s.
+    page.wait_for_url(re.compile(r"/(setup|home)"), timeout=30000)
+    # A fresh user is bounced from /home to /setup once the profile 404s.
     try:
         page.wait_for_url(re.compile(r"/setup"), timeout=6000)
     except Exception:
@@ -60,7 +60,30 @@ def fill_setup(page, name: str, site: str, language: str = "vi") -> None:
     dates.nth(1).fill("2025-12-31")
     page.locator("form.card input[placeholder]").nth(0).fill(site)
     page.get_by_role("button", name=re.compile("Save|Lưu|保存")).click()
-    page.wait_for_url(re.compile(r"/documents"), timeout=20000)
+    page.wait_for_url(re.compile(r"/home"), timeout=20000)
+
+
+def new_request(page, customer: str, *, due: str | None = None, share: str | None = None, new_year: tuple[str, str] | None = None) -> str:
+    """Open the New request dialog from Home, submit it, and return the request id from the URL."""
+    page.goto(f"{WEB}/home")
+    page.get_by_role("button", name=re.compile("New request|Yêu cầu mới|新しい依頼")).first.click()
+    page.get_by_role("dialog").wait_for()
+    page.locator("#nr-name").fill(customer)
+    if new_year:
+        page.locator("#nr-period").select_option("__new")
+        page.locator("#nr-start").fill(new_year[0])
+        page.locator("#nr-end").fill(new_year[1])
+    if due:
+        page.locator("#nr-due").fill(due)
+    if share:
+        page.locator("#nr-share").fill(share)
+    page.get_by_role("dialog").get_by_role("button", name=re.compile("Create request|Tạo yêu cầu|依頼を作成")).click()
+    page.wait_for_url(re.compile(r"/r/(req_[a-f0-9]+)/documents"), timeout=20000)
+    return re.search(r"/r/(req_[a-f0-9]+)/", page.url).group(1)
+
+
+def locked_steps(page) -> list[str]:
+    return [" ".join(t.split()) for t in page.locator("nav[aria-label] [aria-disabled=true]").all_inner_texts()]
 
 
 def upload(page, files: list[str], timeout: int = 600) -> tuple[int, int]:

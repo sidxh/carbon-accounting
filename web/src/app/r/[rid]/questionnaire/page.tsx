@@ -6,11 +6,10 @@ import { useTranslations } from "next-intl";
 import { AnimatePresence, motion } from "motion/react";
 import { Download, FileSpreadsheet, FileText, Lock, Pencil, UploadCloud } from "lucide-react";
 import { cn as clsx } from "@/lib/cn";
-import { RequireAuth } from "@/components/require-auth";
-import { Shell } from "@/components/shell";
+import { useRequest } from "@/components/request-context";
 import { EmptyState, PageTitle, SkeletonList } from "@/components/ui/bits";
 import { useToast } from "@/components/ui/toast";
-import { api, ApiError, type Answer, type QuestionnaireRecord, type SupplierProfile } from "@/lib/api";
+import { api, ApiError, type Answer, type QuestionnaireRecord } from "@/lib/api";
 
 /** Three-segment ring: answered from data, answered by you, still open. */
 function ProgressRing({ auto, yours, open }: { auto: number; yours: number; open: number }) {
@@ -44,7 +43,7 @@ function ProgressRing({ auto, yours, open }: { auto: number; yours: number; open
   );
 }
 
-function AnswerRow({ uid, qid, a, onSaved }: { uid: string; qid: string; a: Answer; onSaved: (r: QuestionnaireRecord) => void }) {
+function AnswerRow({ uid, rid, qid, a, onSaved }: { uid: string; rid: string; qid: string; a: Answer; onSaved: (r: QuestionnaireRecord) => void }) {
   const t = useTranslations("questionnaire");
   const toast = useToast();
   const [editing, setEditing] = useState(false);
@@ -94,7 +93,7 @@ function AnswerRow({ uid, qid, a, onSaved }: { uid: string; qid: string; a: Answ
             {a.editable ? (
               <button className="inline-flex min-h-8 items-center gap-1 text-signal-ink underline-offset-4 hover:underline" onClick={() => setEditing(true)}><Pencil className="size-3" aria-hidden />{t("edit")}</button>
             ) : (
-              <Link href="/inventory" className="inline-flex min-h-8 items-center gap-1 underline-offset-4 hover:underline"><Lock className="size-3" aria-hidden />{t("lockedHint")}</Link>
+              <Link href={`/r/${rid}/inventory`} className="inline-flex min-h-8 items-center gap-1 underline-offset-4 hover:underline"><Lock className="size-3" aria-hidden />{t("lockedHint")}</Link>
             )}
             {missingRevenue && <Link href="/setup" className="inline-flex min-h-8 items-center text-signal-ink underline-offset-4 hover:underline">{t("addRevenue")}</Link>}
           </div>
@@ -111,11 +110,13 @@ function sectionOf(ref: string | null | undefined, fallback: string): string {
   return m ? m[1] : fallback;
 }
 
-function Questionnaire({ uid }: { profile: SupplierProfile | null; uid: string }) {
+function Questionnaire() {
+  const { uid, period, request, reload } = useRequest();
+  const rid = request.id;
   const t = useTranslations("questionnaire");
   const toast = useToast();
-  const [records, setRecords] = useState<QuestionnaireRecord[] | null>(null);
-  const [share, setShare] = useState("");
+  const [latest, setLatest] = useState<QuestionnaireRecord | null | undefined>(undefined);
+  const [share, setShare] = useState(request.customer_share != null ? String(Math.round(request.customer_share * 100)) : "");
   const [busy, setBusy] = useState(false);
   const [gen, setGen] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -123,8 +124,8 @@ function Questionnaire({ uid }: { profile: SupplierProfile | null; uid: string }
   const pick = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    api.listQuestionnaires(uid).then((r) => setRecords(r.questionnaires.sort((a, b) => b.created_at.localeCompare(a.created_at)))).catch((e) => { setRecords([]); setError((e as Error).message); });
-  }, [uid]);
+    api.getQuestionnaire(uid, rid).then((r) => setLatest(r.questionnaire)).catch((e) => { setLatest(null); setError((e as Error).message); });
+  }, [uid, rid]);
 
   async function onFile(list: FileList | null) {
     const f = list?.[0];
@@ -134,9 +135,10 @@ function Questionnaire({ uid }: { profile: SupplierProfile | null; uid: string }
     setError("");
     try {
       const pct = share.trim() ? Number(share) / 100 : undefined;
-      const r = await api.fillQuestionnaire(uid, f, pct);
-      setRecords((rs) => [r.questionnaire, ...(rs ?? [])]);
+      const r = await api.fillQuestionnaire(uid, rid, f, pct);
+      setLatest(r.questionnaire);
       toast(t("filledToast", { n: r.questionnaire.answers.filter((a) => !a.flagged).length }));
+      await reload();
     } catch (e) {
       setError(e instanceof ApiError && e.status === 409 ? t("needInventory") : (e as Error).message);
     } finally {
@@ -145,11 +147,27 @@ function Questionnaire({ uid }: { profile: SupplierProfile | null; uid: string }
     }
   }
 
+  async function fillAttached() {
+    setBusy(true);
+    setError("");
+    try {
+      const pct = share.trim() ? Number(share) / 100 : undefined;
+      const r = await api.fillQuestionnaire(uid, rid, null, pct);
+      setLatest(r.questionnaire);
+      toast(t("filledToast", { n: r.questionnaire.answers.filter((a) => !a.flagged).length }));
+      await reload();
+    } catch (e) {
+      setError(e instanceof ApiError && e.status === 409 ? t("needInventory") : (e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function methodology() {
     setGen(true);
     setError("");
     try {
-      const r = await api.methodology(uid);
+      const r = await api.methodology(uid, period.id);
       await api.download(r.download, "methodology-note.pdf");
     } catch (e) {
       setError(e instanceof ApiError && e.status === 409 ? t("needInventory") : (e as Error).message);
@@ -158,7 +176,6 @@ function Questionnaire({ uid }: { profile: SupplierProfile | null; uid: string }
     }
   }
 
-  const latest = records?.[0];
   const sections = useMemo(() => {
     if (!latest) return [];
     const out: { key: string; items: Answer[] }[] = [];
@@ -171,7 +188,7 @@ function Questionnaire({ uid }: { profile: SupplierProfile | null; uid: string }
     return out;
   }, [latest, t]);
 
-  if (records === null) return <SkeletonList rows={3} />;
+  if (latest === undefined) return <SkeletonList rows={3} />;
 
   const auto = latest?.answers.filter((a) => !a.flagged && !a.edited).length ?? 0;
   const yours = latest?.answers.filter((a) => !a.flagged && a.edited).length ?? 0;
@@ -192,7 +209,7 @@ function Questionnaire({ uid }: { profile: SupplierProfile | null; uid: string }
             <span className="grid size-10 shrink-0 place-items-center rounded-[10px] bg-sunken text-muted"><FileSpreadsheet className="size-5" aria-hidden /></span>
             <div>
               <div className="font-medium">{t("dropTitle")}</div>
-              <div className="text-sm text-muted">{t("dropBody")}</div>
+              <div className="text-sm text-muted">{request.template_filename ? t("attachedTemplate", { name: request.template_filename }) : t("dropBody")}</div>
             </div>
           </div>
           <div>
@@ -203,6 +220,9 @@ function Questionnaire({ uid }: { profile: SupplierProfile | null; uid: string }
           <input ref={pick} type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden onChange={(e) => onFile(e.target.files)} />
           <div className="flex flex-wrap gap-2">
             <button className="btn" onClick={() => pick.current?.click()} disabled={busy}><UploadCloud className="size-4" aria-hidden />{busy ? t("filling") : t("fill")}</button>
+            {request.template_key && !latest && (
+              <button className="btn btn-secondary" onClick={() => fillAttached()} disabled={busy}><FileSpreadsheet className="size-4" aria-hidden />{t("fillAttached")}</button>
+            )}
             <button className="btn btn-secondary" onClick={methodology} disabled={gen}><FileText className="size-4" aria-hidden />{gen ? t("generating") : t("methodology")}</button>
           </div>
           {error && <p role="alert" className="rounded-lg bg-danger-bg px-3 py-2 text-sm text-danger">{error}</p>}
@@ -211,7 +231,7 @@ function Questionnaire({ uid }: { profile: SupplierProfile | null; uid: string }
         {latest ? (
           <div className="card flex flex-col justify-between gap-4 p-5">
             <ProgressRing auto={auto} yours={yours} open={open} />
-            <button className="btn btn-secondary btn-sm w-full" onClick={() => api.download(`/suppliers/${uid}/questionnaire/${latest.id}/file`, "questionnaire-filled.xlsx")}>
+            <button className="btn btn-secondary btn-sm w-full" onClick={() => api.download(api.questionnaireFilePath(uid, latest.id), "questionnaire-filled.xlsx")}>
               <Download className="size-4" aria-hidden />{t("download")}
             </button>
           </div>
@@ -231,7 +251,7 @@ function Questionnaire({ uid }: { profile: SupplierProfile | null; uid: string }
               </h2>
               <ul className="card divide-y divide-line overflow-hidden">
                 {s.items.map((a) => (
-                  <AnswerRow key={a.question_id} uid={uid} qid={latest.id} a={a} onSaved={(r) => setRecords((rs) => (rs ?? []).map((x) => (x.id === r.id ? r : x)))} />
+                  <AnswerRow key={a.question_id} uid={uid} rid={rid} qid={latest.id} a={a} onSaved={(r) => setLatest(r)} />
                 ))}
               </ul>
             </motion.section>
@@ -243,9 +263,5 @@ function Questionnaire({ uid }: { profile: SupplierProfile | null; uid: string }
 }
 
 export default function QuestionnairePage() {
-  return (
-    <Shell>
-      <RequireAuth>{(profile, uid) => <Questionnaire profile={profile} uid={uid} />}</RequireAuth>
-    </Shell>
-  );
+  return <Questionnaire />;
 }

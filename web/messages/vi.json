@@ -6,10 +6,13 @@
     "language": "Ngôn ngữ",
     "signedInAs": "Đang đăng nhập",
     "steps": "Các bước",
-    "signIn": "Đăng nhập"
+    "signIn": "Đăng nhập",
+    "company": "Thông tin công ty",
+    "home": "Trang chủ",
+    "sharedWith": "dùng chung với {n} yêu cầu khác",
+    "sharedNotice": "{year} được dùng chung. Hóa đơn, câu hỏi và kiểm kê ở đây cũng phục vụ: {names}."
   },
   "steps": {
-    "setup": "Thiết lập",
     "documents": "Hóa đơn",
     "reconcile": "Câu hỏi",
     "inventory": "Kiểm kê",
@@ -114,7 +117,8 @@
     "notPeriodic": "Giao hàng, không theo tháng",
     "monthsMissing": "Thiếu {n} tháng",
     "fullYear": "Đủ năm",
-    "otherGroup": "Chưa đọc"
+    "otherGroup": "Chưa đọc",
+    "removeShared": "Năm này dùng chung với {names}: số liệu của họ cũng thay đổi."
   },
   "reconcile": {
     "title": "Vài câu hỏi",
@@ -167,7 +171,8 @@
       "gap": "Không có bản ghi {energy} cho {months} ({n} tháng)",
       "unitHours": "{energy} ghi theo giờ chạy; cần lít/giờ",
       "lowConfidence": "Một giá trị {energy} khó đọc; hãy xác nhận"
-    }
+    },
+    "resetShared": "Năm này dùng chung với {names}: số liệu của họ cũng sẽ được tính lại."
   },
   "inventory": {
     "title": "Bảng kiểm kê",
@@ -310,7 +315,9 @@
     "sections": {
       "label": "Mục {key}",
       "other": "Khác"
-    }
+    },
+    "attachedTemplate": "Đã đính kèm cho yêu cầu này: {name}. Điền file này hoặc chọn file khác.",
+    "fillAttached": "Điền bảng câu hỏi đã đính kèm"
   },
   "common": {
     "loading": "Đang tải…",
@@ -383,6 +390,84 @@
     "finalTitle": "Hóa đơn của bạn đã có câu trả lời.",
     "finalBody": "Đăng nhập bằng điện thoại và tải lên hóa đơn đầu tiên.",
     "footerNote": "Bản demo. Hóa đơn là dữ liệu tổng hợp; hệ số phát thải là thật và có trích dẫn.",
-    "footerLangs": "Ngôn ngữ"
+    "footerLangs": "Ngôn ngữ",
+    "dashboard": "Vào bảng điều khiển"
+  },
+  "stepLock": {
+    "documents": "",
+    "reconcile": "Mở khi đã đọc ít nhất một hóa đơn",
+    "inventory": "Mở khi đã trả lời xong câu hỏi",
+    "questionnaire": "Mở khi đã tính kiểm kê"
+  },
+  "home": {
+    "greeting": "{n, plural, =0 {Chưa có yêu cầu} =1 {Một yêu cầu} other {# yêu cầu}}",
+    "ledeSome": "Mỗi thẻ là một khách hàng đã hỏi số liệu của bạn. Hóa đơn và số liệu thuộc năm báo cáo và dùng chung cho các yêu cầu cùng năm.",
+    "ledeNone": "Bắt đầu từ khách hàng đã hỏi. Hóa đơn và số liệu được gom theo năm báo cáo và dùng lại cho mọi yêu cầu trong năm đó.",
+    "newRequest": "Yêu cầu mới",
+    "requests": "Yêu cầu",
+    "years": "Năm báo cáo",
+    "yearsLede": "Nội dung phía sau các thẻ",
+    "noYears": "Chưa có năm báo cáo. Sẽ được tạo cùng yêu cầu đầu tiên.",
+    "status": {
+      "new": "Mới",
+      "bills": "Đã có hóa đơn",
+      "questions": "Đã trả lời",
+      "inventory": "Đã có kiểm kê",
+      "filled": "Đã điền"
+    },
+    "seg": {
+      "bills": "Hóa đơn",
+      "questions": "Câu hỏi",
+      "inventory": "Kiểm kê",
+      "filled": "Đã điền",
+      "documents": "Hóa đơn",
+      "reconcile": "Câu hỏi"
+    },
+    "done": "xong",
+    "todo": "chưa",
+    "nextUp": "tiếp theo",
+    "start": "Bắt đầu",
+    "continue": "Tiếp tục",
+    "due": "hạn {date}",
+    "overdue": "quá hạn từ {date}",
+    "sharesYear": "dùng chung năm với {n}",
+    "deleteRequest": "Xóa yêu cầu {name}",
+    "sample": "Ví dụ",
+    "sampleCustomer": "Aiko Corp (ví dụ)",
+    "emptyTitle": "Thêm yêu cầu đầu tiên",
+    "emptyBody": "Ghi tên khách hàng và năm họ hỏi. Có thể đính kèm file Excel ngay hoặc để sau.",
+    "bills": "{n} hóa đơn",
+    "usedBy": "dùng bởi {n}: {names}",
+    "scope1": "Phạm vi 1",
+    "scope2": "Phạm vi 2",
+    "notComputed": "Chưa tính",
+    "noBills": "Chưa có hóa đơn",
+    "deleted": "Đã xóa {name}.",
+    "deleteTitle": "Xóa yêu cầu này?",
+    "deleteBody": "{name} và bảng câu hỏi đã điền sẽ bị xóa. Hóa đơn và kiểm kê của {year} được giữ lại vì yêu cầu khác có thể dùng.",
+    "deleteConfirm": "Xóa",
+    "cancel": "Hủy",
+    "new": {
+      "title": "Yêu cầu mới",
+      "lede": "Ai hỏi, và cho năm nào.",
+      "customer": "Khách hàng",
+      "customerPlaceholder": "vd. Aiko Corp",
+      "nameRequired": "Hãy ghi tên khách hàng.",
+      "year": "Năm báo cáo",
+      "yearHint": "Hóa đơn và số liệu đã có của năm này sẽ được dùng lại.",
+      "newYear": "Năm mới…",
+      "start": "Bắt đầu",
+      "end": "Kết thúc",
+      "due": "Hạn nộp (tùy chọn)",
+      "share": "Tỷ lệ sản lượng họ mua, % (tùy chọn)",
+      "template": "Bảng câu hỏi của họ (tùy chọn)",
+      "chooseTemplate": "Chọn .xlsx",
+      "changeTemplate": "Đổi",
+      "templateOptional": "Cũng có thể đính kèm ở bước cuối.",
+      "create": "Tạo yêu cầu",
+      "creating": "Đang tạo…",
+      "cancel": "Hủy",
+      "created": "Đã tạo yêu cầu cho {name}."
+    }
   }
 }

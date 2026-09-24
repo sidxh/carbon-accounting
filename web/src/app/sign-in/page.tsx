@@ -84,7 +84,7 @@ export default function SignInPage() {
     : `${cc}${local.replace(/\D/g, "").replace(/^0+/, "")}`;
 
   useEffect(() => {
-    if (!loading && user) router.replace("/documents");
+    if (!loading && user) router.replace("/home");
   }, [user, loading, router]);
 
   useEffect(() => {
@@ -99,7 +99,7 @@ export default function SignInPage() {
     if (isSignInWithEmailLink(auth, window.location.href)) {
       const saved = window.localStorage.getItem("signInEmail") ?? window.prompt("Email") ?? "";
       signInWithEmailLink(auth, saved, window.location.href)
-        .then(() => router.replace("/documents"))
+        .then(() => router.replace("/home"))
         .catch(() => setError(t("error")));
     }
   }, [router, t]);
@@ -132,7 +132,7 @@ export default function SignInPage() {
     setError("");
     try {
       await confirmation.confirm(value.trim());
-      router.replace("/documents");
+      router.replace("/home");
     } catch {
       setError(t("wrongCode"));
       setCode("");

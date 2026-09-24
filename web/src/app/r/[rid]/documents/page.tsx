@@ -6,24 +6,24 @@ import { useLocale, useTranslations } from "next-intl";
 import { AnimatePresence, motion } from "motion/react";
 import { Camera, ChevronDown, FileText, ImagePlus, RotateCcw, Trash2, UploadCloud, X } from "lucide-react";
 import { cn as clsx } from "@/lib/cn";
-import { RequireAuth } from "@/components/require-auth";
-import { Shell } from "@/components/shell";
+import { useRequest } from "@/components/request-context";
+import { SharedNotice } from "@/components/shared-notice";
 import { CoverageStrip, EmptyState, PageTitle, SkeletonList } from "@/components/ui/bits";
 import { Dialog } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/toast";
-import { api, type DocumentRecord, type SupplierProfile } from "@/lib/api";
+import { api, type DocumentRecord } from "@/lib/api";
 import { coverage, ENERGY_ORDER, energyLabel, fyMonths, PERIODIC, shortMonth } from "@/lib/coverage";
 
 const ACCEPT = "image/*,application/pdf";
 
-function Thumb({ uid, doc }: { uid: string; doc: DocumentRecord }) {
+function Thumb({ uid, pid, doc }: { uid: string; pid: string; doc: DocumentRecord }) {
   const [src, setSrc] = useState<string | null>(null);
   useEffect(() => {
     if (!doc.mime_type.startsWith("image/")) return;
     let url: string | null = null;
-    api.documentFileUrl(uid, doc.id).then((u) => { url = u; setSrc(u); }).catch(() => {});
+    api.documentFileUrl(uid, pid, doc.id).then((u) => { url = u; setSrc(u); }).catch(() => {});
     return () => { if (url) URL.revokeObjectURL(url); };
-  }, [uid, doc.id, doc.mime_type]);
+  }, [uid, pid, doc.id, doc.mime_type]);
   if (!doc.mime_type.startsWith("image/")) {
     return <div className="grid size-14 shrink-0 place-items-center rounded-lg bg-sunken text-muted"><FileText className="size-5" aria-hidden /><span className="sr-only">PDF</span></div>;
   }
@@ -63,7 +63,7 @@ function StagedFile({ file, onRemove, state }: { file: File; onRemove: () => voi
   );
 }
 
-function DocCard({ uid, doc, onRemove, onRetry, busy }: { uid: string; doc: DocumentRecord; onRemove: () => void; onRetry: () => void; busy: boolean }) {
+function DocCard({ uid, pid, doc, onRemove, onRetry, busy }: { uid: string; pid: string; doc: DocumentRecord; onRemove: () => void; onRetry: () => void; busy: boolean }) {
   const t = useTranslations("documents");
   const lines = doc.extraction?.lines ?? [];
   const empty = doc.status === "extracted" && lines.length === 0;
@@ -75,7 +75,7 @@ function DocCard({ uid, doc, onRemove, onRetry, busy }: { uid: string; doc: Docu
       transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
       className="card flex items-start gap-3 p-3"
     >
-      <Thumb uid={uid} doc={doc} />
+      <Thumb uid={uid} pid={pid} doc={doc} />
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-2">
           <span className="truncate text-sm font-medium">{doc.filename}</span>
@@ -108,7 +108,9 @@ function DocCard({ uid, doc, onRemove, onRetry, busy }: { uid: string; doc: Docu
   );
 }
 
-function Documents({ profile, uid }: { profile: SupplierProfile | null; uid: string }) {
+function Documents() {
+  const { uid, profile, period, request, view, reload } = useRequest();
+  const pid = period.id;
   const t = useTranslations("documents");
   const locale = useLocale();
   const toast = useToast();
@@ -122,9 +124,9 @@ function Documents({ profile, uid }: { profile: SupplierProfile | null; uid: str
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const pick = useRef<HTMLInputElement>(null);
   const cam = useRef<HTMLInputElement>(null);
-  const siteId = profile?.sites[0]?.id;
+  const siteId = profile.sites[0]?.id;
 
-  const refresh = useCallback(() => api.listDocuments(uid).then((r) => setDocs(r.documents.sort((a, b) => b.created_at.localeCompare(a.created_at)))), [uid]);
+  const refresh = useCallback(() => api.listDocuments(uid, pid).then((r) => setDocs(r.documents.sort((a, b) => b.created_at.localeCompare(a.created_at)))), [uid, pid]);
   useEffect(() => { refresh(); }, [refresh]);
 
   function stage(list: FileList | File[] | null) {
@@ -151,7 +153,7 @@ function Documents({ profile, uid }: { profile: SupplierProfile | null; uid: str
       try {
         // One request per file so a single bad photo does not fail the batch,
         // and the list fills in as each is read.
-        await api.uploadDocuments(uid, [f], siteId);
+        await api.uploadDocuments(uid, pid, [f], siteId);
         ok += 1;
         setProgress((p) => ({ ...p, [k]: "done" }));
         await refresh();
@@ -163,14 +165,16 @@ function Documents({ profile, uid }: { profile: SupplierProfile | null; uid: str
     setStaged([]);
     setProgress({});
     toast(t("uploadedToast", { n: ok }), ok === staged.length ? "ok" : "attention");
+    await reload();
   }
 
   async function remove(doc: DocumentRecord) {
     setBusyId(doc.id);
     try {
-      await api.deleteDocument(uid, doc.id);
+      await api.deleteDocument(uid, pid, doc.id);
       setDocs((d) => d?.filter((x) => x.id !== doc.id) ?? null);
       toast(t("removedToast", { name: doc.filename }));
+      await reload();
     } catch (e) {
       toast((e as Error).message, "danger");
     } finally {
@@ -183,8 +187,9 @@ function Documents({ profile, uid }: { profile: SupplierProfile | null; uid: str
     setBusyId(doc.id);
     setDocs((d) => d?.map((x) => (x.id === doc.id ? { ...x, status: "extracting" } : x)) ?? null);
     try {
-      const r = await api.retryDocument(uid, doc.id);
+      const r = await api.retryDocument(uid, pid, doc.id);
       setDocs((d) => d?.map((x) => (x.id === doc.id ? r.document : x)) ?? null);
+      await reload();
     } catch (e) {
       toast((e as Error).message, "danger");
       await refresh();
@@ -194,7 +199,7 @@ function Documents({ profile, uid }: { profile: SupplierProfile | null; uid: str
   }
 
   // --- derived: per-energy summary and coverage ------------------------------
-  const months = useMemo(() => (profile ? fyMonths(profile.fiscal_year_start, profile.fiscal_year_end) : []), [profile]);
+  const months = useMemo(() => fyMonths(period.start, period.end), [period]);
   const groups = useMemo(() => {
     const g: Record<string, { docs: DocumentRecord[]; lines: { period_start: string; period_end: string; quantity: number; unit: string }[] }> = {};
     for (const d of docs ?? []) {
@@ -215,6 +220,7 @@ function Documents({ profile, uid }: { profile: SupplierProfile | null; uid: str
   return (
     <div className="space-y-6">
       <PageTitle title={t("title")} lede={t("lede")} />
+      <SharedNotice sharedWith={view.shared_with} periodLabel={period.label} />
 
       {/* Drop zone --------------------------------------------------------------- */}
       <div
@@ -264,7 +270,7 @@ function Documents({ profile, uid }: { profile: SupplierProfile | null; uid: str
         <section className="card p-4 sm:p-5" aria-labelledby="summary-h">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <h2 id="summary-h" className="font-display text-xl text-balance">{t("summaryTitle", { n: docs.length })}</h2>
-            <span className="text-xs text-muted">{profile ? `${profile.fiscal_year_start} → ${profile.fiscal_year_end}` : ""}</span>
+            <span className="text-xs text-muted">{period.label} · {period.start} → {period.end}</span>
           </div>
           <div className="mt-3 grid gap-3">
             {groups.filter(([k]) => !k.startsWith("_")).map(([key, g]) => {
@@ -320,7 +326,7 @@ function Documents({ profile, uid }: { profile: SupplierProfile | null; uid: str
                   <ul className="mt-1 space-y-2">
                     <AnimatePresence initial={false}>
                       {g.docs.map((d) => (
-                        <DocCard key={d.id} uid={uid} doc={d} busy={busyId === d.id} onRemove={() => setConfirmRemove(d)} onRetry={() => retry(d)} />
+                        <DocCard key={d.id} uid={uid} pid={pid} doc={d} busy={busyId === d.id} onRemove={() => setConfirmRemove(d)} onRetry={() => retry(d)} />
                       ))}
                     </AnimatePresence>
                   </ul>
@@ -332,14 +338,14 @@ function Documents({ profile, uid }: { profile: SupplierProfile | null; uid: str
       )}
 
       <div className="flex items-center gap-3 pt-2">
-        <Link href="/reconcile" className={clsx("btn", extracted === 0 && "pointer-events-none opacity-60")} aria-disabled={extracted === 0}>{t("next")}</Link>
+        <Link href={`/r/${request.id}/reconcile`} className={clsx("btn", extracted === 0 && "pointer-events-none opacity-60")} aria-disabled={extracted === 0}>{t("next")}</Link>
         {extracted === 0 && <span className="text-sm text-muted">{t("needMore")}</span>}
       </div>
 
       <Dialog
         open={confirmRemove !== null}
         title={t("removeTitle")}
-        description={confirmRemove ? t("removeBody", { name: confirmRemove.filename }) : ""}
+        description={confirmRemove ? t("removeBody", { name: confirmRemove.filename }) + (view.shared_with.length ? " " + t("removeShared", { n: view.shared_with.length, names: view.shared_with.join(", ") }) : "") : ""}
         confirmLabel={t("remove")}
         cancelLabel={t("cancel")}
         tone="danger"
@@ -352,9 +358,5 @@ function Documents({ profile, uid }: { profile: SupplierProfile | null; uid: str
 }
 
 export default function DocumentsPage() {
-  return (
-    <Shell>
-      <RequireAuth>{(profile, uid) => <Documents profile={profile} uid={uid} />}</RequireAuth>
-    </Shell>
-  );
+  return <Documents />;
 }

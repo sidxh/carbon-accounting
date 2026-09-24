@@ -212,13 +212,72 @@ export interface Answer {
 
 export interface QuestionnaireRecord {
   id: string;
+  request_id?: string | null;
+  period_id?: string;
   filled_key?: string | null;
   answers: Answer[];
   status: string;
   created_at: string;
 }
 
+export interface ReportingPeriod {
+  id: string;
+  label: string;
+  start: string;
+  end: string;
+  created_at: string;
+}
+
+export type RequestStatus = "new" | "bills" | "questions" | "inventory" | "filled";
+
+export interface CustomerRequest {
+  id: string;
+  customer_name: string;
+  period_id: string;
+  template_filename?: string | null;
+  template_key?: string | null;
+  due_date?: string | null;
+  customer_share?: number | null;
+  questionnaire_id?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** What the period has reached; drives the step gating. */
+export interface Progress {
+  bills: boolean;
+  questions: boolean;
+  inventory: boolean;
+  documents: number;
+  reconcile_status: "idle" | "asking" | "done";
+}
+
+export interface RequestView {
+  request: CustomerRequest;
+  period: ReportingPeriod | null;
+  status: RequestStatus;
+  progress: Progress;
+  shared_with: string[];
+}
+
+export interface PeriodView {
+  period: ReportingPeriod;
+  progress: Progress;
+  summary: ReconcileSummary;
+  totals: Totals | null;
+  used_by: string[];
+}
+
+export interface HomeView {
+  profile: SupplierProfile;
+  periods: PeriodView[];
+  requests: RequestView[];
+}
+
 // --- calls ---------------------------------------------------------------------
+
+const P = (uid: string, pid: string) => `/suppliers/${uid}/periods/${pid}`;
+const R = (uid: string, rid: string) => `/suppliers/${uid}/requests/${rid}`;
 
 export const api = {
   health: () => fetch(`${AGENT_URL}/health`).then((r) => r.json()),
@@ -226,51 +285,72 @@ export const api = {
   getSupplier: (uid: string) => request<SupplierProfile>(`/suppliers/${uid}`),
   upsertSupplier: (body: Omit<SupplierProfile, "id" | "sites"> & { sites: Omit<Site, "id">[] }) =>
     json<SupplierProfile>("/suppliers", "POST", body),
+  /** Drops every period, request and questionnaire; the profile stays. */
+  resetAll: (uid: string) => request<{ scope: string }>(`/suppliers/${uid}/data`, { method: "DELETE" }),
 
-  /** "chat" keeps the bills and rebuilds lines from their extractions; "all" keeps only the profile. */
-  resetData: (uid: string, scope: "chat" | "all") =>
-    request<{ scope: string; activity_lines: number }>(`/suppliers/${uid}/data?scope=${scope}`, { method: "DELETE" }),
+  // home, periods, requests
+  home: (uid: string) => request<HomeView>(`/suppliers/${uid}/home`),
+  listPeriods: (uid: string) => request<{ periods: ReportingPeriod[] }>(`/suppliers/${uid}/periods`),
+  createPeriod: (uid: string, body: { start: string; end: string; label?: string }) => json<ReportingPeriod>(`/suppliers/${uid}/periods`, "POST", body),
+  getPeriod: (uid: string, pid: string) => request<{ period: ReportingPeriod; progress: Progress }>(P(uid, pid)),
+  /** "chat" keeps the bills and rebuilds lines from their extractions; "all" empties the period. */
+  resetPeriod: (uid: string, pid: string, scope: "chat" | "all") =>
+    request<{ scope: string; activity_lines: number }>(`${P(uid, pid)}/data?scope=${scope}`, { method: "DELETE" }),
 
-  listDocuments: (uid: string) => request<{ documents: DocumentRecord[] }>(`/suppliers/${uid}/documents`),
-  uploadDocuments: async (uid: string, files: File[], siteId?: string) => {
+  listRequests: (uid: string) => request<{ requests: RequestView[] }>(`/suppliers/${uid}/requests`),
+  createRequest: (uid: string, body: { customer_name: string; period_id?: string; new_period?: { start: string; end: string; label?: string }; due_date?: string | null; customer_share?: number | null }) =>
+    json<RequestView>(`/suppliers/${uid}/requests`, "POST", body),
+  getRequest: (uid: string, rid: string) => request<RequestView>(R(uid, rid)),
+  patchRequest: (uid: string, rid: string, body: { customer_name?: string; due_date?: string | null; customer_share?: number | null; clear_due_date?: boolean }) =>
+    json<RequestView>(R(uid, rid), "PATCH", body),
+  deleteRequest: (uid: string, rid: string) => request<void>(R(uid, rid), { method: "DELETE" }),
+  uploadRequestTemplate: (uid: string, rid: string, file: File) => {
+    const fd = new FormData();
+    fd.append("file", file);
+    return request<RequestView>(`${R(uid, rid)}/template`, { method: "POST", body: fd });
+  },
+
+  // documents (period)
+  listDocuments: (uid: string, pid: string) => request<{ documents: DocumentRecord[] }>(`${P(uid, pid)}/documents`),
+  uploadDocuments: async (uid: string, pid: string, files: File[], siteId?: string) => {
     const fd = new FormData();
     files.forEach((f) => fd.append("files", f));
     if (siteId) fd.append("site_id", siteId);
-    return request<{ documents: DocumentRecord[] }>(`/suppliers/${uid}/documents`, { method: "POST", body: fd });
+    return request<{ documents: DocumentRecord[] }>(`${P(uid, pid)}/documents`, { method: "POST", body: fd });
   },
-  deleteDocument: (uid: string, docId: string) => request<void>(`/suppliers/${uid}/documents/${docId}`, { method: "DELETE" }),
-  retryDocument: (uid: string, docId: string) => json<{ document: DocumentRecord }>(`/suppliers/${uid}/documents/${docId}/retry`, "POST"),
-  documentFileUrl: async (uid: string, docId: string) => {
+  deleteDocument: (uid: string, pid: string, docId: string) => request<void>(`${P(uid, pid)}/documents/${docId}`, { method: "DELETE" }),
+  retryDocument: (uid: string, pid: string, docId: string) => json<{ document: DocumentRecord }>(`${P(uid, pid)}/documents/${docId}/retry`, "POST"),
+  documentFileUrl: async (uid: string, pid: string, docId: string) => {
     const t = await token();
     // Local storage is served by the API with the token in a header; for a
     // browser <img> we fetch and hand back a blob URL instead.
-    const res = await fetch(`${AGENT_URL}/suppliers/${uid}/documents/${docId}/file`, { headers: { Authorization: `Bearer ${t}` } });
+    const res = await fetch(`${AGENT_URL}${P(uid, pid)}/documents/${docId}/file`, { headers: { Authorization: `Bearer ${t}` } });
     if (!res.ok) throw new ApiError(res.status, "file");
     return URL.createObjectURL(await res.blob());
   },
 
-  reconcileState: (uid: string) => request<ReconcileState>(`/suppliers/${uid}/reconcile`),
-  reconcileStart: (uid: string) => json<ReconcileState>(`/suppliers/${uid}/reconcile/start`, "POST"),
-  reconcileReply: (uid: string, message: string) => json<ReconcileState>(`/suppliers/${uid}/reconcile`, "POST", { message }),
+  // reconcile and inventory (period)
+  reconcileState: (uid: string, pid: string) => request<ReconcileState>(`${P(uid, pid)}/reconcile`),
+  reconcileStart: (uid: string, pid: string) => json<ReconcileState>(`${P(uid, pid)}/reconcile/start`, "POST"),
+  reconcileReply: (uid: string, pid: string, message: string) => json<ReconcileState>(`${P(uid, pid)}/reconcile`, "POST", { message }),
+  compute: (uid: string, pid: string) => json<Snapshot>(`${P(uid, pid)}/compute`, "POST"),
+  inventory: (uid: string, pid: string) =>
+    request<{ lines: InventoryLine[]; snapshot: Snapshot | null; assumptions: Assumption[]; activityLines: ActivityLine[] }>(`${P(uid, pid)}/inventory`),
+  patchLine: (uid: string, pid: string, lineId: string, patch: { quantity?: number; energy_type?: string; note?: string }) =>
+    json<{ snapshot: Snapshot }>(`${P(uid, pid)}/activity-lines/${lineId}`, "PATCH", patch),
+  methodology: (uid: string, pid: string) => request<{ download: string; bytes: number }>(`${P(uid, pid)}/methodology`),
 
-  compute: (uid: string) => json<Snapshot>(`/suppliers/${uid}/compute`, "POST"),
-  inventory: (uid: string) =>
-    request<{ lines: InventoryLine[]; snapshot: Snapshot | null; assumptions: Assumption[]; activityLines: ActivityLine[] }>(
-      `/suppliers/${uid}/inventory`,
-    ),
-  patchLine: (uid: string, lineId: string, patch: { quantity?: number; energy_type?: string; note?: string }) =>
-    json<{ snapshot: Snapshot }>(`/suppliers/${uid}/activity-lines/${lineId}`, "PATCH", patch),
-
-  fillQuestionnaire: async (uid: string, file: File, customerShare?: number) => {
+  // questionnaire (request)
+  fillQuestionnaire: async (uid: string, rid: string, file?: File | null, customerShare?: number) => {
     const fd = new FormData();
-    fd.append("file", file);
+    if (file) fd.append("file", file);
     if (customerShare !== undefined && !Number.isNaN(customerShare)) fd.append("customer_share", String(customerShare));
-    return request<{ questionnaire: QuestionnaireRecord; download: string }>(`/suppliers/${uid}/questionnaire`, { method: "POST", body: fd });
+    return request<{ questionnaire: QuestionnaireRecord; request: RequestView; download: string }>(`${R(uid, rid)}/questionnaire`, { method: "POST", body: fd });
   },
-  listQuestionnaires: (uid: string) => request<{ questionnaires: QuestionnaireRecord[] }>(`/suppliers/${uid}/questionnaire`),
+  getQuestionnaire: (uid: string, rid: string) => request<{ questionnaire: QuestionnaireRecord | null }>(`${R(uid, rid)}/questionnaire`),
   editAnswer: (uid: string, qid: string, questionId: string, value: string) =>
     json<{ questionnaire: QuestionnaireRecord }>(`/suppliers/${uid}/questionnaire/${qid}/answers/${questionId}`, "PATCH", { value }),
-  methodology: (uid: string) => request<{ download: string; bytes: number }>(`/suppliers/${uid}/methodology`),
+  questionnaireFilePath: (uid: string, qid: string) => `/suppliers/${uid}/questionnaire/${qid}/file`,
 
   /** Download a protected file by fetching with the token and saving via a blob link. */
   download: async (path: string, filename: string) => {
