@@ -8,7 +8,7 @@ came from.
 
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from enum import StrEnum
 from typing import Literal
 
@@ -97,6 +97,7 @@ class SupplierProfile(BaseModel):
     name: str = ""
     country: str = "VN"
     language: str = "vi"
+    # Only the default for a new reporting period; the period is the truth.
     fiscal_year_start: date
     fiscal_year_end: date
     sites: list[Site] = Field(default_factory=list)
@@ -104,6 +105,41 @@ class SupplierProfile(BaseModel):
     revenue: float | None = None
     revenue_currency: str | None = None
     created_at: datetime | None = None
+
+    def for_period(self, period: "ReportingPeriod") -> "SupplierProfile":
+        """The profile with this period's dates in the FY slots, so code that
+        reads `fiscal_year_*` (reconciler, filler, exporter) sees the period."""
+        return self.model_copy(update={"fiscal_year_start": period.start, "fiscal_year_end": period.end})
+
+
+class ReportingPeriod(BaseModel):
+    """One reporting year. Bills, the conversation and the inventory belong to
+    a period; several customer requests can share it."""
+
+    id: str
+    label: str
+    start: date
+    end: date
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+RequestStatus = Literal["new", "bills", "questions", "inventory", "filled"]
+
+
+class Request(BaseModel):
+    """A customer asked for numbers. Points at the period whose inventory
+    answers it; owns only its questionnaire, template and allocation share."""
+
+    id: str
+    customer_name: str
+    period_id: str
+    template_filename: str | None = None
+    template_key: str | None = None
+    due_date: date | None = None
+    customer_share: float | None = None
+    questionnaire_id: str | None = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class ActivityLine(BaseModel):

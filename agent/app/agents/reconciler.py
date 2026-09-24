@@ -28,7 +28,7 @@ from google.adk.sessions import InMemorySessionService
 from google.genai import types
 
 from ..gemini import get_gemini
-from ..models import ActivityLine, Assumption, SupplierProfile
+from ..models import ActivityLine, Assumption, ReportingPeriod, SupplierProfile
 from ..reconcile_tools import (
     Issue,
     exclude_lines,
@@ -102,14 +102,15 @@ def _closing_line(profile: SupplierProfile, summary: str) -> str:
 class _TurnContext:
     """Mutable holder the tools close over during one reply."""
 
-    def __init__(self, repo: Repo, profile: SupplierProfile, state: ReconcileState, issue: Issue, question: str, answer: str):
+    def __init__(self, repo: Repo, profile: SupplierProfile, pid: str, state: ReconcileState, issue: Issue, question: str, answer: str):
         self.repo = repo
         self.profile = profile
+        self.pid = pid
         self.state = state
         self.issue = issue
         self.question = question
         self.answer = answer
-        self.lines: list[ActivityLine] = repo.list_activity_lines(profile.id)
+        self.lines: list[ActivityLine] = repo.list_activity_lines(profile.id, pid)
         self.recorded: Assumption | None = None
         self.new_lines: list[ActivityLine] = []
         self.replaced_all = False
@@ -218,8 +219,8 @@ def _advance(repo: Repo, profile: SupplierProfile, state: ReconcileState) -> Rec
     """Pick the next issue and ask, or finish."""
     nxt = _first_open(state)
     if nxt is None:
-        n_lines = len(repo.list_activity_lines(profile.id))
-        n_asm = len(repo.list_assumptions(profile.id))
+        n_lines = len(repo.list_activity_lines(profile.id, state.period_id))
+        n_asm = len(repo.list_assumptions(profile.id, state.period_id))
         text = _closing_line(profile, f"{n_lines} records, {n_asm} assumptions recorded")
         state.status, state.pending_issue_id = "done", None
     else:
@@ -231,25 +232,27 @@ def _advance(repo: Repo, profile: SupplierProfile, state: ReconcileState) -> Rec
     return state
 
 
-def start(repo: Repo, profile: SupplierProfile) -> ReconcileState:
+def start(repo: Repo, profile: SupplierProfile, period: ReportingPeriod) -> ReconcileState:
     """Run the deterministic pass over the extracted lines and open the conversation."""
-    raw = repo.list_activity_lines(profile.id)
-    prepared = prepare(raw, profile.fiscal_year_start, profile.fiscal_year_end)
-    repo.replace_activity_lines(profile.id, prepared.lines)
+    profile = profile.for_period(period)
+    raw = repo.list_activity_lines(profile.id, period.id)
+    prepared = prepare(raw, period.start, period.end)
+    repo.replace_activity_lines(profile.id, period.id, prepared.lines)
 
-    state = ReconcileState(supplier_id=profile.id, dropped_outside_fy=prepared.dropped_outside_fy)
+    state = ReconcileState(supplier_id=profile.id, period_id=period.id, dropped_outside_fy=prepared.dropped_outside_fy)
     state.set_issues(prepared.issues)
     # Keep any earlier conversation if the supplier re-runs after new uploads.
-    prev = repo.get_reconcile(profile.id)
+    prev = repo.get_reconcile(profile.id, period.id)
     if prev:
         state.history = prev.history
     return _advance(repo, profile, state)
 
 
-def reply(repo: Repo, profile: SupplierProfile, message: str) -> ReconcileState:
-    state = repo.get_reconcile(profile.id)
+def reply(repo: Repo, profile: SupplierProfile, period: ReportingPeriod, message: str) -> ReconcileState:
+    profile = profile.for_period(period)
+    state = repo.get_reconcile(profile.id, period.id)
     if state is None or state.status != "asking" or not state.pending_issue_id:
-        state = state or ReconcileState(supplier_id=profile.id)
+        state = state or ReconcileState(supplier_id=profile.id, period_id=period.id)
         state.history.append(ChatTurn(role="user", text=message))
         return _advance(repo, profile, state)
 
@@ -258,7 +261,7 @@ def reply(repo: Repo, profile: SupplierProfile, message: str) -> ReconcileState:
     question = next((t.text for t in reversed(state.history) if t.role == "agent"), "")
     state.history.append(ChatTurn(role="user", text=message))
 
-    ctx = _TurnContext(repo, profile, state, issue, question, message)
+    ctx = _TurnContext(repo, profile, period.id, state, issue, question, message)
     agent = _build_agent(ctx)
     get_gemini().limiter.acquire()  # the agent turn costs at least one request
     try:
@@ -269,17 +272,17 @@ def reply(repo: Repo, profile: SupplierProfile, message: str) -> ReconcileState:
         if not (isinstance(exc, genai_errors.APIError) and getattr(exc, "code", None) in (429, 503)):
             raise
         time.sleep(4)
-        ctx = _TurnContext(repo, profile, state, issue, question, message)
+        ctx = _TurnContext(repo, profile, period.id, state, issue, question, message)
         agent = _build_agent(ctx)
         get_gemini().limiter.acquire()
         agent_text = asyncio.run(_run_agent(agent, message))
 
     if ctx.recorded is not None:
         if ctx.replaced_all:
-            repo.replace_activity_lines(profile.id, ctx.lines)
+            repo.replace_activity_lines(profile.id, period.id, ctx.lines)
         if ctx.new_lines:
-            repo.add_activity_lines(profile.id, ctx.new_lines)
-        repo.add_assumption(profile.id, ctx.recorded)
+            repo.add_activity_lines(profile.id, period.id, ctx.new_lines)
+        repo.add_assumption(profile.id, period.id, ctx.recorded)
         state.set_issues(issues)  # `issue` was mutated in place
         if agent_text:
             state.history.append(ChatTurn(role="agent", text=agent_text))
