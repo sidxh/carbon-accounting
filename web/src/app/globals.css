@@ -39,6 +39,24 @@
   --shadow-raised: 0 1px 2px rgb(23 23 22 / 4%), 0 1px 0 rgb(23 23 22 / 4%);
   --shadow-float: 0 12px 32px rgb(23 23 22 / 10%), 0 2px 6px rgb(23 23 22 / 6%);
 
+  /* Motion. Two curves, declared here and nowhere else. Built-in easings are
+     too weak to read as intentional; ease-in is never used because it delays
+     the first frame the user is watching. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --dur-press: 160ms;   /* button feedback */
+  --dur-fast: 150ms;    /* menus, tooltips, row expand */
+  --dur-enter: 220ms;   /* dialogs, toasts, cards entering */
+  --dur-reveal: 600ms;  /* landing-page scroll reveals only */
+
+  /* z-index scale. Fixed, so layers never race each other. */
+  --z-sticky: 10;
+  --z-header: 20;
+  --z-bar: 30;
+  --z-menu: 40;
+  --z-dialog: 50;
+  --z-toast: 60;
+
   /* Backwards-compatible aliases for pages not yet migrated. */
   --bg: var(--paper);
   --card: var(--raised);
@@ -73,7 +91,17 @@
   --font-display: var(--font-garamond), "Noto Serif", "Noto Serif CJK JP", Georgia, "Times New Roman", serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --radius-card: var(--radius);
+  --ease-out: var(--ease-out);
+  --ease-in-out: var(--ease-in-out);
 }
+
+/* z-index utilities bound to the scale; the only z-* classes the app may use. */
+@utility z-sticky { z-index: var(--z-sticky); }
+@utility z-header { z-index: var(--z-header); }
+@utility z-bar { z-index: var(--z-bar); }
+@utility z-menu { z-index: var(--z-menu); }
+@utility z-dialog { z-index: var(--z-dialog); }
+@utility z-toast { z-index: var(--z-toast); }
 
 html,
 body {
