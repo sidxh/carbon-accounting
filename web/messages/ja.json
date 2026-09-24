@@ -130,7 +130,14 @@
     "methodology": "算定方法書をダウンロード",
     "generating": "作成中…",
     "source": "出典",
-    "needInventory": "先にインベントリを算定してください。"
+    "needInventory": "先にインベントリを算定してください。",
+    "edit": "編集",
+    "save": "保存",
+    "cancel": "キャンセル",
+    "editPlaceholder": "回答を入力",
+    "answeredByYou": "ご自身で回答",
+    "lockedHint": "請求書に基づく数値 — インベントリで数量を修正してください",
+    "addRevenue": "設定で売上高を入力すると算定できます"
   },
   "common": {
     "loading": "読み込み中…",

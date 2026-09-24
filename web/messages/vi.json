@@ -130,7 +130,14 @@
     "methodology": "Tải bản ghi phương pháp",
     "generating": "Đang tạo…",
     "source": "Nguồn",
-    "needInventory": "Hãy tính bảng kiểm kê trước."
+    "needInventory": "Hãy tính bảng kiểm kê trước.",
+    "edit": "Sửa",
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "editPlaceholder": "Nhập câu trả lời của bạn",
+    "answeredByYou": "Bạn đã trả lời",
+    "lockedHint": "Từ hóa đơn của bạn — sửa số lượng trong bảng kiểm kê",
+    "addRevenue": "Thêm doanh thu ở phần Thiết lập để tính mục này"
   },
   "common": {
     "loading": "Đang tải…",

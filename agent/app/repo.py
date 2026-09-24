@@ -86,6 +86,7 @@ class QuestionnaireRecord(BaseModel):
     template_key: str
     filled_key: str | None = None
     answers: list[dict[str, Any]] = Field(default_factory=list)
+    answer_column_offset: int = 1
     status: str = "uploaded"
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 

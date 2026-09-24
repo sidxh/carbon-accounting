@@ -163,6 +163,10 @@ export interface Answer {
   source: string;
   flagged: boolean;
   flag_reason?: string | null;
+  /** False for calculator numbers, which are corrected in the inventory instead. */
+  editable: boolean;
+  /** True once the supplier typed the value themselves. */
+  edited: boolean;
 }
 
 export interface QuestionnaireRecord {
@@ -221,6 +225,8 @@ export const api = {
     return request<{ questionnaire: QuestionnaireRecord; download: string }>(`/suppliers/${uid}/questionnaire`, { method: "POST", body: fd });
   },
   listQuestionnaires: (uid: string) => request<{ questionnaires: QuestionnaireRecord[] }>(`/suppliers/${uid}/questionnaire`),
+  editAnswer: (uid: string, qid: string, questionId: string, value: string) =>
+    json<{ questionnaire: QuestionnaireRecord }>(`/suppliers/${uid}/questionnaire/${qid}/answers/${questionId}`, "PATCH", { value }),
   methodology: (uid: string) => request<{ download: string; bytes: number }>(`/suppliers/${uid}/methodology`),
 
   /** Download a protected file by fetching with the token and saving via a blob link. */

@@ -41,8 +41,17 @@ Field_ = Literal[
     "reduction_target", "reduction_activities", "data_quality", "not_a_question",
 ]
 
-FLAG_FILL = PatternFill("solid", fgColor="FFF2CC")
-OK_FILL = PatternFill("solid", fgColor="E8F5E9")
+FLAG_FILL = PatternFill("solid", fgColor="FFF2CC")   # yellow: left for a human
+OK_FILL = PatternFill("solid", fgColor="E8F5E9")     # green: from documents / calculator
+EDITED_FILL = PatternFill("solid", fgColor="DCEBFA") # blue: typed by the supplier
+
+# Numbers the calculator produced. Typing over them in the questionnaire would
+# break the document -> factor -> cell lineage, so the UI sends people to the
+# inventory to correct the underlying quantity instead.
+LOCKED_FIELDS = {
+    "scope1_tco2e", "scope2_location_tco2e", "scope2_market_tco2e", "scope1_2_total_tco2e",
+    "biogenic_tco2", "electricity_mwh",
+}
 
 
 @dataclass
@@ -77,6 +86,14 @@ class Answer(BaseModel):
     source: str
     flagged: bool = False
     flag_reason: str | None = None
+    # Where the question sits, so the workbook can be rewritten from stored answers.
+    sheet: str = ""
+    row: int = 0
+    col: int = 0
+    # False for calculator numbers; True for text, profile facts and anything flagged.
+    editable: bool = True
+    # True once the supplier has typed the value themselves.
+    edited: bool = False
 
 
 # --- 1. find the questions ---------------------------------------------------
@@ -244,12 +261,44 @@ def answer_all(
             case _:
                 val, flagged, reason = None, True, f"unmapped field {m.field}"
 
+        # A locked number that could not be computed (e.g. intensity with no
+        # revenue) is flagged, and a flagged cell is always the supplier's to fill.
+        editable = flagged or m.field not in LOCKED_FIELDS
         out.append(Answer(question_id=c.id, ref=c.ref, question=c.text, field=m.field, value=val, source=src,
-                          flagged=flagged, flag_reason=reason))
+                          flagged=flagged, flag_reason=reason, sheet=c.sheet, row=c.row, col=c.col, editable=editable))
     return out
 
 
 # --- 4. write back ------------------------------------------------------------------
+
+def write_answers(template: bytes, answers: list[Answer], offset: int = 1) -> bytes:
+    """Write answers into a copy of the buyer's workbook.
+
+    Green = from documents and the calculator, blue = typed by the supplier,
+    yellow = still open. Every written cell carries its source as a comment so
+    a reviewer can tell which is which without our UI.
+    """
+    wb = load_workbook(io.BytesIO(template))
+    offset = max(1, offset)
+    for a in answers:
+        if not a.sheet or not a.row or not a.col:
+            continue
+        ws = wb[a.sheet]
+        target = ws.cell(row=a.row, column=a.col + offset)
+        note = ws.cell(row=a.row, column=a.col + offset + 1)
+        if a.flagged:
+            target.value = f"NOT PROVIDED — {a.flag_reason}" if a.value is None else a.value
+            target.fill = FLAG_FILL
+            if note.value in (None, ""):
+                note.value = a.flag_reason
+        else:
+            target.value = a.value
+            target.fill = EDITED_FILL if a.edited else OK_FILL
+        target.comment = Comment(f"Source: {a.source}", "supplier-carbon agent")
+    buf = io.BytesIO()
+    wb.save(buf)
+    return buf.getvalue()
+
 
 def fill_workbook(
     template: bytes,
@@ -259,7 +308,9 @@ def fill_workbook(
     lines: list[InventoryLine],
     assumptions: list[Assumption],
     customer_share: float | None = None,
-) -> tuple[bytes, list[Answer]]:
+) -> tuple[bytes, list[Answer], int]:
+    """Returns the filled workbook, the answers, and the answer-column offset
+    (kept on the record so the workbook can be rewritten after an edit)."""
     wb = load_workbook(io.BytesIO(template))
     cells = _harvest(wb)
     if not cells:
@@ -267,24 +318,5 @@ def fill_workbook(
     mapping = _map_questions(cells)
     answers = answer_all(cells, mapping, profile=profile, snap=snap, lines=lines, assumptions=assumptions,
                          customer_share=customer_share)
-    by_id = {c.id: c for c in cells}
     offset = max(1, mapping.answer_column_offset)
-
-    for a in answers:
-        c = by_id[a.question_id]
-        ws = wb[c.sheet]
-        target = ws.cell(row=c.row, column=c.col + offset)
-        if a.flagged:
-            target.value = f"NOT PROVIDED — {a.flag_reason}" if a.value is None else a.value
-            target.fill = FLAG_FILL
-            note = ws.cell(row=c.row, column=c.col + offset + 1)
-            if note.value in (None, ""):
-                note.value = a.flag_reason
-        else:
-            target.value = a.value
-            target.fill = OK_FILL
-        target.comment = Comment(f"Source: {a.source}", "supplier-carbon agent")
-
-    buf = io.BytesIO()
-    wb.save(buf)
-    return buf.getvalue(), answers
+    return write_answers(template, answers, offset), answers, offset

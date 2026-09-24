@@ -19,7 +19,7 @@ from fastapi.responses import RedirectResponse, Response
 from pydantic import BaseModel, Field
 
 from .agents import reconciler
-from .agents.filler import fill_workbook
+from .agents.filler import LOCKED_FIELDS, Answer, fill_workbook, write_answers
 from .auth import Caller, current_caller, require_supplier
 from .exporters.methodology import build_pdf
 from .models import ActivityLine, Site, SupplierProfile
@@ -70,6 +70,10 @@ class LinePatch(BaseModel):
     energy_type: str | None = None
     site_id: str | None = None
     note: str | None = None
+
+
+class AnswerPatch(BaseModel):
+    value: str
 
 
 # --- helpers ---------------------------------------------------------------------
@@ -261,7 +265,7 @@ def questionnaire(
     template_key = f"suppliers/{supplier_id}/questionnaires/{qid}/template.xlsx"
     storage.put(template_key, template, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     try:
-        filled, answers = fill_workbook(
+        filled, answers, offset = fill_workbook(
             template, profile=profile, snap=snap, lines=lines, assumptions=repo.list_assumptions(supplier_id),
             customer_share=customer_share,
         )
@@ -272,10 +276,54 @@ def questionnaire(
     storage.put(filled_key, filled, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     rec = QuestionnaireRecord(
         id=qid, supplier_id=supplier_id, template_key=template_key, filled_key=filled_key,
-        answers=[a.model_dump() for a in answers], status="filled",
+        answers=[a.model_dump() for a in answers], answer_column_offset=offset, status="filled",
     )
     repo.put_questionnaire(rec)
     return {"questionnaire": rec, "download": f"/suppliers/{supplier_id}/questionnaire/{qid}/file"}
+
+
+@app.patch("/suppliers/{supplier_id}/questionnaire/{qid}/answers/{question_id}")
+def edit_answer(supplier_id: str, qid: str, question_id: str, body: AnswerPatch, caller: Caller = Depends(require_supplier)):
+    """The supplier types an answer the documents could not give (a target, a
+    plan, Scope 3) or overrides drafted text. Calculator numbers are refused:
+    those change by correcting the bill quantity in the inventory, so the
+    lineage from document to cell stays intact. The workbook is rewritten
+    from the stored template so the download always matches the screen."""
+    _profile_or_404(supplier_id)
+    repo = get_repo()
+    rec = repo.get_questionnaire(supplier_id, qid)
+    if rec is None or not rec.filled_key:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Questionnaire not found.")
+    answers = [Answer.model_validate(a) for a in rec.answers]
+    target = next((a for a in answers if a.question_id == question_id), None)
+    if target is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Question not found.")
+    # Records filled before `editable` existed default to True; the field check covers them.
+    if not target.editable or (target.field in LOCKED_FIELDS and not target.flagged):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST,
+                            "This figure comes from the calculator. Correct the bill quantity in the inventory instead.")
+    value = body.value.strip()
+    if not value:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Answer is empty.")
+    # Only a generated answer is worth remembering; a supplier retyping their
+    # own text is still just "entered by supplier".
+    generated_previous = target.value if (not target.flagged and not target.edited) else None
+    target.value = value
+    target.flagged = False
+    target.flag_reason = None
+    target.edited = True
+    target.source = (
+        "entered by supplier" if generated_previous is None
+        else f"edited by supplier; generated answer was: {generated_previous}"
+    )
+
+    storage = get_storage()
+    template = storage.get(rec.template_key)
+    filled = write_answers(template, answers, rec.answer_column_offset)
+    storage.put(rec.filled_key, filled, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    rec.answers = [a.model_dump() for a in answers]
+    repo.put_questionnaire(rec)
+    return {"questionnaire": rec}
 
 
 @app.get("/suppliers/{supplier_id}/questionnaire")

@@ -130,7 +130,14 @@
     "methodology": "Download methodology note",
     "generating": "Generating…",
     "source": "Source",
-    "needInventory": "Calculate your inventory first."
+    "needInventory": "Calculate your inventory first.",
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "editPlaceholder": "Type your answer",
+    "answeredByYou": "Answered by you",
+    "lockedHint": "From your bills — correct the quantity in the inventory",
+    "addRevenue": "Add revenue in Setup to calculate this"
   },
   "common": {
     "loading": "Loading…",

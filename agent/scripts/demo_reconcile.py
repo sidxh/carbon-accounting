@@ -90,7 +90,7 @@ def main() -> int:
     from app.agents.filler import fill_workbook
 
     template = (ROOT / "data" / "templates" / "cdp_sme_questionnaire.xlsx").read_bytes()
-    filled, answers = fill_workbook(
+    filled, answers, _offset = fill_workbook(
         template, profile=profile, snap=snap, lines=inv, assumptions=asms, customer_share=0.20
     )
     out = ROOT / "agent" / ".local_storage" / "demo_filled_cdp_sme.xlsx"
