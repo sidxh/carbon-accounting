@@ -433,8 +433,6 @@
     "overdue": "quá hạn từ {date}",
     "sharesYear": "dùng chung năm với {n}",
     "deleteRequest": "Xóa yêu cầu {name}",
-    "sample": "Ví dụ",
-    "sampleCustomer": "Aiko Corp (ví dụ)",
     "emptyTitle": "Thêm yêu cầu đầu tiên",
     "emptyBody": "Ghi tên khách hàng và năm họ hỏi. Có thể đính kèm file Excel ngay hoặc để sau.",
     "bills": "{n} hóa đơn",

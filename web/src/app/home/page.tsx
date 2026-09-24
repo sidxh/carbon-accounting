@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { motion } from "motion/react";
 import { ArrowRight, BookOpenCheck, CalendarDays, FileSpreadsheet, Link2, Plus, ShieldCheck, Trash2, Users, type LucideIcon } from "lucide-react";
@@ -41,7 +41,7 @@ function ProgressBar({ view }: { view: RequestView }) {
   );
 }
 
-function RequestCard({ view, onDelete, sample = false }: { view: RequestView; onDelete?: () => void; sample?: boolean }) {
+function RequestCard({ view, onDelete }: { view: RequestView; onDelete?: () => void }) {
   const t = useTranslations("home");
   const locale = useLocale();
   const r = view.request;
@@ -52,14 +52,13 @@ function RequestCard({ view, onDelete, sample = false }: { view: RequestView; on
       initial={{ opacity: 0, transform: "translateY(6px)" }}
       animate={{ opacity: 1, transform: "translateY(0px)" }}
       transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-      className={cn("card flex flex-col gap-3 p-4 sm:p-5", sample && "border-dashed")}
+      className="card flex flex-col gap-3 p-4 sm:p-5"
     >
       <div className="flex items-start gap-3">
         <span className="grid size-10 shrink-0 place-items-center rounded-[10px] bg-sunken font-display text-base text-ink-soft" aria-hidden>{initials(r.customer_name)}</span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <span className="truncate font-medium">{r.customer_name}</span>
-            {sample && <span className="pill pill-muted">{t("sample")}</span>}
             <span className={cn("pill", view.status === "filled" ? "pill-primary" : view.status === "new" ? "pill-muted" : "pill-secondary")}>{t(`status.${view.status}`)}</span>
           </div>
           <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted">
@@ -83,11 +82,7 @@ function RequestCard({ view, onDelete, sample = false }: { view: RequestView; on
       <ProgressBar view={view} />
       <div className="flex items-center justify-between gap-3 text-xs text-muted">
         <span>{t(`seg.${step}`)} · {t("nextUp")}</span>
-        {sample ? (
-          <span className="btn btn-secondary btn-sm pointer-events-none opacity-70">{t("continue")}</span>
-        ) : (
-          <Link href={`/r/${r.id}/${step}`} className="btn btn-sm">{view.status === "new" ? t("start") : t("continue")}<ArrowRight className="size-4" aria-hidden /></Link>
-        )}
+        <Link href={`/r/${r.id}/${step}`} className="btn btn-sm">{view.status === "new" ? t("start") : t("continue")}<ArrowRight className="size-4" aria-hidden /></Link>
       </div>
     </motion.li>
   );
@@ -230,11 +225,6 @@ function Home({ profile, uid }: { profile: SupplierProfile | null; uid: string }
   const load = useCallback(() => api.home(uid).then(setData).catch((e) => setError((e as Error).message)), [uid]);
   useEffect(() => { load(); }, [load]);
 
-  const sample = useMemo<RequestView>(() => ({
-    request: { id: "sample", customer_name: t("sampleCustomer"), period_id: "", template_filename: "cdp_sme_questionnaire.xlsx", due_date: null, created_at: "", updated_at: "" },
-    period: { id: "", label: "FY2025", start: "2025-01-01", end: "2025-12-31", created_at: "" },
-    status: "new", progress: { bills: false, questions: false, inventory: false, documents: 0, reconcile_status: "idle" }, shared_with: [],
-  }), [t]);
 
   async function remove(v: RequestView) {
     setBusy(true);
@@ -269,12 +259,7 @@ function Home({ profile, uid }: { profile: SupplierProfile | null; uid: string }
         <h2 id="req-h" className="text-xs font-semibold uppercase tracking-wider text-muted">{t("requests")}</h2>
         {data.requests.length === 0 ? (
           <>
-            <ul className="grid gap-3 sm:grid-cols-2">
-              <RequestCard view={sample} sample />
-              <li>
-                <EmptyState icon={Plus} title={t("emptyTitle")} body={t("emptyBody")} action={<button className="btn" onClick={() => setCreating(true)}><Plus className="size-4" aria-hidden />{t("newRequest")}</button>} />
-              </li>
-            </ul>
+            <EmptyState icon={Plus} title={t("emptyTitle")} body={t("emptyBody")} action={<button className="btn" onClick={() => setCreating(true)}><Plus className="size-4" aria-hidden />{t("newRequest")}</button>} />
             <ul className="grid gap-3 sm:grid-cols-3">
               {TRUST.map(({ icon: Icon, key }) => (
                 <li key={key} className="flex gap-3 rounded-[var(--radius)] bg-sunken/60 p-4">

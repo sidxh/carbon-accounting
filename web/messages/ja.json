@@ -433,8 +433,6 @@
     "overdue": "{date} から期限超過",
     "sharesYear": "{n}件と年度を共有",
     "deleteRequest": "依頼 {name} を削除",
-    "sample": "例",
-    "sampleCustomer": "Aiko Corp（例）",
     "emptyTitle": "最初の依頼を追加",
     "emptyBody": "取引先名と対象年度を入力。Excelは今でも後でも添付できます。",
     "bills": "{n}件",
