@@ -136,9 +136,21 @@ def html_to_pdf(html: str) -> bytes:
         return HTML(string=html, base_url=str(HERE)).write_pdf()
     except Exception:
         from xhtml2pdf import pisa  # type: ignore
+        from xhtml2pdf.files import ResourceAccessPolicy  # type: ignore
 
+        # xhtml2pdf refuses local files outside the document's directory by
+        # default. The Unicode font we embed for Vietnamese and CJK lives in a
+        # system directory, so allow exactly that root and nothing remote.
+        font = _font_path()
+        policy = ResourceAccessPolicy(
+            allow_remote=False,
+            base_dir=HERE,
+            extra_roots=(Path(font).parent,) if font else (),
+        )
         out = io.BytesIO()
-        status = pisa.CreatePDF(io.BytesIO(html.encode("utf-8")), dest=out, encoding="utf-8")
+        status = pisa.CreatePDF(
+            io.BytesIO(html.encode("utf-8")), dest=out, encoding="utf-8", resource_policy=policy
+        )
         if status.err:
             raise RuntimeError("PDF rendering failed")
         return out.getvalue()

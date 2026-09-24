@@ -19,7 +19,12 @@ function Headline({ label, kg }: { label: string; kg: number }) {
   );
 }
 
-function Row({ uid, line, activity, assumptions, onChanged }: { uid: string; line: InventoryLine; activity?: ActivityLine; assumptions: Assumption[]; onChanged: () => void }) {
+const shortDate = (iso: string) => {
+  const d = new Date(iso + "T00:00:00");
+  return d.toLocaleDateString(undefined, { day: "2-digit", month: "short" });
+};
+
+function Row({ uid, line, market, activity, assumptions, onChanged }: { uid: string; line: InventoryLine; market?: InventoryLine; activity?: ActivityLine; assumptions: Assumption[]; onChanged: () => void }) {
   const t = useTranslations("inventory");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -41,22 +46,30 @@ function Row({ uid, line, activity, assumptions, onChanged }: { uid: string; lin
   return (
     <>
       <tr className="cursor-pointer border-t border-[var(--line)] hover:bg-[#fafaf8]" onClick={() => setOpen(!open)}>
-        <td className="whitespace-nowrap px-3 py-2 text-xs text-[var(--muted)]">{line.period_start} → {line.period_end}</td>
-        <td className="px-3 py-2 capitalize">{line.energy_type.replace("_", " ")}{line.basis === "market" && <span className="ml-1 text-xs text-[var(--muted)]">(mkt)</span>}</td>
-        <td className="px-3 py-2 text-right tabular-nums">{line.quantity.toLocaleString(undefined, { maximumFractionDigits: 1 })} {line.unit}</td>
-        <td className="px-3 py-2 text-right tabular-nums text-xs text-[var(--muted)]">{line.factor_value}</td>
+        <td className="whitespace-nowrap px-3 py-2 text-xs text-[var(--muted)]">
+          {line.period_start === line.period_end ? shortDate(line.period_start) : `${shortDate(line.period_start)} – ${shortDate(line.period_end)}`}
+        </td>
+        <td className="px-3 py-2 capitalize">{line.energy_type.replace("_", " ")}</td>
+        <td className="whitespace-nowrap px-3 py-2 text-right tabular-nums">{line.quantity.toLocaleString(undefined, { maximumFractionDigits: 0 })} <span className="text-xs text-[var(--muted)]">{line.unit}</span></td>
         <td className="px-3 py-2 text-right font-medium tabular-nums">{t1(line.kg_co2e)}</td>
-        <td className="px-3 py-2"><span className={`pill ${line.tier === "primary" ? "pill-ok" : line.tier === "estimated" ? "pill-warn" : "pill-muted"}`}>{t(`tier.${line.tier}`)}</span></td>
+        <td className="px-3 py-2 text-right"><span className={`pill ${line.tier === "primary" ? "pill-ok" : line.tier === "estimated" ? "pill-warn" : "pill-muted"}`}>{t(`tier.${line.tier}`)}</span></td>
       </tr>
       {open && (
         <tr className="bg-[#fafaf8]">
-          <td colSpan={6} className="px-4 py-3 text-sm">
+          <td colSpan={5} className="px-4 py-3 text-sm">
             <div className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">{t("lineage")}</div>
             <dl className="mt-2 grid gap-2 sm:grid-cols-[140px_1fr]">
               <dt className="text-[var(--muted)]">{t("document")}</dt>
-              <dd className="font-mono text-xs">{line.source_doc_id}{activity?.notes && <div className="mt-0.5 font-sans text-[var(--muted)]">{activity.notes}</div>}</dd>
+              <dd className="break-words font-mono text-xs">{line.source_doc_id}{activity?.notes && <div className="mt-0.5 font-sans text-[var(--muted)]">{activity.notes}</div>}</dd>
               <dt className="text-[var(--muted)]">{t("factor")}</dt>
-              <dd className="text-xs">{line.factor_citation}</dd>
+              <dd className="break-words text-xs">
+                <b>{line.factor_value}</b> kgCO2e/{line.unit} — {line.factor_citation}
+                {market && (
+                  <div className="mt-1 text-[var(--muted)]">
+                    {t("scope2mkt")}: <b>{t1(market.kg_co2e)}</b> {t("tonnes")} · {market.factor_citation}
+                  </div>
+                )}
+              </dd>
               {asms.length > 0 && (
                 <>
                   <dt className="text-[var(--muted)]">{t("assumptions")}</dt>
@@ -109,7 +122,12 @@ function Inventory({ uid }: { profile: SupplierProfile | null; uid: string }) {
   if (!data) return null;
   const { lines, snapshot, assumptions, activityLines } = data;
   const byActivity = Object.fromEntries(activityLines.map((a) => [a.id, a]));
-  const shown = [...lines].sort((a, b) => a.period_start.localeCompare(b.period_start) || a.energy_type.localeCompare(b.energy_type));
+  // One row per bill. The market-based Scope 2 figure lives inside the
+  // expanded detail so the table does not show every electricity bill twice.
+  const marketByActivity = Object.fromEntries(lines.filter((l) => l.basis === "market").map((l) => [l.activity_line_id, l]));
+  const shown = lines
+    .filter((l) => l.basis !== "market")
+    .sort((a, b) => a.period_start.localeCompare(b.period_start) || a.energy_type.localeCompare(b.energy_type));
 
   return (
     <div className="space-y-5">
@@ -148,14 +166,13 @@ function Inventory({ uid }: { profile: SupplierProfile | null; uid: string }) {
                   <th className="px-3 py-2">{t("columns.period")}</th>
                   <th className="px-3 py-2">{t("columns.type")}</th>
                   <th className="px-3 py-2 text-right">{t("columns.quantity")}</th>
-                  <th className="px-3 py-2 text-right">{t("columns.factor")}</th>
                   <th className="px-3 py-2 text-right">{t("columns.emissions")}</th>
-                  <th className="px-3 py-2">{t("columns.tier")}</th>
+                  <th className="px-3 py-2 text-right">{t("columns.tier")}</th>
                 </tr>
               </thead>
               <tbody>
                 {shown.map((l) => (
-                  <Row key={l.id} uid={uid} line={l} activity={byActivity[l.activity_line_id]} assumptions={assumptions} onChanged={load} />
+                  <Row key={l.id} uid={uid} line={l} market={marketByActivity[l.activity_line_id]} activity={byActivity[l.activity_line_id]} assumptions={assumptions} onChanged={load} />
                 ))}
               </tbody>
             </table>

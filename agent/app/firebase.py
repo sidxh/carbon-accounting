@@ -49,5 +49,16 @@ def get_app() -> firebase_admin.App:
 
 @lru_cache
 def get_db() -> FirestoreClient:
+    _export_emulator_env()
+    s = get_settings()
+    if s.firestore_emulator_host:
+        # firebase-admin's ApplicationDefault credential is lazy and still tries
+        # to load real Google credentials the first time Firestore is touched,
+        # which fails on a laptop with no gcloud login. The emulator needs none,
+        # so build the client directly with anonymous credentials.
+        from google.auth.credentials import AnonymousCredentials
+        from google.cloud import firestore as gcf
+
+        return gcf.Client(project=s.firebase_project_id, credentials=AnonymousCredentials())
     get_app()
     return firestore.client()
