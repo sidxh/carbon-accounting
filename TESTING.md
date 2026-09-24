@@ -61,13 +61,17 @@ clean slate. Three reset levels, from lightest to heaviest:
 | Want to…                                      | Use                                                                              | What goes                                                                                                                                                                                                            | What stays                                                  |
 | --------------------------------------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
 | Answer the chat differently on the same bills | **Reset questions** (small link on the Questions page, next to "Check my bills") | Conversation, assumptions, inventory, questionnaire results. Activity lines are rebuilt from each bill's stored extraction, so estimated months, hour conversions, exclusions and inline corrections are all undone. | Uploaded bills and their extractions. Zero model calls.     |
-| Replay from the upload step                   | **Start over** (bottom of the Setup page)                                        | Everything above plus documents and stored files                                                                                                                                                                     | Company profile                                             |
+| Replay from the upload step                   | **Start over** (bottom of the Company details page, account menu → Company details) | Every reporting year, request, bill, answer and file                                                                                                                                                                  | Company profile                                             |
 | Factory-fresh emulator, no suppliers at all   | `scripts/dev.sh reset` (with the emulators stopped)                              | `emulator-data/`, `agent/.local_storage/suppliers/`, e2e screenshots                                                                                                                                                 | Gemini cache, so re-uploading golden bills is still instant |
 
 
-Backend: `DELETE /suppliers/{uid}/data?scope=chat|all` in `agent/app/main.py`,
-implemented by `reset_questions` / `reset_all` in `agent/app/services.py`.
-Same auth as every other route: you can only reset your own supplier.
+Backend: `DELETE /suppliers/{uid}/periods/{pid}/data?scope=chat|all` (one
+reporting year) and `DELETE /suppliers/{uid}/data` (everything) in
+`agent/app/main.py`, implemented by `reset_questions` / `reset_period` /
+`reset_all` in `agent/app/services.py`. Same auth as every other route: you
+can only reset your own supplier. Resetting a year also drops the filled
+questionnaires of every request on that year, because the numbers behind them
+are gone; the requests themselves stay.
 
 Note that pressing "Check my bills" again without a reset re-runs the
 deterministic checks but keeps the chat history on purpose; if everything is
@@ -87,8 +91,9 @@ of their runs. Either *Start over* on it or pick any other number.
   (mark, language, Sign in), the serif hero, an expanded inventory-row mock
   showing document → quantity → factor → calculation, four how-it-works
   cards, a trust row and a footer that says the bills are synthetic. Switch
-  language in the nav; every string changes. Signed-in users are redirected
-  to `/documents`.
+  language in the nav; every string changes. Signed-in users are not
+  redirected: the nav button and both calls to action read "Go to your
+  dashboard" and lead to `/home`, and the logo links there too.
 
 ### A. Sign-in (Auth emulator)
 
@@ -110,13 +115,57 @@ route.
 ### B. Profile
 
 - Steps: name `Công ty TNHH Cơ khí Minh Phát`, country VN, language `vi`, FY
-`2025-01-01` to `2025-12-31`, one site `Xưởng Nhơn Trạch`. Leave revenue
-empty for now (scenario J tests the flagged intensity answer). Save.
-- Observe: Firestore `suppliers/{uid}` appears with the site given an auto id.
+  `2025-01-01` to `2025-12-31`, one site `Xưởng Nhơn Trạch`. Leave revenue
+  empty for now (scenario J tests the flagged intensity answer). Save: you
+  land on `/home`.
+- Observe: Firestore `suppliers/{uid}` appears with the site given an auto
+  id, and `suppliers/{uid}/periods/{pid}` holds FY2025, created from the FY
+  you typed. The FY on the profile is only the default for new years from
+  here on; the period is the truth. Re-saving the form keeps site ids stable
+  (matched by id, then by name), so bills uploaded earlier stay attached.
+
+### B2. Home and requests
+
+The supplier's mental model is "a customer asked me for numbers", so Home
+leads with **requests**. Bills, the conversation and the inventory belong to
+a **reporting year** and are shared by every request on that year; only the
+questionnaire is the request's own.
+
+- Empty state: an example card ("Aiko Corp (example)", dashed border), an
+  "Add your first request" panel and the three trust points. Under it, the
+  Reporting years strip shows FY2025 with "0 bills".
+- **New request**: name `Aiko Corp`, year FY2025 (preselected; "New year…"
+  opens start/end fields), due date `2026-01-31`, share `20`, optional
+  `.xlsx`. Create: you land on `/r/{rid}/documents` with the header
+  "← Home / Aiko Corp · FY2025" and a four-step stepper where Questions,
+  Inventory and Questionnaire show a lock. Locked steps are not links
+  (hover shows what unlocks them); going back is always free.
+- Add a second request `Toyota Boshoku` on the same year. Both cards show
+  "shares the year with 1"; the Bills/Questions/Inventory pages show a
+  shared-year notice naming the other customer, and the Remove-bill and
+  Reset-questions dialogs warn that the other request's figures change too.
+- Add `Old Buyer` on a new year 2024-01-01 → 2024-12-31: a second entry in
+  the Reporting years strip with its own empty bills.
+- Card anatomy: initials mark, name, template filename if attached, due date
+  (amber within 14 days, terracotta and "overdue since" when past), a
+  four-segment bar Bills → Questions → Inventory → Filled, "next" step, and
+  Start/Continue which opens the request at its next step. The trash icon
+  deletes the request and its questionnaire only; the year's bills and
+  inventory stay because other requests may use them.
+- Gating: after the first bill is read, Questions unlocks; after the chat
+  finishes (or an inventory exists), Inventory; after compute, Questionnaire.
+  The stepper re-reads progress whenever a page changes it (upload, delete,
+  chat done, compute), so you never need to reload.
+- Background: `GET /suppliers/{uid}/home` returns periods (document count,
+  coverage summary, totals, used-by) and requests with a derived `status`
+  (`new|bills|questions|inventory|filled`) and `progress` flags in one call.
+  Request status is not stored; it is computed from the period's state and
+  whether a questionnaire exists (`period_progress` / `request_status` in
+  `agent/app/services.py`).
 
 ### C. Upload, happy path
 
-- Steps: on `/documents` drop or choose all 12 `vn_evn_2025-MM.png`, the 9
+- Steps: on the request's Bills page (`/r/{rid}/documents`) drop or choose all 12 `vn_evn_2025-MM.png`, the 9
   `vn_lpg_*.png` (there is no Jul, Aug, Sep LPG file; that is deliberate), the
   6 `vn_diesel_*.png` and the 2 `vn_refrigerant_*.png`. 29 files.
 - **Staging**: nothing uploads yet. A list shows every chosen file with a
@@ -294,7 +343,10 @@ share).
   document → factor → cell lineage, so the fix is the inline correction in
   scenario I followed by "Fill it in" again. Trying the PATCH directly
   returns 400.
-- Negative cases: a brand-new user going straight to `/questionnaire` gets
+- The share you gave when creating the request is prefilled; a template
+  attached at creation shows "Attached to this request: …" with a "Fill the
+  attached questionnaire" button, so the last step can be one click.
+- Negative cases: a request whose year has no inventory yet gets
   "compute the inventory first" (409). An xlsx with no question-like text
   gives 422.
 - Background: `agent/app/agents/filler.py` harvests question cells with
@@ -330,7 +382,8 @@ profile with language `ja` to see Japanese questions.
 
 ### M. Persistence
 
-Sign out and back in with the same number: everything is there. Kill and
+Sign out and back in with the same number: the dashboard lists the same
+requests and every year's inventory is still there. Kill and
 restart the agent: still there (Firestore, not process memory). Stop the
 emulators with Ctrl-C and restart: still there because `dev.sh` exports to
 `emulator-data/` on exit. `kill -9` the emulator and you lose the session;
@@ -338,7 +391,7 @@ that is the emulator, not the app.
 
 ### N. Agent down
 
-Stop the agent, reload `/documents`: an error card with "Try again", not a
+Stop the agent, reload `/home`: an error card with "Try again", not a
 spinner. Start the agent, press Try again: recovers.
 
 ### O. Isolation
@@ -380,7 +433,7 @@ cd agent
 .venv/bin/pytest                                  # calculator, factors, reconcile tools, API; offline
 .venv/bin/python -m scripts.eval_extraction       # golden-set accuracy, cached
 .venv/bin/python -m scripts.e2e_local             # browser: the whole journey on a fresh supplier (needs the 3 terminals)
-.venv/bin/python -m scripts.e2e_local --resume --phone +84XXXXXXXXX   # from the inventory step on an existing supplier (useful when Gemini is flaky)
+.venv/bin/python -m scripts.e2e_local --resume --phone +84XXXXXXXXX   # first request on the dashboard, from its inventory step (useful when Gemini is flaky)
 .venv/bin/python -m scripts.e2e_edge              # browser: edge cases above
 ```
 

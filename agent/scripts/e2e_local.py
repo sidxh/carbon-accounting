@@ -23,7 +23,7 @@ import sys
 import time
 from pathlib import Path
 
-from .e2e_common import WEB, chat_bubbles, fill_setup, sign_in, upload
+from .e2e_common import WEB, chat_bubbles, fill_setup, locked_steps, new_request, sign_in, upload
 
 ROOT = Path(__file__).resolve().parents[2]
 AGENT = ROOT / "agent"
@@ -65,15 +65,27 @@ def main() -> int:
         step("01-signed-in", page)
 
         if args.resume:
-            page.goto(f"{WEB}/inventory")
+            # First request on the dashboard, straight to its inventory.
+            page.goto(f"{WEB}/home")
+            page.get_by_role("link", name=re.compile("Continue|Tiếp tục|続ける")).first.click()
+            page.wait_for_url(re.compile(r"/r/(req_[a-f0-9]+)/"), timeout=20000)
+            rid = re.search(r"/r/(req_[a-f0-9]+)/", page.url).group(1)
+            page.goto(f"{WEB}/r/{rid}/inventory")
             page.wait_for_selector("table", timeout=60000)
-            return _from_inventory(page, step, SHOTS, console_errors, browser, args)
+            return _from_inventory(page, step, SHOTS, console_errors, browser, args, rid)
 
-        # 2. Setup -----------------------------------------------------------------
+        # 2. Setup, then the first request from the dashboard -------------------------
         if "/setup" not in page.url:
             page.goto(f"{WEB}/setup")
         fill_setup(page, "Công ty TNHH Cơ khí Minh Phát", "Xưởng Nhơn Trạch")
-        step("02-setup-saved", page)
+        page.get_by_role("button", name=re.compile("New request|Yêu cầu mới|新しい依頼")).first.wait_for(timeout=20000)
+        page.wait_for_timeout(600)
+        step("02-home-empty", page, ok=page.get_by_text(re.compile("Aiko Corp \(example\)|ví dụ|例")).count() > 0)
+        rid = new_request(page, "Aiko Corp", due="2026-01-31", share="20")
+        page.wait_for_timeout(800)
+        locked = locked_steps(page)
+        print(f"    request {rid}, locked: {locked}")
+        step("02b-request-created-gated", page, ok=len(locked) == 3)
 
         # 3. Stage, remove one, upload the rest -----------------------------------------
         page.locator("input[type=file]").first.set_input_files(files)
@@ -104,6 +116,10 @@ def main() -> int:
         step("06-document-readded", page, ok=page.locator("li.card").count() == n_before)
         coverage_ok = page.locator(".coverage").count() >= 2  # electricity and LPG strips
         step("07-summary-coverage", page, ok=coverage_ok)
+
+        # Bills in: Questions unlocks, the rest stays locked.
+        page.wait_for_function("() => document.querySelectorAll('nav[aria-label] [aria-disabled=true]').length === 2", timeout=15000)
+        print(f"    after bills, locked: {locked_steps(page)}")
 
         # 5. Reconcile ---------------------------------------------------------------------
         page.get_by_role("link", name=re.compile("Continue to questions|Tiếp tục đến câu hỏi|確認へ進む")).click()
@@ -136,16 +152,18 @@ def main() -> int:
                     continue
             time.sleep(1.0)
         page.get_by_role("link", name=re.compile("See the inventory|Xem bảng kiểm kê|インベントリを見る")).wait_for(timeout=120000)
+        page.wait_for_function("() => document.querySelectorAll('nav[aria-label] [aria-disabled=true]').length === 0", timeout=30000)
+        print(f"    after questions, locked: {locked_steps(page)}")
         step("10-reconcile-done", page)
 
         # 6. Inventory ------------------------------------------------------------------------
         page.get_by_role("link", name=re.compile("See the inventory|Xem bảng kiểm kê|インベントリを見る")).click()
         page.wait_for_url(re.compile(r"/inventory"))
         page.wait_for_selector("table", timeout=60000)
-        return _from_inventory(page, step, SHOTS, console_errors, browser, args)
+        return _from_inventory(page, step, SHOTS, console_errors, browser, args, rid)
 
 
-def _from_inventory(page, step, SHOTS, console_errors, browser, args) -> int:
+def _from_inventory(page, step, SHOTS, console_errors, browser, args, rid) -> int:
     if True:
         headline = [el.get_attribute("data-value") for el in page.locator("[data-stat]").all()]
         print(f"    headline: {headline}")
@@ -192,6 +210,13 @@ def _from_inventory(page, step, SHOTS, console_errors, browser, args) -> int:
         dl2.value.save_as(str(pdf))
         print(f"    downloaded {xlsx.stat().st_size:,} B xlsx, {pdf.stat().st_size:,} B pdf")
         step("15-downloads", page, ok=xlsx.stat().st_size > 5000 and pdf.stat().st_size > 5000)
+
+        # 7b. Home shows the request as filled, with the year's totals underneath ------------
+        page.goto(f"{WEB}/home")
+        page.get_by_text(re.compile("^Filled$|^Đã điền$|^記入済み$")).first.wait_for(timeout=20000)
+        step("15b-home-filled", page, ok=page.get_by_text(re.compile("Scope 1|Phạm vi 1|スコープ1")).count() > 0)
+        page.goto(f"{WEB}/r/{rid}/questionnaire")
+        page.get_by_role("button", name=re.compile("Download filled|Tải bảng câu hỏi|記入済み質問票")).wait_for(timeout=30000)
 
         # 8. Language switch (account menu) ------------------------------------------------------
         page.get_by_role("button", name=re.compile("Signed in|Đang đăng nhập|サインイン中"), exact=False).count()

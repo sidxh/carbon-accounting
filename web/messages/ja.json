@@ -421,7 +421,8 @@
       "inventory": "インベントリ",
       "filled": "記入",
       "documents": "請求書",
-      "reconcile": "質問"
+      "reconcile": "質問",
+      "questionnaire": "質問票"
     },
     "done": "完了",
     "todo": "未着手",

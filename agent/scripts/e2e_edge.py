@@ -17,7 +17,7 @@ import sys
 import time
 from pathlib import Path
 
-from .e2e_common import WEB, chat_bubbles, fill_setup, sign_in, upload
+from .e2e_common import WEB, chat_bubbles, fill_setup, locked_steps, new_request, sign_in, upload
 
 ROOT = Path(__file__).resolve().parents[2]
 AGENT = ROOT / "agent"
@@ -64,6 +64,13 @@ def main() -> int:
 
         # 2. Second supplier, LPG Jan–Jun only -> gap Jul–Dec -----------------------
         fill_setup(page, "Xí nghiệp Gas Thử Nghiệm", "Xưởng 2")
+        rid = new_request(page, "Aiko Corp")
+        rid2 = new_request(page, "Toyota Boshoku")
+        # A locked step is not a link: clicking it must not navigate.
+        page.locator("nav[aria-label] [aria-disabled=true]").first.click(force=True)
+        page.wait_for_timeout(500)
+        ok("locked-step-does-not-navigate", page.url.endswith(f"/r/{rid2}/documents") and len(locked_steps(page)) == 3, page)
+        ok("shared-year-notice", page.get_by_text(re.compile("shared|dùng chung|共有")).count() >= 1)
         read, failed = upload(page, [str(noise), pdf_doc] + lpg_h1)
         cards = page.locator("li.card").all_inner_texts()
         noise_card = next((t for t in cards if "not-a-bill" in t), "")
@@ -121,7 +128,7 @@ def main() -> int:
         page.get_by_role("link", name=re.compile("See the inventory")).wait_for(timeout=60000)
         ok("rerun-check-is-clean", page.locator("input.input").count() == 0, page)
 
-        page.goto(f"{WEB}/inventory")
+        page.goto(f"{WEB}/r/{rid2}/inventory")
         page.wait_for_selector("table", timeout=60000)
         est = page.locator("tbody tr:has(button[aria-expanded])", has_text=re.compile("estimated")).count()
         # The six estimated LPG rows are the zero months; the eleven estimated electricity rows are extrapolated.
@@ -129,24 +136,39 @@ def main() -> int:
         print(f"    estimated rows: {est} (of which zero-LPG: {zero_rows})")
         ok("gaps-recorded-as-estimated", est == 17 and zero_rows == 6, page)
 
-        # 5. Persistence: sign out, sign in, inventory still there ---------------------------
+        # 4b. The other request on the same year sees the same inventory, no re-upload -----------
+        page.goto(f"{WEB}/r/{rid}/inventory")
+        page.wait_for_selector("table", timeout=60000)
+        ok("shared-year-inventory-visible-from-other-request", page.locator("tbody tr:has(button[aria-expanded])").count() >= 12, page)
+        # Deleting a shared bill warns about the other request.
+        page.goto(f"{WEB}/r/{rid}/documents")
+        page.wait_for_selector("li.card", timeout=30000)
+        page.get_by_role("button", name=re.compile("^Remove$")).first.click()
+        dlg = page.locator("[role=alertdialog],[role=dialog]")
+        dlg.wait_for()
+        ok("shared-bill-delete-warns", "Toyota Boshoku" in dlg.inner_text(), page)
+        dlg.get_by_role("button", name=re.compile("^Cancel$")).click()
+
+        # 5. Persistence: sign out, sign in, dashboard and inventory still there ------------------
         page.locator("header button[aria-haspopup=menu]").click()
         page.get_by_role("menuitem", name=re.compile("Sign out")).click()
         page.wait_for_timeout(300)
         page.wait_for_url(re.compile(r"/sign-in"))
         sign_in(page, PHONE2)
-        page.goto(f"{WEB}/inventory")
+        page.goto(f"{WEB}/home")
+        page.get_by_text("Toyota Boshoku").first.wait_for(timeout=20000)
+        page.goto(f"{WEB}/r/{rid2}/inventory")
         page.wait_for_selector("table", timeout=60000)
         ok("data-persists-across-sign-out", page.locator("tbody tr:has(button[aria-expanded])").count() >= 12, page)
 
         # 6. Agent unreachable -> error card with retry, not an endless spinner --------------
         page.route(re.compile(r"http://localhost:8000/.*"), lambda route: route.abort())
-        page.goto(f"{WEB}/documents")
+        page.goto(f"{WEB}/home")
         page.get_by_role("button", name=re.compile("Try again")).wait_for(timeout=20000)
         ok("agent-down-shows-error-card", True, page)
         page.unroute(re.compile(r"http://localhost:8000/.*"))
         page.get_by_role("button", name=re.compile("Try again")).click()
-        page.wait_for_selector("li.card", timeout=20000)
+        page.get_by_text("Toyota Boshoku").first.wait_for(timeout=20000)
         ok("retry-recovers", True)
 
         b.close()
