@@ -3,7 +3,10 @@
     "name": "Supplier Carbon",
     "tagline": "Forward the email. Photograph the bills. Get back the completed questionnaire.",
     "signOut": "Sign out",
-    "language": "Language"
+    "language": "Language",
+    "signedInAs": "Signed in as",
+    "steps": "Steps",
+    "signIn": "Sign in"
   },
   "steps": {
     "setup": "Setup",

@@ -3,8 +3,10 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import { CircleAlert } from "lucide-react";
 import { api, ApiError, type SupplierProfile } from "@/lib/api";
 import { useAuth } from "./auth-provider";
+import { SkeletonList } from "./ui/bits";
 
 /**
  * Gate for every page after sign-in. Sends anonymous visitors to /sign-in and
@@ -44,17 +46,20 @@ export function RequireAuth({ children }: { children: (p: SupplierProfile | null
 
   if (error) {
     return (
-      <div className="card m-4 p-5 text-sm">
-        <p className="text-red-700">{t("error")}</p>
-        <p className="mt-1 font-mono text-xs text-[var(--muted)]">{error}</p>
-        <button className="btn btn-secondary mt-3 px-4 py-1.5 text-sm" onClick={() => setAttempt((n) => n + 1)}>
+      <div className="card flex flex-col gap-3 p-5 text-sm sm:flex-row sm:items-start">
+        <CircleAlert className="size-5 shrink-0 text-danger" aria-hidden />
+        <div className="flex-1">
+          <p className="font-medium text-ink">{t("error")}</p>
+          <p className="mt-1 break-all font-mono text-xs text-muted">{error}</p>
+        </div>
+        <button className="btn btn-secondary btn-sm" onClick={() => setAttempt((n) => n + 1)}>
           {t("retry")}
         </button>
       </div>
     );
   }
   if (loading || !user || profile === undefined) {
-    return <p className="p-8 text-sm text-[var(--muted)]">{t("loading")}</p>;
+    return <SkeletonList rows={3} />;
   }
   if (profile === null && path !== "/setup") return null;
   return <>{children(profile, user.uid)}</>;

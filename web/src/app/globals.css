@@ -1,29 +1,118 @@
 @import "tailwindcss";
 
+/*
+ * Supplier Carbon palette. Paper rather than screen: an off-white page, cards
+ * that lift by going whiter, near-black ink. One signal colour (teal) for
+ * actions and for data that came straight from a bill; amber only for
+ * "needs you"; terracotta for trouble. Everything the UI paints with goes
+ * through these tokens so a component names a role, not a colour.
+ */
 :root {
-  --bg: #f6f6f3;
-  --card: #ffffff;
-  --ink: #1b1b1b;
-  --muted: #6b6b66;
-  --line: #e2e2dd;
-  --accent: #0e7c72;
-  --accent-ink: #ffffff;
-  --warn: #b7791f;
-  --warn-bg: #fff6e0;
-  --ok-bg: #e8f5ef;
+  --paper: #f7f6f3;
+  --raised: #fffefc;
+  --sunken: #efeeea;
+  --ink: #171716;
+  --ink-soft: #3d3d3a;
+  --muted: #6f6e69;
+  --faint: #a3a29c;
+  --line: rgb(23 23 22 / 12%);
+  --line-strong: rgb(23 23 22 / 22%);
+
+  --signal: #0e7c72;
+  --signal-ink: #0a5d55;
+  --signal-bg: #e6f3f0;
+  --signal-on: #ffffff;
+
+  --attention: #8a5a00;
+  --attention-bg: #fff3d6;
+  --attention-strong: #f2b705;
+
+  --danger: #b3452f;
+  --danger-bg: #fbe9e4;
+
+  --secondary-tier: #4b5f8a;
+  --secondary-tier-bg: #e8edf7;
+
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-lg: 18px;
+  --shadow-raised: 0 1px 2px rgb(23 23 22 / 4%), 0 1px 0 rgb(23 23 22 / 4%);
+  --shadow-float: 0 12px 32px rgb(23 23 22 / 10%), 0 2px 6px rgb(23 23 22 / 6%);
+
+  /* Backwards-compatible aliases for pages not yet migrated. */
+  --bg: var(--paper);
+  --card: var(--raised);
+  --accent: var(--signal);
+  --accent-ink: var(--signal-on);
+  --warn: var(--attention);
+  --warn-bg: var(--attention-bg);
+  --ok-bg: var(--signal-bg);
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-raised: var(--raised);
+  --color-sunken: var(--sunken);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-signal: var(--signal);
+  --color-signal-ink: var(--signal-ink);
+  --color-signal-bg: var(--signal-bg);
+  --color-attention: var(--attention);
+  --color-attention-bg: var(--attention-bg);
+  --color-attention-strong: var(--attention-strong);
+  --color-danger: var(--danger);
+  --color-danger-bg: var(--danger-bg);
+  --color-tier2: var(--secondary-tier);
+  --color-tier2-bg: var(--secondary-tier-bg);
+  --font-sans: var(--font-figtree), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Noto Sans CJK JP", sans-serif;
+  --font-display: var(--font-garamond), "Noto Serif", "Noto Serif CJK JP", Georgia, "Times New Roman", serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --radius-card: var(--radius);
 }
 
 html,
 body {
-  background: var(--bg);
+  background: var(--paper);
   color: var(--ink);
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Noto Sans CJK JP", sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
+::selection {
+  background: var(--attention-bg);
+  color: var(--ink);
+}
+
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.015em;
+}
+
+/* Focus is an outline, never a shadow, so it survives on any fill. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ---- primitives ------------------------------------------------------------ */
+
 .card {
-  background: var(--card);
+  background: var(--raised);
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-raised);
+}
+.card-sunken {
+  background: var(--sunken);
+  border: 1px solid transparent;
+  border-radius: var(--radius);
 }
 
 .btn {
@@ -31,49 +120,210 @@ body {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  min-height: 44px;
   border-radius: 999px;
-  padding: 0.7rem 1.2rem;
+  padding: 0.625rem 1.25rem;
   font-weight: 600;
-  background: var(--accent);
-  color: var(--accent-ink);
-  transition: opacity 0.15s;
+  font-size: 0.9375rem;
+  line-height: 1.2;
+  background: var(--signal);
+  color: var(--signal-on);
+  border: 1px solid transparent;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn:hover:not(:disabled) {
+  background: var(--signal-ink);
+}
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
 }
 .btn:disabled {
-  opacity: 0.5;
+  background: var(--sunken);
+  color: var(--faint);
   cursor: not-allowed;
 }
 .btn-secondary {
-  background: transparent;
+  background: var(--raised);
   color: var(--ink);
-  border: 1px solid var(--line);
+  border-color: var(--line-strong);
+}
+.btn-secondary:hover:not(:disabled) {
+  background: var(--sunken);
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--ink-soft);
+  border-color: transparent;
+}
+.btn-ghost:hover:not(:disabled) {
+  background: var(--sunken);
+  color: var(--ink);
+}
+.btn-danger {
+  background: var(--raised);
+  color: var(--danger);
+  border-color: var(--line-strong);
+}
+.btn-danger:hover:not(:disabled) {
+  background: var(--danger-bg);
+  border-color: var(--danger);
+}
+.btn-sm {
+  min-height: 36px;
+  padding: 0.375rem 0.875rem;
+  font-size: 0.875rem;
+}
+.btn-icon {
+  min-height: 40px;
+  min-width: 40px;
+  padding: 0;
+  border-radius: 999px;
 }
 
 .input {
   width: 100%;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 0.7rem 0.9rem;
-  background: #fff;
+  min-height: 44px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  padding: 0.625rem 0.875rem;
+  background: var(--raised);
+  color: var(--ink);
   outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.input::placeholder {
+  color: var(--faint);
 }
 .input:focus {
-  border-color: var(--accent);
+  border-color: var(--signal);
+  box-shadow: 0 0 0 3px var(--signal-bg);
+}
+.input:disabled {
+  background: var(--sunken);
+  color: var(--muted);
+}
+textarea.input {
+  min-height: 88px;
+  resize: vertical;
 }
 
 .label {
   display: block;
-  font-size: 0.85rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--ink-soft);
+  margin-bottom: 0.375rem;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   color: var(--muted);
-  margin-bottom: 0.35rem;
+}
+.eyebrow::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--attention-strong);
 }
 
 .pill {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
   border-radius: 999px;
-  padding: 0.15rem 0.6rem;
+  padding: 0.125rem 0.625rem;
   font-size: 0.75rem;
   font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
 }
-.pill-ok { background: var(--ok-bg); color: var(--accent); }
-.pill-warn { background: var(--warn-bg); color: var(--warn); }
-.pill-muted { background: #eeeeea; color: var(--muted); }
+.pill-ok,
+.pill-primary { background: var(--signal-bg); color: var(--signal-ink); }
+.pill-warn,
+.pill-attention,
+.pill-estimated { background: var(--attention-bg); color: var(--attention); }
+.pill-muted { background: var(--sunken); color: var(--muted); }
+.pill-secondary { background: var(--secondary-tier-bg); color: var(--secondary-tier); }
+.pill-danger { background: var(--danger-bg); color: var(--danger); }
+
+.hairline {
+  border-color: var(--line);
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Coverage strip: twelve cells, one per month. Text in `title` carries the
+   meaning so colour is never the only signal. */
+.coverage {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 2px;
+}
+.coverage > span {
+  height: 8px;
+  border-radius: 2px;
+  background: var(--sunken);
+}
+.coverage > .cov-primary { background: var(--signal); }
+.coverage > .cov-secondary { background: var(--secondary-tier); }
+.coverage > .cov-estimated {
+  background: repeating-linear-gradient(135deg, var(--attention-strong) 0 3px, var(--attention-bg) 3px 6px);
+}
+.coverage > .cov-missing {
+  background: var(--raised);
+  border: 1px dashed var(--line-strong);
+}
+.coverage > .cov-na { background: transparent; }
+
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to { background-position: 200% 0; }
+}
+.skeleton {
+  border-radius: var(--radius-sm);
+  background: linear-gradient(90deg, var(--sunken) 25%, var(--raised) 50%, var(--sunken) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.rise {
+  animation: rise 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

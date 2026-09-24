@@ -3,7 +3,10 @@
     "name": "Supplier Carbon",
     "tagline": "Chuyển tiếp email. Chụp ảnh hóa đơn. Nhận lại bảng câu hỏi đã điền.",
     "signOut": "Đăng xuất",
-    "language": "Ngôn ngữ"
+    "language": "Ngôn ngữ",
+    "signedInAs": "Đang đăng nhập",
+    "steps": "Các bước",
+    "signIn": "Đăng nhập"
   },
   "steps": {
     "setup": "Thiết lập",

@@ -3,7 +3,10 @@
     "name": "Supplier Carbon",
     "tagline": "メールを転送し、請求書を撮影するだけで、記入済みの質問票が戻ってきます。",
     "signOut": "サインアウト",
-    "language": "言語"
+    "language": "言語",
+    "signedInAs": "サインイン中",
+    "steps": "ステップ",
+    "signIn": "サインイン"
   },
   "steps": {
     "setup": "設定",
