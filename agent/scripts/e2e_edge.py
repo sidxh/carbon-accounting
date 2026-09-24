@@ -124,13 +124,15 @@ def main() -> int:
         page.goto(f"{WEB}/inventory")
         page.wait_for_selector("table", timeout=60000)
         est = page.locator("tbody tr:has(button[aria-expanded])", has_text=re.compile("estimated")).count()
-        zero_rows = page.locator("tbody tr:has(button[aria-expanded])", has_text=re.compile(r"\b0 kg")).count()
+        # The six estimated LPG rows are the zero months; the eleven estimated electricity rows are extrapolated.
+        zero_rows = page.locator("tbody tr:has(button[aria-expanded])", has_text=re.compile("estimated")).filter(has_text=re.compile("LPG|Lpg")).count()
         print(f"    estimated rows: {est} (of which zero-LPG: {zero_rows})")
         ok("gaps-recorded-as-estimated", est == 17 and zero_rows == 6, page)
 
         # 5. Persistence: sign out, sign in, inventory still there ---------------------------
         page.locator("header button[aria-haspopup=menu]").click()
         page.get_by_role("menuitem", name=re.compile("Sign out")).click()
+        page.wait_for_timeout(300)
         page.wait_for_url(re.compile(r"/sign-in"))
         sign_in(page, PHONE2)
         page.goto(f"{WEB}/inventory")

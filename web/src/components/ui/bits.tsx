@@ -28,7 +28,7 @@ export function Stat({ label, value, unit, sub, tone = "default", className, dig
   return (
     <div className={clsx("card p-4 sm:p-5", className)}>
       <div className="text-xs font-medium text-muted">{label}</div>
-      <div data-stat className={clsx("mt-1 font-display text-3xl leading-none tabular sm:text-[2.25rem]", tone === "signal" ? "text-signal-ink" : tone === "muted" ? "text-muted" : "text-ink")}>
+      <div data-stat data-value={typeof value === "number" ? value.toFixed(digits) : value} className={clsx("mt-1 font-display text-3xl leading-none tabular sm:text-[2.25rem]", tone === "signal" ? "text-signal-ink" : tone === "muted" ? "text-muted" : "text-ink")}>
         {typeof value === "number" ? (
           <NumberFlow value={value} format={{ maximumFractionDigits: digits }} transformTiming={{ duration: 500, easing: "cubic-bezier(0.23, 1, 0.32, 1)" }} spinTiming={{ duration: 500, easing: "cubic-bezier(0.23, 1, 0.32, 1)" }} />
         ) : (

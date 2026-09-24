@@ -39,7 +39,7 @@ def sign_in(page, phone: str, wrong_first: bool = False) -> None:
     page.locator("input[autocomplete=one-time-code]").wait_for(timeout=15000)
     if wrong_first:
         type_code(page, "000000")
-        page.get_by_role("alert").wait_for(timeout=15000)
+        page.locator("p[role=alert]").wait_for(timeout=15000)
     type_code(page, emulator_code(phone))
     page.wait_for_url(re.compile(r"/(setup|documents)"), timeout=30000)
     # A fresh user is bounced from /documents to /setup once the profile 404s.

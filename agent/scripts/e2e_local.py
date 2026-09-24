@@ -94,8 +94,9 @@ def main() -> int:
         # 4. Delete one uploaded bill, then upload the one we removed at staging --------------
         n_before = page.locator("li.card").count()
         page.get_by_role("button", name=re.compile("^Remove$|^Xóa$|^削除$")).first.click()
-        page.get_by_role("dialog").wait_for()
-        page.get_by_role("dialog").get_by_role("button", name=re.compile("^Remove$|^Xóa$|^削除$")).click()
+        dlg = page.locator("[role=alertdialog],[role=dialog]")
+        dlg.wait_for()
+        dlg.get_by_role("button", name=re.compile("^Remove$|^Xóa$|^削除$")).click()
         page.wait_for_function("n => document.querySelectorAll('li.card').length === n - 1", arg=n_before, timeout=20000)
         step("05-document-removed", page)
         read2, _ = upload(page, [files[0]])
@@ -146,8 +147,8 @@ def main() -> int:
 
 def _from_inventory(page, step, SHOTS, console_errors, browser, args) -> int:
     if True:
-        headline = page.locator("[data-stat]").all_inner_texts()
-        print(f"    headline: {[h.split(chr(10))[0] for h in headline]}")
+        headline = [el.get_attribute("data-value") for el in page.locator("[data-stat]").all()]
+        print(f"    headline: {headline}")
         rows = page.locator("tbody tr:has(button[aria-expanded])").count()
         step("11-inventory", page, ok=rows > 20)
 
@@ -158,15 +159,16 @@ def _from_inventory(page, step, SHOTS, console_errors, browser, args) -> int:
         print(f"    lineage: {' '.join(lineage.split())[:140]}")
         step("12-inventory-lineage", page, ok="GWP" in lineage or "gwp" in lineage)
 
-        before = page.locator("[data-stat]").first.inner_text()
+        before = page.locator("[data-stat]").first.get_attribute("data-value")
         page.get_by_role("button", name=re.compile("Correct quantity|Sửa số lượng|数量を修正")).click()
         qty = page.locator("tbody input.input").first
         qty.fill(str(float(qty.input_value()) + 0.5))  # always a change, even on a re-run
         page.locator("tbody").get_by_role("button", name=re.compile("^Save$|^Lưu$|^保存$")).click()
-        page.get_by_role("dialog").get_by_role("button", name=re.compile("^Save$|^Lưu$|^保存$")).click()
+        page.locator("[role=alertdialog],[role=dialog]").get_by_role("button", name=re.compile("^Save$|^Lưu$|^保存$")).click()
         page.wait_for_timeout(2500)
-        after = page.locator("[data-stat]").first.inner_text()
-        print(f"    scope1 before={before.split()[0]} after={after.split()[0]}")
+        page.wait_for_function("v => document.querySelector('[data-stat]').getAttribute('data-value') !== v", arg=before, timeout=15000)
+        after = page.locator("[data-stat]").first.get_attribute("data-value")
+        print(f"    scope1 before={before} after={after}")
         step("13-inventory-corrected", page, ok=before != after)
 
         # 7. Questionnaire --------------------------------------------------------------------
@@ -194,7 +196,7 @@ def _from_inventory(page, step, SHOTS, console_errors, browser, args) -> int:
         # 8. Language switch (account menu) ------------------------------------------------------
         page.get_by_role("button", name=re.compile("Signed in|Đang đăng nhập|サインイン中"), exact=False).count()
         page.locator("header button[aria-haspopup=menu]").click()
-        page.locator("[role=menu] select").select_option("vi")
+        page.get_by_role("menuitemradio", name="Tiếng Việt").click()
         page.wait_for_timeout(1500)
         step("16-vietnamese-ui", page, ok=page.get_by_text("Bảng câu hỏi của khách hàng").count() > 0)
 
