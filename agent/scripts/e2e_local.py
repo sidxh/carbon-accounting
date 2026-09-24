@@ -80,7 +80,7 @@ def main() -> int:
         fill_setup(page, "Công ty TNHH Cơ khí Minh Phát", "Xưởng Nhơn Trạch")
         page.get_by_role("button", name=re.compile("New request|Yêu cầu mới|新しい依頼")).first.wait_for(timeout=20000)
         page.wait_for_timeout(600)
-        step("02-home-empty", page, ok=page.get_by_text(re.compile("Aiko Corp \(example\)|ví dụ|例")).count() > 0)
+        step("02-home-empty", page, ok=page.get_by_text(re.compile("Add your first request|Thêm yêu cầu đầu tiên|最初の依頼を追加")).count() > 0)
         rid = new_request(page, "Aiko Corp", due="2026-01-31", share="20")
         page.wait_for_timeout(800)
         locked = locked_steps(page)

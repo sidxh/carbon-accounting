@@ -5,11 +5,12 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { Menu } from "@base-ui/react";
-import { ArrowLeft, Check, ChevronDown, ClipboardList, FileSpreadsheet, Globe, Leaf, Lock, LogOut, MessageSquareText, Receipt, Settings2, Users, type LucideIcon } from "lucide-react";
+import { ArrowLeft, Check, ChevronDown, ClipboardList, FileSpreadsheet, Globe, Lock, LogOut, MessageSquareText, Receipt, Settings2, Users, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { firebaseAuth } from "@/lib/firebase";
 import type { Progress } from "@/lib/api";
 import { useAuth } from "./auth-provider";
+import { Wordmark } from "./brand/logo-mark";
 import { LanguageSwitcher, LANGUAGE_NAMES, setLocaleCookie } from "./language-switcher";
 
 export type StepKey = "documents" | "reconcile" | "inventory" | "questionnaire";
@@ -40,17 +41,7 @@ export function nextStep(progress: Progress, filled: boolean): StepKey {
   return "documents";
 }
 
-export function Wordmark({ className }: { className?: string }) {
-  const t = useTranslations();
-  return (
-    <span className={cn("inline-flex items-center gap-2 font-semibold text-ink", className)}>
-      <span className="grid size-8 place-items-center rounded-[10px] bg-signal text-signal-on">
-        <Leaf className="size-4" aria-hidden />
-      </span>
-      <span className="font-display text-xl tracking-tight">{t("app.name")}</span>
-    </span>
-  );
-}
+export { Wordmark };
 
 const menuItem =
   "flex min-h-10 w-full cursor-default items-center gap-2 rounded-[var(--radius-sm)] px-2 text-sm text-ink outline-none select-none data-[highlighted]:bg-sunken";
