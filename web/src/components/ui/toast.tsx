@@ -1,70 +1,49 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { AnimatePresence, motion } from "motion/react";
-import { CheckCircle2, CircleAlert, Info, X } from "lucide-react";
+import { useCallback } from "react";
+import { Toaster, toast as sonner } from "sonner";
+import { CheckCircle2, CircleAlert, Info } from "lucide-react";
 
 type Tone = "ok" | "attention" | "danger" | "info";
-interface Toast { id: number; text: string; tone: Tone }
 
-const Ctx = createContext<{ toast: (text: string, tone?: Tone) => void }>({ toast: () => {} });
-
-/** Short, dismissable confirmations announced to screen readers via aria-live. */
+/** Sonner, styled with the app tokens. Mounted once in the root layout. */
 export function ToastProvider({ children }: { children: React.ReactNode }) {
-  const [items, setItems] = useState<Toast[]>([]);
-  const seq = useRef(0);
-  const timers = useRef<Map<number, ReturnType<typeof setTimeout>>>(new Map());
-
-  const dismiss = useCallback((id: number) => {
-    setItems((xs) => xs.filter((x) => x.id !== id));
-    const t = timers.current.get(id);
-    if (t) clearTimeout(t);
-    timers.current.delete(id);
-  }, []);
-
-  const toast = useCallback((text: string, tone: Tone = "ok") => {
-    const id = ++seq.current;
-    setItems((xs) => [...xs.slice(-2), { id, text, tone }]);
-    timers.current.set(id, setTimeout(() => dismiss(id), tone === "danger" ? 7000 : 3500));
-  }, [dismiss]);
-
-  useEffect(() => () => timers.current.forEach(clearTimeout), []);
-  const value = useMemo(() => ({ toast }), [toast]);
-
-  const Icon = { ok: CheckCircle2, attention: CircleAlert, danger: CircleAlert, info: Info };
-  const color = { ok: "text-signal", attention: "text-attention", danger: "text-danger", info: "text-muted" };
-
   return (
-    <Ctx.Provider value={value}>
+    <>
       {children}
-      <div aria-live="polite" aria-atomic="false" className="pointer-events-none fixed inset-x-0 bottom-4 z-[1000] flex flex-col items-center gap-2 px-4">
-        <AnimatePresence>
-          {items.map((t) => {
-            const I = Icon[t.tone];
-            return (
-              <motion.div
-                key={t.id}
-                role="status"
-                initial={{ opacity: 0, y: 12, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 8, scale: 0.98 }}
-                transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-                className="card pointer-events-auto flex w-full max-w-md items-center gap-3 px-4 py-3 text-sm shadow-[var(--shadow-float)]"
-              >
-                <I className={`size-4 shrink-0 ${color[t.tone]}`} aria-hidden />
-                <span className="flex-1">{t.text}</span>
-                <button className="btn btn-ghost btn-icon !min-h-8 !min-w-8" onClick={() => dismiss(t.id)} aria-label="Dismiss">
-                  <X className="size-4" aria-hidden />
-                </button>
-              </motion.div>
-            );
-          })}
-        </AnimatePresence>
-      </div>
-    </Ctx.Provider>
+      <Toaster
+        position="bottom-center"
+        offset={{ bottom: "max(16px, env(safe-area-inset-bottom))" }}
+        gap={8}
+        visibleToasts={3}
+        icons={{
+          success: <CheckCircle2 className="size-4 text-signal" aria-hidden />,
+          warning: <CircleAlert className="size-4 text-attention" aria-hidden />,
+          error: <CircleAlert className="size-4 text-danger" aria-hidden />,
+          info: <Info className="size-4 text-muted" aria-hidden />,
+        }}
+        toastOptions={{
+          unstyled: true,
+          classNames: {
+            toast: "card z-toast flex w-full max-w-md items-center gap-3 px-4 py-3 text-sm text-ink shadow-[var(--shadow-float)]",
+            title: "font-medium",
+            description: "text-muted",
+            closeButton: "btn btn-ghost btn-icon !min-h-8 !min-w-8",
+          },
+        }}
+        closeButton
+      />
+    </>
   );
 }
 
+/** Same call shape as before: toast(text, tone). */
 export function useToast() {
-  return useContext(Ctx).toast;
+  return useCallback((text: string, tone: Tone = "ok") => {
+    const opts = { duration: tone === "danger" ? 7000 : 3500 };
+    if (tone === "ok") sonner.success(text, opts);
+    else if (tone === "attention") sonner.warning(text, opts);
+    else if (tone === "danger") sonner.error(text, opts);
+    else sonner.info(text, opts);
+  }, []);
 }

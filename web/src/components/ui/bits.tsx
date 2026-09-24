@@ -1,7 +1,8 @@
 "use client";
 
 import type { LucideIcon } from "lucide-react";
-import clsx from "clsx";
+import NumberFlow from "@number-flow/react";
+import { cn as clsx } from "@/lib/cn";
 
 /** Page heading: serif display line with a one-sentence lede. */
 export function PageTitle({ eyebrow, title, lede, aside }: { eyebrow?: string; title: string; lede?: string; aside?: React.ReactNode }) {
@@ -17,12 +18,21 @@ export function PageTitle({ eyebrow, title, lede, aside }: { eyebrow?: string; t
   );
 }
 
-export function Stat({ label, value, unit, sub, tone = "default", className }: { label: string; value: string; unit?: string; sub?: React.ReactNode; tone?: "default" | "signal" | "muted"; className?: string }) {
+/**
+ * Headline number. `value` is numeric so NumberFlow can roll the digits when a
+ * recompute or correction changes it (rare, state indication); static text
+ * values render as-is.
+ */
+export function Stat({ label, value, unit, sub, tone = "default", className, digits = 2 }: { label: string; value: number | string; unit?: string; sub?: React.ReactNode; tone?: "default" | "signal" | "muted"; className?: string; digits?: number }) {
   return (
     <div className={clsx("card p-4 sm:p-5", className)}>
       <div className="text-xs font-medium text-muted">{label}</div>
       <div data-stat className={clsx("mt-1 font-display text-3xl leading-none tabular sm:text-[2.25rem]", tone === "signal" ? "text-signal-ink" : tone === "muted" ? "text-muted" : "text-ink")}>
-        {value}
+        {typeof value === "number" ? (
+          <NumberFlow value={value} format={{ maximumFractionDigits: digits }} transformTiming={{ duration: 500, easing: "cubic-bezier(0.23, 1, 0.32, 1)" }} spinTiming={{ duration: 500, easing: "cubic-bezier(0.23, 1, 0.32, 1)" }} />
+        ) : (
+          value
+        )}
         {unit && <span className="ml-1.5 font-sans text-sm font-normal text-muted">{unit}</span>}
       </div>
       {sub && <div className="mt-2 text-xs text-muted">{sub}</div>}

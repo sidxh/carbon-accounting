@@ -13,8 +13,9 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { motion } from "motion/react";
+import { OTPInput, REGEXP_ONLY_DIGITS } from "input-otp";
 import { ArrowLeft, ChevronDown, Smartphone } from "lucide-react";
-import clsx from "clsx";
+import { cn } from "@/lib/cn";
 import { useAuth } from "@/components/auth-provider";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { Wordmark } from "@/components/shell";
@@ -23,46 +24,40 @@ import { firebaseAuth } from "@/lib/firebase";
 const EMULATOR = process.env.NEXT_PUBLIC_USE_EMULATORS === "true";
 const CODES = [["+84", "VN"], ["+81", "JP"], ["+91", "IN"], ["+65", "SG"], ["+61", "AU"], ["+66", "TH"], ["+62", "ID"]] as const;
 
-/** Six single-digit boxes; paste fills them all; the last digit submits. */
+/**
+ * Six-digit code on input-otp: one real input (autofill, paste, caret,
+ * screen-reader friendly) rendered as six slots. The last digit submits.
+ */
 function OtpInput({ value, onChange, onComplete, disabled }: { value: string; onChange: (v: string) => void; onComplete: (v: string) => void; disabled: boolean }) {
   const t = useTranslations("signIn");
-  const refs = useRef<(HTMLInputElement | null)[]>([]);
-  const digits = Array.from({ length: 6 }, (_, i) => value[i] ?? "");
-
-  function set(i: number, ch: string) {
-    const next = (value.slice(0, i) + ch + value.slice(i + 1)).replace(/\D/g, "").slice(0, 6);
-    onChange(next);
-    if (ch && i < 5) refs.current[i + 1]?.focus();
-    if (next.length === 6) onComplete(next);
-  }
-
   return (
-    <div className="flex justify-between gap-2" role="group" aria-label={t("codeLabel")}>
-      {digits.map((d, i) => (
-        <input
-          key={i}
-          ref={(el) => { refs.current[i] = el; }}
-          className="input h-14 w-full max-w-[52px] p-0 text-center font-mono text-2xl"
-          inputMode="numeric"
-          autoComplete={i === 0 ? "one-time-code" : "off"}
-          aria-label={`${t("codeLabel")} ${i + 1}`}
-          maxLength={1}
-          value={d}
-          disabled={disabled}
-          autoFocus={i === 0}
-          onChange={(e) => set(i, e.target.value.replace(/\D/g, "").slice(-1))}
-          onKeyDown={(e) => {
-            if (e.key === "Backspace" && !d && i > 0) { refs.current[i - 1]?.focus(); onChange(value.slice(0, i - 1)); }
-            if (e.key === "ArrowLeft" && i > 0) refs.current[i - 1]?.focus();
-            if (e.key === "ArrowRight" && i < 5) refs.current[i + 1]?.focus();
-          }}
-          onPaste={(e) => {
-            const txt = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
-            if (txt) { e.preventDefault(); onChange(txt); refs.current[Math.min(txt.length, 5)]?.focus(); if (txt.length === 6) onComplete(txt); }
-          }}
-        />
-      ))}
-    </div>
+    <OTPInput
+      value={value}
+      onChange={onChange}
+      onComplete={onComplete}
+      maxLength={6}
+      disabled={disabled}
+      autoFocus
+      inputMode="numeric"
+      pattern={REGEXP_ONLY_DIGITS}
+      aria-label={t("codeLabel")}
+      containerClassName="flex justify-between gap-2 has-[:disabled]:opacity-60"
+      render={({ slots }) => (
+        <>
+          {slots.map((slot, i) => (
+            <div
+              key={i}
+              className={cn(
+                "input relative flex h-14 w-full max-w-[52px] items-center justify-center p-0 font-mono text-2xl transition-[border-color,box-shadow] duration-[var(--dur-fast)]",
+                slot.isActive && "border-signal shadow-[0_0_0_3px_var(--signal-bg)]",
+              )}
+            >
+              {slot.char ?? (slot.hasFakeCaret ? <span className="h-7 w-px animate-pulse bg-ink" aria-hidden /> : <span className="text-faint">·</span>)}
+            </div>
+          ))}
+        </>
+      )}
+    />
   );
 }
 
@@ -218,7 +213,7 @@ export default function SignInPage() {
 
           <div className="mt-6 border-t hairline pt-4">
             <button type="button" className="flex w-full items-center justify-between text-left text-sm text-muted" aria-expanded={moreOpen} onClick={() => setMoreOpen((v) => !v)}>
-              {t("otherWays")}<ChevronDown className={clsx("size-4 transition-transform", moreOpen && "rotate-180")} aria-hidden />
+              {t("otherWays")}<ChevronDown className={cn("size-4 transition-transform", moreOpen && "rotate-180")} aria-hidden />
             </button>
             {moreOpen && (
               <form onSubmit={sendLink} className="mt-3 space-y-2">

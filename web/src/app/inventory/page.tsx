@@ -364,10 +364,10 @@ function Inventory({ profile, uid }: { profile: SupplierProfile | null; uid: str
 
       {/* Headline band --------------------------------------------------------------- */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat label={t("scope1")} value={t1(tot.scope1_kg)} unit={t("tonnes")} sub={t("shareOfTotal", { pct: share(tot.scope1_kg) })} />
-        <Stat label={t("scope2loc")} value={t1(tot.scope2_location_kg)} unit={t("tonnes")} sub={t("shareOfTotal", { pct: share(tot.scope2_location_kg) })} />
-        <Stat label={t("scope2mkt")} value={t1(tot.scope2_market_kg)} unit={t("tonnes")} tone="muted" sub={t("marketNote")} />
-        <Stat label={t("total")} value={t1(total)} unit={t("tonnes")} tone="signal" sub={<><MixBar segments={tierSegs} className="mt-1" /><span className="mt-1 block">{tierSegs.map((s) => `${s.label} ${(s.share * 100).toFixed(1)}%`).join(" · ")}</span></>} />
+        <Stat label={t("scope1")} value={tot.scope1_kg / 1000} unit={t("tonnes")} sub={t("shareOfTotal", { pct: share(tot.scope1_kg) })} />
+        <Stat label={t("scope2loc")} value={tot.scope2_location_kg / 1000} unit={t("tonnes")} sub={t("shareOfTotal", { pct: share(tot.scope2_location_kg) })} />
+        <Stat label={t("scope2mkt")} value={tot.scope2_market_kg / 1000} unit={t("tonnes")} tone="muted" sub={t("marketNote")} />
+        <Stat label={t("total")} value={total / 1000} unit={t("tonnes")} tone="signal" sub={<><MixBar segments={tierSegs} className="mt-1" /><span className="mt-1 block">{tierSegs.map((s) => `${s.label} ${(s.share * 100).toFixed(1)}%`).join(" · ")}</span></>} />
       </div>
 
       <MonthlyChart byMonth={tot.by_month ?? {}} />
