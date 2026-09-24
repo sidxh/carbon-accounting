@@ -69,6 +69,44 @@ def main() -> int:
     print(f"assumptions: {[(a.method, len(a.applied_to)) for a in asms]}")
     est = [l for l in repo.list_activity_lines(profile.id) if l.tier == "estimated"]
     print(f"estimated lines: {[(l.energy_type.value, l.period_start.isoformat(), round(l.quantity)) for l in est]}")
+
+    from app.services import compute_inventory
+
+    snap = compute_inventory(repo, profile)
+    t = snap.totals
+    print(f"\nINVENTORY FY{snap.reporting_year}")
+    print(f"  Scope 1                {t.scope1_kg/1000:10.2f} tCO2e")
+    print(f"  Scope 2 location-based {t.scope2_location_kg/1000:10.2f} tCO2e")
+    print(f"  Scope 2 market-based   {t.scope2_market_kg/1000:10.2f} tCO2e")
+    print(f"  biogenic (outside)     {t.biogenic_kg/1000:10.2f} tCO2")
+    print(f"  by type: {{ {', '.join(f'{k}: {v/1000:.2f} t' for k, v in t.by_energy_type.items())} }}")
+    print(f"  tier mix: {{ {', '.join(f'{k}: {v:.1%}' for k, v in t.tier_mix.items())} }}")
+    print(f"  skipped: {snap.skipped}")
+    inv, _ = repo.list_inventory(profile.id)
+    sample = next(l for l in inv if l.energy_type.value == "refrigerant")
+    print(f"\nsample lineage — {sample.id}: {sample.quantity:g} {sample.unit} × {sample.factor_value} = {sample.kg_co2e:.0f} kg")
+    print(f"  doc={sample.source_doc_id} factor={sample.factor_id} tier={sample.tier}\n  {sample.factor_citation}")
+
+    from app.agents.filler import fill_workbook
+
+    template = (ROOT / "data" / "templates" / "cdp_sme_questionnaire.xlsx").read_bytes()
+    filled, answers = fill_workbook(
+        template, profile=profile, snap=snap, lines=inv, assumptions=asms, customer_share=0.20
+    )
+    out = ROOT / "agent" / ".local_storage" / "demo_filled_cdp_sme.xlsx"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_bytes(filled)
+    print(f"\nQUESTIONNAIRE — {len(answers)} answers written to {out.relative_to(ROOT)}")
+    for a in answers:
+        v = a.value if not isinstance(a.value, str) else (a.value[:70] + "…" if len(a.value) > 70 else a.value)
+        print(f"  {'⚑' if a.flagged else ' '} {a.ref or '-':8s} {a.field:24s} {v}")
+
+    from app.exporters.methodology import build_pdf
+
+    pdf = build_pdf(profile, snap, inv, asms, n_docs=30, dropped=len(state.dropped_outside_fy))
+    pdf_path = out.with_name("demo_methodology_note.pdf")
+    pdf_path.write_bytes(pdf)
+    print(f"\nMETHODOLOGY NOTE — {len(pdf):,} bytes → {pdf_path.relative_to(ROOT)}")
     return 0
 
 

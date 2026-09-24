@@ -28,11 +28,14 @@ class FactorChoice:
     exact_year: bool
     exact_region: bool
     fell_back_to: FactorMethod | None  # set when market-based had to use a grid average
+    requested_year: int | None = None
 
     def explanation(self) -> str:
         parts = [self.factor.citation()]
         if not self.exact_year:
-            parts.append(f"nearest available vintage used for {self.factor.year}")
+            parts.append(
+                f"{self.factor.year} factor used as nearest available vintage for {self.requested_year}"
+            )
         if not self.exact_region:
             parts.append("national factor used; no sub-national factor for this site")
         if self.fell_back_to:
@@ -154,7 +157,7 @@ class FactorLibrary:
             if not cands:
                 raise FactorNotFound(f"no GWP for refrigerant {gas}")
             f = self._nearest_year(cands, year)
-            return FactorChoice(f, f.year == year, True, None)
+            return FactorChoice(f, f.year == year, True, None, year)
 
         if energy_type in (EnergyType.ELECTRICITY, EnergyType.PURCHASED_STEAM, EnergyType.PURCHASED_COOLING):
             if scope2_method == "market":
@@ -164,21 +167,21 @@ class FactorLibrary:
                         f = self._nearest_year(cands, year)
                         fell_back = method if method != "supplier_specific" else None
                         return FactorChoice(
-                            f, f.year == year, bool(region) and f.region == region, fell_back
+                            f, f.year == year, bool(region) and f.region == region, fell_back, year
                         )
                 raise FactorNotFound(f"no Scope 2 factor for {country} {year}")
             cands = self._candidates(energy_type, "location", unit, country, region, None, allow_global)
             if not cands:
                 raise FactorNotFound(f"no location-based grid factor for {country} {year}")
             f = self._nearest_year(cands, year)
-            return FactorChoice(f, f.year == year, (not region) or f.region == region, None)
+            return FactorChoice(f, f.year == year, (not region) or f.region == region, None, year)
 
         # Fuels: national factor first, then the DEFRA/IPCC generic fallback.
         cands = self._candidates(energy_type, "fuel", unit, country, region, None, allow_global)
         if not cands:
             raise FactorNotFound(f"no fuel factor for {energy_type} in {unit or 'any unit'}")
         f = self._nearest_year(cands, year)
-        return FactorChoice(f, f.year == year, True, None)
+        return FactorChoice(f, f.year == year, True, None, year)
 
     def biogenic(self, energy_type: EnergyType, year: int, unit: Unit) -> Factor | None:
         cands = [

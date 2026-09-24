@@ -42,7 +42,7 @@ def test_nearest_vintage_prefers_most_recent_prior_year(lib):
     c = lib.select(energy_type=EnergyType.ELECTRICITY, year=2019, country="VN", unit=Unit.KWH)
     assert c.factor.year == 2021
     assert c.exact_year is False
-    assert "nearest available vintage" in c.explanation()
+    assert "nearest available vintage for 2019" in c.explanation()
 
 
 def test_regional_factor_beats_national_when_site_region_known(lib):

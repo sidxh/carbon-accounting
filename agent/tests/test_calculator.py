@@ -81,7 +81,7 @@ def test_diesel_uses_generic_factor_where_country_has_none(lib):
     (l,) = r.lines
     assert l.scope == 1 and l.factor_id == "GL-diesel-2024"
     assert l.kg_co2e == pytest.approx(2660)
-    assert "nearest available vintage" in l.factor_citation  # 2025 asked, 2024 used
+    assert "nearest available vintage for 2025" in l.factor_citation
 
 
 def test_lpg_in_litres_converted_to_kg_for_japanese_factor(lib):

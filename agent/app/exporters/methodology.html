@@ -1,0 +1,95 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @font-face { font-family: "Body"; src: url("{{ font_path }}"); }
+  @page { size: A4; margin: 18mm 16mm 18mm 16mm; }
+  body { font-family: "Body", "Noto Sans", "Helvetica", sans-serif; font-size: 10.5pt; color: #1b1b1b; line-height: 1.45; }
+  h1 { font-size: 17pt; margin: 0 0 2pt 0; }
+  h2 { font-size: 12pt; margin: 14pt 0 4pt 0; border-bottom: 1px solid #999; padding-bottom: 2pt; }
+  .sub { color: #555; font-size: 9.5pt; margin-bottom: 10pt; }
+  table { width: 100%; border-collapse: collapse; font-size: 9.5pt; margin: 4pt 0 8pt 0; }
+  th, td { border-bottom: 1px solid #ddd; padding: 3pt 5pt; text-align: left; vertical-align: top; }
+  th { background: #f0f0ee; }
+  td.num, th.num { text-align: right; }
+  .headline td { font-size: 11pt; }
+  .headline td.num { font-weight: bold; }
+  .muted { color: #666; font-size: 9pt; }
+  .box { border: 1px solid #ccc; padding: 6pt 8pt; margin: 6pt 0; background: #fafaf8; }
+  p { margin: 4pt 0 6pt 0; }
+</style>
+</head>
+<body>
+<h1>Greenhouse gas inventory — methodology note</h1>
+<div class="sub">{{ profile.name }} · {{ profile.country }} · reporting period {{ profile.fiscal_year_start }} to {{ profile.fiscal_year_end }} · generated {{ generated }}</div>
+
+<table class="headline">
+  <tr><td>Scope 1 (direct)</td><td class="num">{{ '%.2f' % (t.scope1_kg/1000) }} tCO2e</td></tr>
+  <tr><td>Scope 2 — location-based</td><td class="num">{{ '%.2f' % (t.scope2_location_kg/1000) }} tCO2e</td></tr>
+  <tr><td>Scope 2 — market-based</td><td class="num">{{ '%.2f' % (t.scope2_market_kg/1000) }} tCO2e</td></tr>
+  <tr><td>Scope 1 + 2 (location-based)</td><td class="num">{{ '%.2f' % ((t.scope1_kg + t.scope2_location_kg)/1000) }} tCO2e</td></tr>
+  <tr><td>Biogenic CO2 (reported outside the scopes)</td><td class="num">{{ '%.2f' % (t.biogenic_kg/1000) }} tCO2</td></tr>
+</table>
+
+<h2>1. Approach</h2>
+<p>{{ narrative.approach }}</p>
+
+<h2>2. Organisational and operational boundary</h2>
+<p>Operational control. Sites included:</p>
+<table>
+  <tr><th>Site</th><th>Country / region</th><th class="num">Scope 1 (t)</th><th class="num">Scope 2 loc. (t)</th><th class="num">Scope 2 mkt. (t)</th></tr>
+  {% for s in sites %}
+  <tr><td>{{ s.name }}</td><td>{{ s.country }}{% if s.region %} / {{ s.region }}{% endif %}</td>
+      <td class="num">{{ '%.2f' % (s.scope1/1000) }}</td><td class="num">{{ '%.2f' % (s.scope2_location/1000) }}</td><td class="num">{{ '%.2f' % (s.scope2_market/1000) }}</td></tr>
+  {% endfor %}
+</table>
+
+<h2>3. Activity data</h2>
+<p>{{ narrative.data }}</p>
+<table>
+  <tr><th>Energy carrier</th><th class="num">Quantity</th><th>Unit</th><th class="num">Lines</th><th class="num">tCO2e</th><th>Data quality</th></tr>
+  {% for r in activity %}
+  <tr><td>{{ r.energy_type }}</td><td class="num">{{ '{:,.1f}'.format(r.quantity) }}</td><td>{{ r.unit }}</td><td class="num">{{ r.lines }}</td><td class="num">{{ '%.2f' % (r.kg/1000) }}</td><td>{{ r.tiers }}</td></tr>
+  {% endfor %}
+</table>
+<p class="muted">{{ documents }} source document(s) read. {{ dropped }} record(s) fell wholly outside the reporting period and were excluded. Billing periods straddling the period boundary were apportioned by days.</p>
+
+<h2>4. Emission factors</h2>
+<table>
+  <tr><th>Applies to</th><th class="num">Value</th><th>Unit</th><th>Source</th><th>Vintage</th><th>Notes</th></tr>
+  {% for f in factors %}
+  <tr><td>{{ f.applies }}</td><td class="num">{{ f.value }}</td><td>kgCO2e/{{ f.unit }}</td><td>{{ f.source }}</td><td>{{ f.vintage }}</td><td class="muted">{{ f.notes }}</td></tr>
+  {% endfor %}
+</table>
+<p class="muted">Scope 2 market-based figures follow the GHG Protocol Scope 2 Guidance hierarchy; where no contractual or residual-mix factor is published for the country the grid average is used and marked as such above. Refrigerant GWPs are IPCC AR5 GWP-100.</p>
+
+<h2>5. Assumptions and estimates</h2>
+{% if assumptions %}
+<table>
+  <tr><th>Question put to the supplier</th><th>Answer</th><th>Method applied</th><th class="num">Records</th></tr>
+  {% for a in assumptions %}
+  <tr><td>{{ a.question }}</td><td>{{ a.answer }}</td><td>{{ a.method }}</td><td class="num">{{ a.applied_to|length }}</td></tr>
+  {% endfor %}
+</table>
+{% else %}
+<p>No assumptions were required; every quantity is taken from a primary document.</p>
+{% endif %}
+<p>{{ narrative.assumptions }}</p>
+
+<h2>6. Data quality</h2>
+<div class="box">
+  {% for k, v in tier_mix %}<b>{{ k }}</b>: {{ '%.1f' % (v*100) }}%&nbsp;&nbsp;{% endfor %}
+  <div class="muted">Share of Scope 1 + 2 (location-based) CO2e. Primary = metered or invoiced quantity from a document; secondary = quantity derived from a document with a documented conversion; estimated = documented assumption agreed with the supplier.</div>
+</div>
+{% if skipped %}
+<p><b>Not computed:</b></p>
+<ul>{% for s in skipped %}<li class="muted">{{ s[0] }} — {{ s[1] }}</li>{% endfor %}</ul>
+{% endif %}
+
+<h2>7. Verification</h2>
+<p>These figures are self-reported and have not been verified by a third party. Every inventory line carries a reference to its source document, the emission factor applied and any assumption used, and the evidence pack (documents, factor library with citations, assumption log) is available to an assurance provider on request.</p>
+
+<p class="muted">Prepared with the supplier carbon reporting agent. Calculations are deterministic; the model was used only to read documents, converse with the supplier, and draft the narrative sections above.</p>
+</body>
+</html>
