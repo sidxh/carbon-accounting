@@ -505,8 +505,8 @@ function Inventory({ profile, uid }: { profile: SupplierProfile | null; uid: str
       )}
 
       {snapshot.skipped.length > 0 && (
-        <section className="card border-attention-strong/40 p-4 text-sm" aria-labelledby="skipped-h">
-          <h2 id="skipped-h" className="font-medium">{t("skipped")} · {snapshot.skipped.length}</h2>
+        <section className="card p-4 text-sm" aria-labelledby="skipped-h">
+          <h2 id="skipped-h" className="flex items-center gap-2 font-medium">{t("skipped")}<span className="pill pill-attention tabular">{snapshot.skipped.length}</span></h2>
           <ul className="mt-1 list-disc pl-5 text-muted">{snapshot.skipped.map(([id, why]) => <li key={id}>{why}</li>)}</ul>
           <Link href="/reconcile" className="btn btn-secondary btn-sm mt-3">{t("fixInQuestions")}</Link>
         </section>

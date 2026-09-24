@@ -299,7 +299,7 @@ function Documents({ profile, uid }: { profile: SupplierProfile | null; uid: str
 
       {/* Documents by energy type -------------------------------------------------- */}
       {docs.length === 0 ? (
-        <EmptyState icon={ImagePlus} title={t("empty")} body={t("emptyBody")} />
+        <EmptyState icon={ImagePlus} title={t("empty")} body={t("emptyBody")} action={<button className="btn" onClick={() => pick.current?.click()} disabled={uploading}><ImagePlus className="size-4" aria-hidden />{t("pick")}</button>} />
       ) : (
         <div className="space-y-4">
           {groups.map(([key, g]) => {
