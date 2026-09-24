@@ -49,7 +49,12 @@
     "saved": "Đã lưu.",
     "startOver": "Bắt đầu lại",
     "startOverLede": "Xóa toàn bộ hóa đơn, câu trả lời và kết quả của tài khoản này. Thông tin công ty được giữ lại.",
-    "startOverConfirm": "Xóa toàn bộ hóa đơn, câu trả lời và kết quả? Thông tin công ty sẽ được giữ lại."
+    "startOverConfirm": "Xóa toàn bộ hóa đơn, câu trả lời và kết quả? Thông tin công ty sẽ được giữ lại.",
+    "languageHint": "Các câu hỏi ở bước sau sẽ được hỏi bằng ngôn ngữ này.",
+    "sitesHint": "Mỗi dòng một nhà xưởng hoặc văn phòng có hóa đơn bạn sẽ tải lên.",
+    "removeSite": "Xóa cơ sở {n}",
+    "cancel": "Hủy",
+    "startedOver": "Đã xóa toàn bộ hóa đơn, câu trả lời và kết quả."
   },
   "documents": {
     "title": "Hóa đơn của bạn",
@@ -107,7 +112,46 @@
     "issues": "{count} mục cần giải quyết",
     "reset": "Đặt lại câu hỏi",
     "resetConfirm": "Xóa cuộc trò chuyện, câu trả lời và số liệu đã tính? Hóa đơn được giữ lại để bạn trả lời khác đi.",
-    "next": "Xem bảng kiểm kê"
+    "next": "Xem bảng kiểm kê",
+    "cancel": "Hủy",
+    "resetDone": "Đã đặt lại câu hỏi. Hóa đơn được giữ lại.",
+    "chatTitle": "Trò chuyện",
+    "thinking": "Đang suy nghĩ…",
+    "startHint": "Chúng tôi so hóa đơn với năm báo cáo, loại bản trùng, cắt kỳ theo năm và tìm tháng còn thiếu. Điều gì không tự giải quyết được, chúng tôi sẽ hỏi bạn.",
+    "startNoDocs": "Hãy tải lên ít nhất một hóa đơn trước.",
+    "systemCard": "Đã kiểm tra {docs} hóa đơn · {n} điều cần hỏi bạn",
+    "found": {
+      "title": "Những gì chúng tôi tìm thấy · {docs} hóa đơn, {lines} bản ghi",
+      "none": "Chưa đọc hóa đơn nào.",
+      "lines": "{docs} hóa đơn, {lines} bản ghi",
+      "deliveries": "Giao hàng — không cần phủ theo tháng",
+      "missing": "Thiếu {n} tháng",
+      "estimatedMonths": "{n} tháng từ câu trả lời của bạn",
+      "complete": "Đủ năm"
+    },
+    "note": {
+      "duplicates": "Đã loại {n} ảnh trùng",
+      "apportioned": "{n} hóa đơn vắt qua năm được phân bổ theo ngày",
+      "converted": "{n} lần đổi đơn vị",
+      "outsideFy": "Bỏ qua {n} bản ghi ngoài năm báo cáo",
+      "estimated": "{n} tháng được bù từ câu trả lời của bạn"
+    },
+    "legend": {
+      "primary": "đọc từ hóa đơn",
+      "estimated": "từ câu trả lời",
+      "missing": "chưa có"
+    },
+    "items": {
+      "title": "{n} mục còn mở",
+      "resolved": "Đã giải quyết",
+      "asking": "Đang hỏi bạn",
+      "queued": "Tiếp theo"
+    },
+    "issue": {
+      "gap": "Không có bản ghi {energy} cho {months} ({n} tháng)",
+      "unitHours": "{energy} ghi theo giờ chạy; cần lít/giờ",
+      "lowConfidence": "Một giá trị {energy} khó đọc; hãy xác nhận"
+    }
   },
   "inventory": {
     "title": "Bảng kiểm kê",

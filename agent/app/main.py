@@ -23,6 +23,7 @@ from .agents.filler import LOCKED_FIELDS, Answer, fill_workbook, write_answers
 from .auth import Caller, current_caller, require_supplier
 from .exporters.methodology import build_pdf
 from .models import ActivityLine, Site, SupplierProfile
+from .reconcile_tools import summarise
 from .repo import QuestionnaireRecord, ReconcileState, get_repo
 from .services import compute_inventory, register_and_extract, remove_document, reset_all, reset_questions, retry_extraction
 from .settings import get_settings
@@ -198,23 +199,37 @@ def document_file(supplier_id: str, doc_id: str, caller: Caller = Depends(requir
     return _file_response(rec.storage_key, rec.filename)
 
 
-@app.post("/suppliers/{supplier_id}/reconcile/start", response_model=ReconcileState)
+def _reconcile_view(profile: SupplierProfile, state: ReconcileState | None) -> dict:
+    """The stored state plus a summary of what the checks found, computed on read.
+
+    Before the first "Check my bills" the state is idle but the bills are
+    already uploaded, so the summary still describes them (with no issues).
+    """
+    repo = get_repo()
+    lines = repo.list_activity_lines(profile.id)
+    state = state or ReconcileState(supplier_id=profile.id)
+    summary = summarise(lines, state.issue_objects(), state.dropped_outside_fy, profile.fiscal_year_start, profile.fiscal_year_end)
+    return state.model_dump(mode="json") | {"summary": summary}
+
+
+@app.post("/suppliers/{supplier_id}/reconcile/start")
 def reconcile_start(supplier_id: str, caller: Caller = Depends(require_supplier)):
     profile = _profile_or_404(supplier_id)
-    return reconciler.start(get_repo(), profile)
+    return _reconcile_view(profile, reconciler.start(get_repo(), profile))
 
 
-@app.post("/suppliers/{supplier_id}/reconcile", response_model=ReconcileState)
+@app.post("/suppliers/{supplier_id}/reconcile")
 def reconcile_reply(supplier_id: str, body: ReplyIn, caller: Caller = Depends(require_supplier)):
     profile = _profile_or_404(supplier_id)
     if not body.message.strip():
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Say something first.")
-    return reconciler.reply(get_repo(), profile, body.message.strip())
+    return _reconcile_view(profile, reconciler.reply(get_repo(), profile, body.message.strip()))
 
 
-@app.get("/suppliers/{supplier_id}/reconcile", response_model=ReconcileState | None)
+@app.get("/suppliers/{supplier_id}/reconcile")
 def reconcile_state(supplier_id: str, caller: Caller = Depends(require_supplier)):
-    return get_repo().get_reconcile(supplier_id)
+    profile = _profile_or_404(supplier_id)
+    return _reconcile_view(profile, get_repo().get_reconcile(supplier_id))
 
 
 @app.post("/suppliers/{supplier_id}/compute")

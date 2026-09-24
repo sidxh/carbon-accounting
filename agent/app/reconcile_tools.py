@@ -315,6 +315,69 @@ def exclude_lines(
     return [l for l in lines if l.id not in set(line_ids)], asm
 
 
+# --- summary for the UI ----------------------------------------------------------------
+
+_TIER_RANK = {"primary": 3, "secondary": 2, "estimated": 1}
+
+
+def summarise(lines: list[ActivityLine], issues: list[Issue], dropped_outside_fy: list[str], fy_start: date, fy_end: date) -> dict:
+    """What the deterministic pass found, in a shape the Questions page can draw.
+
+    Per energy type: how many bills and lines, the total quantity, and one
+    coverage state per fiscal-year month (primary / secondary / estimated /
+    missing; `na` for carriers that are deliveries rather than monthly bills).
+    Plus the housekeeping the supplier never sees otherwise: duplicates
+    dropped, lines outside the year, unit conversions and apportionments.
+    """
+    months = _months_between(fy_start, fy_end)
+    by_type: dict[EnergyType, list[ActivityLine]] = {}
+    for ln in lines:
+        by_type.setdefault(ln.energy_type, []).append(ln)
+
+    energy = []
+    for et, ls in by_type.items():
+        docs = {l.source_doc_id for l in ls if not l.source_doc_id.startswith("assumption:")}
+        cov: list[str] = []
+        if et in PERIODIC:
+            for ym in months:
+                best = "missing"
+                for l in ls:
+                    if ym in _covered_months(l) and (best == "missing" or _TIER_RANK.get(l.tier, 0) > _TIER_RANK.get(best, 0)):
+                        best = l.tier
+                cov.append(best)
+        else:
+            cov = ["na"] * len(months)
+        energy.append({
+            "energy_type": et.value,
+            "documents": len(docs),
+            "lines": len(ls),
+            "quantity": round(sum(l.quantity for l in ls), 3),
+            "unit": ls[0].unit.value,
+            "periodic": et in PERIODIC,
+            "coverage": cov,
+            "months_missing": sum(1 for c in cov if c == "missing"),
+            "months_estimated": sum(1 for c in cov if c == "estimated"),
+        })
+    energy.sort(key=lambda e: (-e["quantity"] if e["energy_type"] == "electricity" else 0, e["energy_type"]))
+
+    dup = [i for i in issues if i.kind == "duplicate"]
+    open_issues = [i for i in issues if not i.resolved and i.kind != "duplicate"]
+    resolved = [i for i in issues if i.resolved and i.kind != "duplicate"]
+    return {
+        "months": months,
+        "energy": energy,
+        "documents": len({l.source_doc_id for l in lines if not l.source_doc_id.startswith("assumption:")}),
+        "lines": len(lines),
+        "duplicates_dropped": len(dup),
+        "outside_fy": len(dropped_outside_fy),
+        "converted": sum(1 for l in lines if "converted from" in (l.notes or "")),
+        "apportioned": sum(1 for l in lines if "apportioned to FY" in (l.notes or "")),
+        "estimated_lines": sum(1 for l in lines if l.tier == "estimated"),
+        "open_issues": len(open_issues),
+        "resolved_issues": len(resolved),
+    }
+
+
 # --- pipeline ------------------------------------------------------------------------
 
 @dataclass

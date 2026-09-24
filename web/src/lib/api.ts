@@ -82,13 +82,42 @@ export interface ChatTurn {
   at: string;
 }
 
+export interface EnergySummary {
+  energy_type: string;
+  documents: number;
+  lines: number;
+  quantity: number;
+  unit: string;
+  periodic: boolean;
+  coverage: string[];
+  months_missing: number;
+  months_estimated: number;
+}
+
+export interface ReconcileSummary {
+  months: string[];
+  energy: EnergySummary[];
+  documents: number;
+  lines: number;
+  duplicates_dropped: number;
+  outside_fy: number;
+  converted: number;
+  apportioned: number;
+  estimated_lines: number;
+  open_issues: number;
+  resolved_issues: number;
+}
+
+export interface Issue { id: string; kind: string; energy_type?: string | null; months: string[]; detail: string; resolved: boolean }
+
 export interface ReconcileState {
   supplier_id: string;
   status: "idle" | "asking" | "done";
-  issues: { id: string; kind: string; energy_type?: string | null; months: string[]; detail: string; resolved: boolean }[];
+  issues: Issue[];
   pending_issue_id?: string | null;
   history: ChatTurn[];
   dropped_outside_fy: string[];
+  summary: ReconcileSummary;
 }
 
 export interface InventoryLine {
@@ -208,7 +237,7 @@ export const api = {
     return URL.createObjectURL(await res.blob());
   },
 
-  reconcileState: (uid: string) => request<ReconcileState | null>(`/suppliers/${uid}/reconcile`),
+  reconcileState: (uid: string) => request<ReconcileState>(`/suppliers/${uid}/reconcile`),
   reconcileStart: (uid: string) => json<ReconcileState>(`/suppliers/${uid}/reconcile/start`, "POST"),
   reconcileReply: (uid: string, message: string) => json<ReconcileState>(`/suppliers/${uid}/reconcile`, "POST", { message }),
 

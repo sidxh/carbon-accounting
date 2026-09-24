@@ -137,7 +137,12 @@ def test_reset_chat_rebuilds_lines_from_extraction_and_keeps_documents(client):
     assert len(lines) == 1
     assert lines[0].source_doc_id == "doc-1" and lines[0].quantity == 10000 and lines[0].tier == "primary"
     assert client.repo.list_assumptions("sup-1") == []
-    assert client.get("/suppliers/sup-1/reconcile", headers=_auth()).json() is None
+    view = client.get("/suppliers/sup-1/reconcile", headers=_auth()).json()
+    assert view["status"] == "idle" and view["history"] == []
+    # The summary describes the rebuilt lines: one electricity bill covering January only.
+    elec = next(e for e in view["summary"]["energy"] if e["energy_type"] == "electricity")
+    assert elec["documents"] == 1 and elec["coverage"][0] == "primary" and elec["months_missing"] == 11
+    assert view["summary"]["estimated_lines"] == 0 and view["summary"]["open_issues"] == 0
     inv = client.get("/suppliers/sup-1/inventory", headers=_auth()).json()
     assert inv["snapshot"] is None and inv["lines"] == []
     assert len(client.get("/suppliers/sup-1/documents", headers=_auth()).json()["documents"]) == 1

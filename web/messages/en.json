@@ -49,7 +49,12 @@
     "saved": "Saved.",
     "startOver": "Start over",
     "startOverLede": "Delete every bill, answer and result for this account. Your company details stay.",
-    "startOverConfirm": "Delete all bills, answers and results? Your company details will be kept."
+    "startOverConfirm": "Delete all bills, answers and results? Your company details will be kept.",
+    "languageHint": "The questions on the next steps are asked in this language.",
+    "sitesHint": "One row per factory or office whose bills you will upload.",
+    "removeSite": "Remove site {n}",
+    "cancel": "Cancel",
+    "startedOver": "All bills, answers and results removed."
   },
   "documents": {
     "title": "Your bills",
@@ -107,7 +112,46 @@
     "issues": "{count} item(s) to resolve",
     "reset": "Reset questions",
     "resetConfirm": "Clear the conversation, your answers and the calculated figures? Your bills are kept, so you can answer differently.",
-    "next": "See the inventory"
+    "next": "See the inventory",
+    "cancel": "Cancel",
+    "resetDone": "Questions reset. Your bills are kept.",
+    "chatTitle": "Conversation",
+    "thinking": "Thinking…",
+    "startHint": "We compare the bills against your reporting year, drop duplicates, cut periods to the year and look for months with nothing. Anything the checks cannot settle, we ask you.",
+    "startNoDocs": "Upload at least one bill first.",
+    "systemCard": "Checked {docs} bill(s) · {n} thing(s) to ask you",
+    "found": {
+      "title": "What we found · {docs} bills, {lines} records",
+      "none": "No bills read yet.",
+      "lines": "{docs} bill(s), {lines} record(s)",
+      "deliveries": "Deliveries — no monthly coverage expected",
+      "missing": "{n} month(s) missing",
+      "estimatedMonths": "{n} month(s) from your answers",
+      "complete": "Full year"
+    },
+    "note": {
+      "duplicates": "{n} duplicate photo(s) dropped",
+      "apportioned": "{n} bill(s) straddling the year apportioned by days",
+      "converted": "{n} unit conversion(s)",
+      "outsideFy": "{n} record(s) outside the reporting year ignored",
+      "estimated": "{n} month(s) filled from your answers"
+    },
+    "legend": {
+      "primary": "read from a bill",
+      "estimated": "from your answer",
+      "missing": "nothing yet"
+    },
+    "items": {
+      "title": "{n} open item(s)",
+      "resolved": "Resolved",
+      "asking": "Asking you now",
+      "queued": "Next"
+    },
+    "issue": {
+      "gap": "No {energy} records for {months} ({n} month(s))",
+      "unitHours": "{energy} recorded in running hours; litres per hour needed",
+      "lowConfidence": "A {energy} value was hard to read; please confirm"
+    }
   },
   "inventory": {
     "title": "Your inventory",

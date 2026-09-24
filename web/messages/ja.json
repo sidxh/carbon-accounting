@@ -49,7 +49,12 @@
     "saved": "保存しました。",
     "startOver": "最初からやり直す",
     "startOverLede": "このアカウントの請求書、回答、結果をすべて削除します。会社情報は残ります。",
-    "startOverConfirm": "請求書、回答、結果をすべて削除しますか？会社情報は保持されます。"
+    "startOverConfirm": "請求書、回答、結果をすべて削除しますか？会社情報は保持されます。",
+    "languageHint": "次のステップの質問はこの言語で行われます。",
+    "sitesHint": "請求書をアップロードする工場や事業所ごとに1行。",
+    "removeSite": "拠点{n}を削除",
+    "cancel": "キャンセル",
+    "startedOver": "請求書、回答、結果をすべて削除しました。"
   },
   "documents": {
     "title": "請求書",
@@ -107,7 +112,46 @@
     "issues": "未解決 {count}件",
     "reset": "質問をリセット",
     "resetConfirm": "会話、回答、算定結果を消去しますか？請求書は残るので、別の回答で再実行できます。",
-    "next": "インベントリを見る"
+    "next": "インベントリを見る",
+    "cancel": "キャンセル",
+    "resetDone": "質問をリセットしました。請求書は残っています。",
+    "chatTitle": "会話",
+    "thinking": "考え中…",
+    "startHint": "請求書を報告年度と照合し、重複を除き、期間を年度に合わせ、抜けている月を探します。自動で解決できないことだけお尋ねします。",
+    "startNoDocs": "まず請求書を1件以上アップロードしてください。",
+    "systemCard": "{docs}件を確認 · 質問 {n}件",
+    "found": {
+      "title": "確認結果 · 請求書{docs}件、記録{lines}件",
+      "none": "まだ読み取った請求書がありません。",
+      "lines": "{docs}件、記録{lines}件",
+      "deliveries": "納品 — 月次カバレッジ不要",
+      "missing": "{n}か月不足",
+      "estimatedMonths": "回答による{n}か月",
+      "complete": "通年"
+    },
+    "note": {
+      "duplicates": "重複写真{n}件を除外",
+      "apportioned": "年度をまたぐ{n}件を日割り",
+      "converted": "単位換算{n}件",
+      "outsideFy": "報告年度外の{n}件を除外",
+      "estimated": "回答で{n}か月を補完"
+    },
+    "legend": {
+      "primary": "請求書から",
+      "estimated": "回答から",
+      "missing": "未取得"
+    },
+    "items": {
+      "title": "未解決 {n}件",
+      "resolved": "解決済み",
+      "asking": "確認中",
+      "queued": "次"
+    },
+    "issue": {
+      "gap": "{months}の{energy}記録なし（{n}か月）",
+      "unitHours": "{energy}が運転時間で記録。L/hが必要",
+      "lowConfidence": "{energy}の値が読み取りづらい。確認をお願いします"
+    }
   },
   "inventory": {
     "title": "インベントリ",

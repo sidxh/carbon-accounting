@@ -3,8 +3,12 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { Plus, Trash2 } from "lucide-react";
 import { RequireAuth } from "@/components/require-auth";
 import { Shell } from "@/components/shell";
+import { PageTitle } from "@/components/ui/bits";
+import { Dialog } from "@/components/ui/dialog";
+import { useToast } from "@/components/ui/toast";
 import { api, type SupplierProfile } from "@/lib/api";
 
 const COUNTRIES = ["VN", "JP", "SG", "AU", "TH", "ID", "IN"];
@@ -14,8 +18,9 @@ function Form({ profile, uid }: { profile: SupplierProfile | null; uid: string }
   const t = useTranslations("setup");
   const locale = useLocale();
   const router = useRouter();
+  const toast = useToast();
   const [busy, setBusy] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [confirmReset, setConfirmReset] = useState(false);
   const [f, setF] = useState({
     name: profile?.name ?? "",
     country: profile?.country ?? "VN",
@@ -43,102 +48,120 @@ function Form({ profile, uid }: { profile: SupplierProfile | null; uid: string }
         revenue_currency: f.revenue_currency || null,
         sites: f.sites.filter((s) => s.name.trim()).map((s) => ({ name: s.name, country: s.country || f.country, region: s.region || null })),
       });
-      setSaved(true);
+      toast(t("saved"));
       router.push("/documents");
+    } catch (err) {
+      toast((err as Error).message, "danger");
     } finally {
       setBusy(false);
     }
   }
 
   async function startOver() {
-    if (!window.confirm(t("startOverConfirm"))) return;
     setBusy(true);
     try {
       await api.resetData(uid, "all");
+      toast(t("startedOver"));
       router.push("/documents");
+    } catch (err) {
+      toast((err as Error).message, "danger");
     } finally {
       setBusy(false);
+      setConfirmReset(false);
     }
   }
 
   return (
-    <>
-    <form onSubmit={save} className="card space-y-5 p-6">
-      <div>
-        <h1 className="text-2xl font-semibold">{t("title")}</h1>
-        <p className="mt-1 text-sm text-[var(--muted)]">{t("lede")}</p>
-      </div>
+    <div className="space-y-6">
+      <PageTitle title={t("title")} lede={t("lede")} />
 
-      <div>
-        <label className="label">{t("name")}</label>
-        <input className="input" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} required />
-      </div>
+      <form onSubmit={save} className="card space-y-6 p-5 sm:p-6">
+        <div>
+          <label className="label" htmlFor="name">{t("name")}</label>
+          <input id="name" className="input" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} required autoComplete="organization" />
+        </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div>
-          <label className="label">{t("country")}</label>
-          <select className="input" value={f.country} onChange={(e) => setF({ ...f, country: e.target.value })}>
-            {COUNTRIES.map((c) => <option key={c}>{c}</option>)}
-          </select>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="label" htmlFor="country">{t("country")}</label>
+            <select id="country" className="input" value={f.country} onChange={(e) => setF({ ...f, country: e.target.value })}>
+              {COUNTRIES.map((c) => <option key={c}>{c}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="label" htmlFor="language">{t("language")}</label>
+            <select id="language" className="input" value={f.language} onChange={(e) => setF({ ...f, language: e.target.value })}>
+              {LANGS.map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+            </select>
+            <p className="mt-1 text-xs text-muted">{t("languageHint")}</p>
+          </div>
+          <div>
+            <label className="label" htmlFor="fyStart">{t("fyStart")}</label>
+            <input id="fyStart" className="input" type="date" value={f.fiscal_year_start} onChange={(e) => setF({ ...f, fiscal_year_start: e.target.value })} required />
+          </div>
+          <div>
+            <label className="label" htmlFor="fyEnd">{t("fyEnd")}</label>
+            <input id="fyEnd" className="input" type="date" value={f.fiscal_year_end} onChange={(e) => setF({ ...f, fiscal_year_end: e.target.value })} required />
+          </div>
         </div>
-        <div>
-          <label className="label">{t("language")}</label>
-          <select className="input" value={f.language} onChange={(e) => setF({ ...f, language: e.target.value })}>
-            {LANGS.map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-          </select>
-        </div>
-        <div>
-          <label className="label">{t("fyStart")}</label>
-          <input className="input" type="date" value={f.fiscal_year_start} onChange={(e) => setF({ ...f, fiscal_year_start: e.target.value })} required />
-        </div>
-        <div>
-          <label className="label">{t("fyEnd")}</label>
-          <input className="input" type="date" value={f.fiscal_year_end} onChange={(e) => setF({ ...f, fiscal_year_end: e.target.value })} required />
-        </div>
-      </div>
 
-      <div>
-        <label className="label">{t("sites")}</label>
-        <div className="space-y-2">
-          {f.sites.map((s, i) => (
-            <div key={i} className="grid gap-2 sm:grid-cols-2">
-              <input className="input" placeholder={t("siteName")} value={s.name} onChange={(e) => { const sites = [...f.sites]; sites[i] = { ...s, name: e.target.value }; setF({ ...f, sites }); }} />
-              <input className="input" placeholder={t("siteRegion")} value={s.region} onChange={(e) => { const sites = [...f.sites]; sites[i] = { ...s, region: e.target.value }; setF({ ...f, sites }); }} />
-            </div>
-          ))}
-        </div>
-        <button type="button" className="mt-2 text-sm text-[var(--accent)] underline-offset-4 hover:underline" onClick={() => setF({ ...f, sites: [...f.sites, { name: "", country: f.country, region: "" }] })}>
-          + {t("addSite")}
-        </button>
-      </div>
+        <fieldset>
+          <legend className="label">{t("sites")}</legend>
+          <p className="mb-2 text-xs text-muted">{t("sitesHint")}</p>
+          <div className="space-y-2">
+            {f.sites.map((s, i) => (
+              <div key={i} className="grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
+                <input className="input" aria-label={`${t("siteName")} ${i + 1}`} placeholder={t("siteName")} value={s.name} onChange={(e) => { const sites = [...f.sites]; sites[i] = { ...s, name: e.target.value }; setF({ ...f, sites }); }} />
+                <input className="input" aria-label={`${t("siteRegion")} ${i + 1}`} placeholder={t("siteRegion")} value={s.region} onChange={(e) => { const sites = [...f.sites]; sites[i] = { ...s, region: e.target.value }; setF({ ...f, sites }); }} />
+                <button type="button" className="btn btn-ghost btn-icon" aria-label={t("removeSite", { n: i + 1 })} disabled={f.sites.length === 1} onClick={() => setF({ ...f, sites: f.sites.filter((_, j) => j !== i) })}>
+                  <Trash2 className="size-4" aria-hidden />
+                </button>
+              </div>
+            ))}
+          </div>
+          <button type="button" className="btn btn-ghost btn-sm mt-2 gap-1.5" onClick={() => setF({ ...f, sites: [...f.sites, { name: "", country: f.country, region: "" }] })}>
+            <Plus className="size-4" aria-hidden /> {t("addSite")}
+          </button>
+        </fieldset>
 
-      <div className="grid gap-4 sm:grid-cols-[1fr_120px]">
-        <div>
-          <label className="label">{t("revenue")}</label>
-          <input className="input" inputMode="decimal" value={f.revenue} onChange={(e) => setF({ ...f, revenue: e.target.value })} />
+        <div className="grid gap-4 sm:grid-cols-[1fr_140px]">
+          <div>
+            <label className="label" htmlFor="revenue">{t("revenue")}</label>
+            <input id="revenue" className="input tabular" inputMode="decimal" value={f.revenue} onChange={(e) => setF({ ...f, revenue: e.target.value })} />
+          </div>
+          <div>
+            <label className="label" htmlFor="currency">{t("currency")}</label>
+            <input id="currency" className="input" placeholder="VND" value={f.revenue_currency} onChange={(e) => setF({ ...f, revenue_currency: e.target.value.toUpperCase() })} />
+          </div>
         </div>
-        <div>
-          <label className="label">{t("currency")}</label>
-          <input className="input" placeholder="VND" value={f.revenue_currency} onChange={(e) => setF({ ...f, revenue_currency: e.target.value.toUpperCase() })} />
-        </div>
-      </div>
 
-      <div className="flex items-center gap-3">
-        <button className="btn" disabled={busy}>{t("save")}</button>
-        {saved && <span className="text-sm text-[var(--accent)]">{t("saved")}</span>}
-      </div>
-    </form>
-
-    {profile && (
-      <div className="card mt-5 flex flex-wrap items-center justify-between gap-3 p-5 text-sm">
-        <div>
-          <div className="font-medium">{t("startOver")}</div>
-          <div className="mt-0.5 text-[var(--muted)]">{t("startOverLede")}</div>
+        <div className="flex items-center gap-3">
+          <button className="btn" disabled={busy}>{t("save")}</button>
         </div>
-        <button type="button" className="btn btn-secondary px-4 py-1.5 text-sm" onClick={startOver} disabled={busy}>{t("startOver")}</button>
-      </div>
-    )}
-    </>
+      </form>
+
+      {profile && (
+        <div className="card flex flex-wrap items-center justify-between gap-3 p-5 text-sm">
+          <div>
+            <div className="font-medium">{t("startOver")}</div>
+            <div className="mt-0.5 text-muted">{t("startOverLede")}</div>
+          </div>
+          <button type="button" className="btn btn-danger btn-sm" onClick={() => setConfirmReset(true)} disabled={busy}>{t("startOver")}</button>
+        </div>
+      )}
+
+      <Dialog
+        open={confirmReset}
+        title={t("startOver")}
+        description={t("startOverConfirm")}
+        confirmLabel={t("startOver")}
+        cancelLabel={t("cancel")}
+        tone="danger"
+        busy={busy}
+        onConfirm={startOver}
+        onClose={() => setConfirmReset(false)}
+      />
+    </div>
   );
 }
 
