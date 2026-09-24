@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { AnimatePresence, motion } from "motion/react";
 import { Camera, ChevronDown, FileText, ImagePlus, RotateCcw, Trash2, UploadCloud, X } from "lucide-react";
-import clsx from "clsx";
+import { cn as clsx } from "@/lib/cn";
 import { RequireAuth } from "@/components/require-auth";
 import { Shell } from "@/components/shell";
 import { CoverageStrip, EmptyState, PageTitle, SkeletonList } from "@/components/ui/bits";
@@ -240,8 +240,8 @@ function Documents({ profile, uid }: { profile: SupplierProfile | null; uid: str
       <AnimatePresence>
         {staged.length > 0 && (
           <motion.div initial={{ opacity: 0, transform: "translateY(8px)" }} animate={{ opacity: 1, transform: "translateY(0px)" }} exit={{ opacity: 0 }} transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }} className="card p-4">
-            <div className="flex items-center justify-between gap-3">
-              <div className="font-medium">{t("readyToUpload", { n: staged.length })}</div>
+            <div className="flex items-center justify-between gap-3" role="status" aria-live="polite">
+              <div className="font-medium">{uploading ? t("uploading", { count: Object.values(progress).filter((p) => p === "queued" || p === "uploading").length }) : t("readyToUpload", { n: staged.length })}</div>
               {!uploading && <button className="btn btn-ghost btn-sm" onClick={() => setStaged([])}>{t("clearAll")}</button>}
             </div>
             <ul className="mt-2 divide-y divide-line">
@@ -263,7 +263,7 @@ function Documents({ profile, uid }: { profile: SupplierProfile | null; uid: str
       {docs.length > 0 && (
         <section className="card p-4 sm:p-5" aria-labelledby="summary-h">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h2 id="summary-h" className="font-display text-xl">{t("summaryTitle", { n: docs.length })}</h2>
+            <h2 id="summary-h" className="font-display text-xl text-balance">{t("summaryTitle", { n: docs.length })}</h2>
             <span className="text-xs text-muted">{profile ? `${profile.fiscal_year_start} → ${profile.fiscal_year_end}` : ""}</span>
           </div>
           <div className="mt-3 grid gap-3">

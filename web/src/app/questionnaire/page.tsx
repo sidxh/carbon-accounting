@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { AnimatePresence, motion } from "motion/react";
 import { Download, FileSpreadsheet, FileText, Lock, Pencil, UploadCloud } from "lucide-react";
-import clsx from "clsx";
+import { cn as clsx } from "@/lib/cn";
 import { RequireAuth } from "@/components/require-auth";
 import { Shell } from "@/components/shell";
 import { EmptyState, PageTitle, SkeletonList } from "@/components/ui/bits";
@@ -197,7 +197,8 @@ function Questionnaire({ uid }: { profile: SupplierProfile | null; uid: string }
           </div>
           <div>
             <label className="label" htmlFor="share">{t("share")}</label>
-            <input id="share" className="input max-w-xs tabular" inputMode="decimal" placeholder={t("sharePlaceholder")} value={share} onChange={(e) => setShare(e.target.value)} />
+            <input id="share" className="input max-w-xs tabular" inputMode="decimal" placeholder={t("sharePlaceholder")} aria-describedby="share-hint" value={share} onChange={(e) => setShare(e.target.value)} />
+            <p id="share-hint" className="sr-only">{t("sharePlaceholder")}</p>
           </div>
           <input ref={pick} type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden onChange={(e) => onFile(e.target.files)} />
           <div className="flex flex-wrap gap-2">

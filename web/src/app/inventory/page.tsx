@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowRight, ArrowUpDown, Calculator, ChevronDown, ExternalLink, FileText, Info, Pencil, RefreshCw } from "lucide-react";
-import clsx from "clsx";
+import { cn as clsx } from "@/lib/cn";
 import { RequireAuth } from "@/components/require-auth";
 import { Shell } from "@/components/shell";
 import { EmptyState, MixBar, PageTitle, SkeletonList, Stat, TIER_BAR, TIER_PILL } from "@/components/ui/bits";
@@ -430,7 +430,7 @@ function Inventory({ profile, uid }: { profile: SupplierProfile | null; uid: str
       {/* Filters + table ------------------------------------------------------------------ */}
       <section aria-labelledby="lines-h" className="space-y-3">
         <div className="flex flex-wrap items-center gap-2">
-          <h2 id="lines-h" className="font-display text-xl">{t("lines.title", { n: view.headline.length })}</h2>
+          <h2 id="lines-h" className="font-display text-xl text-balance">{t("lines.title", { n: view.headline.length })}</h2>
           <span className="flex-1" />
           <button className="btn btn-ghost btn-sm gap-1.5" onClick={() => setSort((s) => (s === "period" ? "emissions" : "period"))} aria-label={t("lines.sortBy", { key: t(`lines.sort.${sort === "period" ? "emissions" : "period"}`) })}>
             <ArrowUpDown className="size-3.5" aria-hidden />{t(`lines.sort.${sort}`)}
@@ -492,7 +492,7 @@ function Inventory({ profile, uid }: { profile: SupplierProfile | null; uid: str
       {/* By site ---------------------------------------------------------------------------- */}
       {Object.keys(tot.by_site).length > 1 && (
         <section className="card p-4 sm:p-5" aria-labelledby="site-h">
-          <h2 id="site-h" className="font-display text-xl">{t("bySite")}</h2>
+          <h2 id="site-h" className="font-display text-xl text-balance">{t("bySite")}</h2>
           <table className="mt-3 w-full text-sm">
             <thead className="text-left text-xs text-muted"><tr><th className="py-1 font-medium">{t("site")}</th><th className="py-1 text-right font-medium">{t("scope1short")}</th><th className="py-1 text-right font-medium">{t("scope2short")}</th></tr></thead>
             <tbody>
@@ -512,7 +512,7 @@ function Inventory({ profile, uid }: { profile: SupplierProfile | null; uid: str
         </section>
       )}
 
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t hairline bg-paper/95 p-3 sm:static sm:border-0 sm:bg-transparent sm:p-0">
+      <div className="fixed inset-x-0 bottom-0 z-bar border-t hairline bg-paper/95 p-3 pb-[max(12px,env(safe-area-inset-bottom))] sm:static sm:border-0 sm:bg-transparent sm:p-0">
         <Link href="/questionnaire" className="btn w-full sm:w-auto">{t("next")}<ArrowRight className="size-4" aria-hidden /></Link>
       </div>
     </div>

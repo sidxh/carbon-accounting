@@ -110,7 +110,11 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  -webkit-tap-highlight-color: transparent;
 }
+
+/* Hover styles written as Tailwind `hover:` utilities only apply with a real pointer. */
+@custom-variant hover (@media (hover: hover) and (pointer: fine) { &:hover });
 
 ::selection {
   background: var(--attention-bg);
@@ -229,7 +233,14 @@ body {
   background: var(--raised);
   color: var(--ink);
   outline: none;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  /* 16px on touch screens: anything smaller makes iOS Safari zoom the page on focus. */
+  font-size: 16px;
+  transition: border-color var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .input {
+    font-size: 0.9375rem;
+  }
 }
 .input::placeholder {
   color: var(--faint);

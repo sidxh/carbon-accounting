@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowRight, Check, CircleDashed, MessageSquareText, RotateCcw, ScanSearch, Send } from "lucide-react";
-import clsx from "clsx";
+import { cn as clsx } from "@/lib/cn";
 import { RequireAuth } from "@/components/require-auth";
 import { Shell } from "@/components/shell";
 import { CoverageStrip, PageTitle, SkeletonList } from "@/components/ui/bits";
@@ -43,7 +43,7 @@ function Found({ state, fy }: { state: ReconcileState; fy: [string, string] }) {
   return (
     <section className="card p-4 sm:p-5" aria-labelledby="found-h">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 id="found-h" className="font-display text-xl">{t("found.title", { docs: s.documents, lines: s.lines })}</h2>
+        <h2 id="found-h" className="font-display text-xl text-balance">{t("found.title", { docs: s.documents, lines: s.lines })}</h2>
         <span className="text-xs text-muted">{fy[0]} → {fy[1]}</span>
       </div>
       {s.energy.length === 0 ? (
@@ -98,7 +98,7 @@ function OpenItems({ state }: { state: ReconcileState }) {
   if (!items.length) return null;
   return (
     <section className="card p-4 sm:p-5" aria-labelledby="items-h">
-      <h2 id="items-h" className="font-display text-xl">{t("items.title", { n: items.filter((i) => !i.resolved).length })}</h2>
+      <h2 id="items-h" className="font-display text-xl text-balance">{t("items.title", { n: items.filter((i) => !i.resolved).length })}</h2>
       <ul className="mt-3 space-y-2">
         {items.map((i) => {
           const pending = state.pending_issue_id === i.id;

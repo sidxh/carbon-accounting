@@ -11,8 +11,8 @@ export function PageTitle({ eyebrow, title, lede, aside }: { eyebrow?: string; t
     <div className="flex flex-wrap items-end justify-between gap-4">
       <div className="max-w-2xl">
         {eyebrow && <div className="eyebrow mb-2">{eyebrow}</div>}
-        <h1 className="font-display text-[2rem] leading-[1.05] text-ink sm:text-[2.5rem]">{title}</h1>
-        {lede && <p className="mt-2 text-[15px] leading-relaxed text-muted">{lede}</p>}
+        <h1 className="font-display text-[2rem] leading-[1.05] text-balance text-ink sm:text-[2.5rem]">{title}</h1>
+        {lede && <p className="mt-2 text-[15px] leading-relaxed text-pretty text-muted">{lede}</p>}
       </div>
       {aside}
     </div>
@@ -49,8 +49,8 @@ export function EmptyState({ icon: Icon, title, body, action }: { icon?: LucideI
           <Icon className="size-5" aria-hidden />
         </div>
       )}
-      <div className="font-display text-xl text-ink">{title}</div>
-      {body && <p className="mt-1 max-w-sm text-sm text-muted">{body}</p>}
+      <div className="font-display text-xl text-balance text-ink">{title}</div>
+      {body && <p className="mt-1 max-w-sm text-sm text-pretty text-muted">{body}</p>}
       {action && <div className="mt-5">{action}</div>}
     </div>
   );

@@ -109,7 +109,7 @@ export default function Home() {
   return (
     <div className="min-h-dvh overflow-x-clip">
       {/* Floating nav ------------------------------------------------------------ */}
-      <header className="pointer-events-none fixed inset-x-0 top-3 z-50 flex justify-center px-3">
+      <header className="pointer-events-none fixed inset-x-0 top-3 z-header flex justify-center px-3">
         <nav className="card pointer-events-auto flex w-full max-w-4xl items-center justify-between gap-3 px-3 py-2 shadow-[var(--shadow-raised)] sm:px-4" aria-label={t("navLabel")}>
           <Link href="/" className="rounded-lg"><Wordmark /></Link>
           <div className="flex items-center gap-2">
@@ -145,7 +145,7 @@ export default function Home() {
         <section className="mx-auto max-w-5xl px-4 py-16" aria-labelledby="how-h">
           <Reveal className="text-center">
             <p className="eyebrow justify-center">{t("howEyebrow")}</p>
-            <h2 id="how-h" className="font-display mt-3 text-3xl sm:text-4xl">{t("howTitle")}</h2>
+            <h2 id="how-h" className="font-display mt-3 text-3xl text-balance sm:text-4xl">{t("howTitle")}</h2>
           </Reveal>
           <ol className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {STEPS.map(({ icon: Icon, key }, i) => (
@@ -168,7 +168,7 @@ export default function Home() {
           <div className="card grid gap-8 p-6 sm:p-10 lg:grid-cols-[1fr_1.2fr]">
             <Reveal>
               <p className="eyebrow">{t("trustEyebrow")}</p>
-              <h2 id="trust-h" className="font-display mt-3 text-3xl leading-tight sm:text-4xl">{t("trustTitle")}</h2>
+              <h2 id="trust-h" className="font-display mt-3 text-3xl leading-tight text-balance sm:text-4xl">{t("trustTitle")}</h2>
               <p className="mt-4 text-[15px] leading-relaxed text-muted">{t("trustBody")}</p>
             </Reveal>
             <ul className="grid gap-4 sm:grid-cols-2">
@@ -187,7 +187,7 @@ export default function Home() {
         {/* CTA ---------------------------------------------------------------------------- */}
         <section className="mx-auto max-w-3xl px-4 pb-20 pt-4 text-center">
           <Reveal>
-            <h2 className="font-display text-3xl sm:text-4xl">{t("finalTitle")}</h2>
+            <h2 className="font-display text-3xl text-balance sm:text-4xl">{t("finalTitle")}</h2>
             <p className="mt-3 text-muted">{t("finalBody")}</p>
             <Link href="/sign-in" className="btn mt-6 px-6 text-base">{t("cta")}<ArrowRight className="size-4" aria-hidden /></Link>
           </Reveal>

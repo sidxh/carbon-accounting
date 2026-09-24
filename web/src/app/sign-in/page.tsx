@@ -165,8 +165,8 @@ export default function SignInPage() {
       <main className="mx-auto grid w-full max-w-5xl gap-10 px-4 pb-16 pt-10 sm:px-6 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:pt-20">
         <motion.div initial={{ opacity: 0, transform: "translateY(8px)" }} animate={{ opacity: 1, transform: "translateY(0px)" }} transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }} className="max-w-lg">
           <p className="eyebrow">{t("eyebrow")}</p>
-          <h1 className="font-display mt-4 text-4xl leading-[1.02] sm:text-5xl">{t("title")}</h1>
-          <p className="mt-4 text-[15px] leading-relaxed text-muted">{t("lede")}</p>
+          <h1 className="font-display mt-4 text-4xl leading-[1.02] text-balance sm:text-5xl">{t("title")}</h1>
+          <p className="mt-4 text-[15px] leading-relaxed text-pretty text-muted">{t("lede")}</p>
           <ul className="mt-6 hidden space-y-2 text-sm text-ink-soft lg:block">
             {["p1", "p2", "p3"].map((k) => <li key={k} className="flex gap-2"><span className="mt-2 size-1.5 shrink-0 rounded-full bg-attention-strong" aria-hidden />{t(`points.${k}`)}</li>)}
           </ul>
@@ -185,6 +185,7 @@ export default function SignInPage() {
                 <input id="phone" className="input font-mono" inputMode="tel" autoComplete="tel-national" placeholder={t("phonePlaceholder")} value={local} onChange={(e) => setLocal(e.target.value)} autoFocus />
               </div>
               <button className="btn w-full" disabled={busy || local.replace(/\D/g, "").length < 7}>{busy ? t("sending") : t("sendCode")}</button>
+              {error && <p role="alert" className="rounded-lg bg-danger-bg px-3 py-2 text-sm text-danger">{error}</p>}
               <p className="text-xs text-muted">{t("smsNote")}</p>
             </form>
           ) : (
@@ -197,6 +198,7 @@ export default function SignInPage() {
                 <div className="mt-0.5 text-xs text-muted">{t("codeSentTo", { phone })}</div>
               </div>
               <OtpInput value={code} onChange={setCode} onComplete={(v) => verify(v)} disabled={busy} />
+              {error && <p role="alert" className="rounded-lg bg-danger-bg px-3 py-2 text-sm text-danger">{error}</p>}
               <button className="btn w-full" onClick={() => verify()} disabled={busy || code.length < 6}>{busy ? t("verifying") : t("verify")}</button>
               <div className="flex items-center justify-between text-xs text-muted">
                 <span>{t("noCode")}</span>
@@ -208,8 +210,6 @@ export default function SignInPage() {
           )}
 
           <div id="recaptcha-slot" />
-
-          {error && <p role="alert" className="mt-4 rounded-lg bg-danger-bg px-3 py-2 text-sm text-danger">{error}</p>}
 
           <div className="mt-6 border-t hairline pt-4">
             <button type="button" className="flex w-full items-center justify-between text-left text-sm text-muted" aria-expanded={moreOpen} onClick={() => setMoreOpen((v) => !v)}>
@@ -223,6 +223,7 @@ export default function SignInPage() {
                   <button className="btn btn-secondary shrink-0" disabled={busy || !email.includes("@")}>{t("sendLink")}</button>
                 </div>
                 {linkSent && <p className="text-sm text-signal-ink">{t("linkSent")}</p>}
+                {error && moreOpen && <p role="alert" className="text-sm text-danger">{error}</p>}
               </form>
             )}
           </div>

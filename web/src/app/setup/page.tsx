@@ -90,10 +90,10 @@ function Form({ profile, uid }: { profile: SupplierProfile | null; uid: string }
           </div>
           <div>
             <label className="label" htmlFor="language">{t("language")}</label>
-            <select id="language" className="input" value={f.language} onChange={(e) => setF({ ...f, language: e.target.value })}>
+            <select id="language" className="input" aria-describedby="language-hint" value={f.language} onChange={(e) => setF({ ...f, language: e.target.value })}>
               {LANGS.map(([k, v]) => <option key={k} value={k}>{v}</option>)}
             </select>
-            <p className="mt-1 text-xs text-muted">{t("languageHint")}</p>
+            <p id="language-hint" className="mt-1 text-xs text-muted">{t("languageHint")}</p>
           </div>
           <div>
             <label className="label" htmlFor="fyStart">{t("fyStart")}</label>

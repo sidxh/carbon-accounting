@@ -141,7 +141,7 @@ export function Shell({ children, showSteps = true, stepMeta, wide = false }: { 
       </header>
 
       {showSteps && (
-        <div className="sticky top-0 z-40 -mx-4 mt-5 bg-paper/95 px-4 py-2 sm:mx-0 sm:px-0">
+        <div className="sticky top-0 z-sticky -mx-4 mt-5 bg-paper/95 px-4 py-2 sm:mx-0 sm:px-0">
           <Stepper meta={stepMeta} />
         </div>
       )}
