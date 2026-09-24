@@ -99,6 +99,7 @@
     },
     "lineage": "Where this number comes from",
     "document": "Document",
+    "fromAssumption": "From your answer",
     "factor": "Emission factor",
     "assumptions": "Assumptions",
     "correct": "Correct quantity",

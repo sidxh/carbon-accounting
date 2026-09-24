@@ -5,9 +5,32 @@ import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { RequireAuth } from "@/components/require-auth";
 import { Shell } from "@/components/shell";
-import { api, type ActivityLine, type Assumption, type InventoryLine, type Snapshot, type SupplierProfile } from "@/lib/api";
+import { api, type ActivityLine, type Assumption, type DocumentRecord, type InventoryLine, type Snapshot, type SupplierProfile } from "@/lib/api";
 
 const t1 = (kg: number) => (kg / 1000).toLocaleString(undefined, { maximumFractionDigits: 2 });
+
+/** The bill a line came from, as a small image; a badge for PDFs; a note for estimated lines. */
+function SourceThumb({ uid, docId, doc }: { uid: string; docId: string; doc?: DocumentRecord }) {
+  const t = useTranslations("inventory");
+  const [src, setSrc] = useState<string | null>(null);
+  const isImage = !!doc && doc.mime_type.startsWith("image/");
+  useEffect(() => {
+    if (!isImage) return;
+    let url: string | null = null;
+    api.documentFileUrl(uid, docId).then((u) => { url = u; setSrc(u); }).catch(() => {});
+    return () => { if (url) URL.revokeObjectURL(url); };
+  }, [uid, docId, isImage]);
+
+  if (docId.startsWith("assumption:")) {
+    return <div className="grid h-20 w-16 shrink-0 place-items-center rounded-lg bg-[var(--warn-bg)] px-1 text-center text-[10px] leading-tight text-[var(--warn)]">{t("fromAssumption")}</div>;
+  }
+  if (!isImage) {
+    return <div className="grid h-20 w-16 shrink-0 place-items-center rounded-lg bg-[#eeeeea] text-xs font-semibold text-[var(--muted)]">PDF</div>;
+  }
+  // A blob: URL from an authenticated fetch; next/image cannot optimise it.
+  // eslint-disable-next-line @next/next/no-img-element
+  return src ? <img src={src} alt="" className="h-20 w-16 shrink-0 rounded-lg object-cover" /> : <div className="h-20 w-16 shrink-0 rounded-lg bg-[#eeeeea]" />;
+}
 
 function Headline({ label, kg }: { label: string; kg: number }) {
   const t = useTranslations("inventory");
@@ -24,7 +47,7 @@ const shortDate = (iso: string) => {
   return d.toLocaleDateString(undefined, { day: "2-digit", month: "short" });
 };
 
-function Row({ uid, line, market, activity, assumptions, onChanged }: { uid: string; line: InventoryLine; market?: InventoryLine; activity?: ActivityLine; assumptions: Assumption[]; onChanged: () => void }) {
+function Row({ uid, line, market, activity, doc, assumptions, onChanged }: { uid: string; line: InventoryLine; market?: InventoryLine; activity?: ActivityLine; doc?: DocumentRecord; assumptions: Assumption[]; onChanged: () => void }) {
   const t = useTranslations("inventory");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -60,7 +83,14 @@ function Row({ uid, line, market, activity, assumptions, onChanged }: { uid: str
             <div className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">{t("lineage")}</div>
             <dl className="mt-2 grid gap-2 sm:grid-cols-[140px_1fr]">
               <dt className="text-[var(--muted)]">{t("document")}</dt>
-              <dd className="break-words font-mono text-xs">{line.source_doc_id}{activity?.notes && <div className="mt-0.5 font-sans text-[var(--muted)]">{activity.notes}</div>}</dd>
+              <dd className="flex items-start gap-3">
+                <SourceThumb uid={uid} docId={line.source_doc_id} doc={doc} />
+                <div className="min-w-0 break-words text-xs">
+                  {doc?.filename && <div className="font-medium">{doc.filename}</div>}
+                  <div className="font-mono text-[var(--muted)]">{line.source_doc_id}</div>
+                  {activity?.notes && <div className="mt-0.5 text-[var(--muted)]">{activity.notes}</div>}
+                </div>
+              </dd>
               <dt className="text-[var(--muted)]">{t("factor")}</dt>
               <dd className="break-words text-xs">
                 <b>{line.factor_value}</b> kgCO2e/{line.unit} — {line.factor_citation}
@@ -101,11 +131,16 @@ function Row({ uid, line, market, activity, assumptions, onChanged }: { uid: str
 function Inventory({ uid }: { profile: SupplierProfile | null; uid: string }) {
   const t = useTranslations("inventory");
   const [data, setData] = useState<{ lines: InventoryLine[]; snapshot: Snapshot | null; assumptions: Assumption[]; activityLines: ActivityLine[] } | null>(null);
+  const [docs, setDocs] = useState<Record<string, DocumentRecord>>({});
   const [busy, setBusy] = useState(false);
   const [flash, setFlash] = useState("");
 
   const load = useCallback(() => api.inventory(uid).then(setData), [uid]);
   useEffect(() => { load(); }, [load]);
+  // Document metadata (filename, mime type) for the lineage thumbnails.
+  useEffect(() => {
+    api.listDocuments(uid).then((r) => setDocs(Object.fromEntries(r.documents.map((d) => [d.id, d])))).catch(() => {});
+  }, [uid]);
 
   async function compute() {
     setBusy(true);
@@ -172,7 +207,7 @@ function Inventory({ uid }: { profile: SupplierProfile | null; uid: string }) {
               </thead>
               <tbody>
                 {shown.map((l) => (
-                  <Row key={l.id} uid={uid} line={l} market={marketByActivity[l.activity_line_id]} activity={byActivity[l.activity_line_id]} assumptions={assumptions} onChanged={load} />
+                  <Row key={l.id} uid={uid} line={l} market={marketByActivity[l.activity_line_id]} activity={byActivity[l.activity_line_id]} doc={docs[l.source_doc_id]} assumptions={assumptions} onChanged={load} />
                 ))}
               </tbody>
             </table>

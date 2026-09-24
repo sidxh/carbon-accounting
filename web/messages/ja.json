@@ -99,6 +99,7 @@
     },
     "lineage": "この数値の根拠",
     "document": "書類",
+    "fromAssumption": "回答に基づく",
     "factor": "排出係数",
     "assumptions": "前提条件",
     "correct": "数量を修正",

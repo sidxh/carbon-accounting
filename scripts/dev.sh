@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Local development stack, zero-payment mode.
 #
-#   scripts/dev.sh emulators   # Firebase Auth + Firestore + Storage emulators (needs Java 21+)
+#   scripts/dev.sh emulators   # Firebase Auth + Firestore emulators (needs Java 21+)
+#                              # Storage emulator is not started: STORAGE_BACKEND=local writes to disk.
 #   scripts/dev.sh agent       # FastAPI agent on :8000, pointed at the emulators via .env
 #   scripts/dev.sh web         # Next.js on :3000
 #
@@ -18,7 +19,7 @@ fi
 case "${1:-}" in
   emulators)
     cd "$ROOT"
-    exec firebase emulators:start --only auth,firestore,storage --project fir-testing-f96b1 \
+    exec firebase emulators:start --only auth,firestore --project fir-testing-f96b1 \
       --import ./emulator-data --export-on-exit ./emulator-data
     ;;
   agent)
