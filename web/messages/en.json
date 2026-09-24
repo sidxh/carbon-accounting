@@ -292,7 +292,25 @@
     "editPlaceholder": "Type your answer",
     "answeredByYou": "Answered by you",
     "lockedHint": "From your bills — correct the quantity in the inventory",
-    "addRevenue": "Add revenue in Setup to calculate this"
+    "addRevenue": "Add revenue in Setup to calculate this",
+    "dropTitle": "Your customer's Excel",
+    "dropBody": "Drop the .xlsx here or choose it. We keep the layout and write into the answer column.",
+    "xlsxOnly": "Only .xlsx workbooks can be filled.",
+    "filledToast": "{n} answer(s) filled from your inventory.",
+    "savedToast": "{ref} saved.",
+    "fromData": "From your data",
+    "legend": "Green cells come from your bills and the calculator. Blue cells you typed. Yellow cells are for you to complete; the reason is written beside them.",
+    "emptyTitle": "No questionnaire filled yet",
+    "emptyBody": "Upload the Excel your customer sent. Try data/templates/cdp_sme_questionnaire.xlsx for the CDP SME climate module.",
+    "ring": {
+      "auto": "From your data",
+      "yours": "Answered by you",
+      "open": "For you to complete"
+    },
+    "sections": {
+      "label": "Section {key}",
+      "other": "Other"
+    }
   },
   "common": {
     "loading": "Loading…",

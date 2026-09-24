@@ -21,7 +21,7 @@ export function Stat({ label, value, unit, sub, tone = "default", className }: {
   return (
     <div className={clsx("card p-4 sm:p-5", className)}>
       <div className="text-xs font-medium text-muted">{label}</div>
-      <div className={clsx("mt-1 font-display text-3xl leading-none tabular sm:text-[2.25rem]", tone === "signal" ? "text-signal-ink" : tone === "muted" ? "text-muted" : "text-ink")}>
+      <div data-stat className={clsx("mt-1 font-display text-3xl leading-none tabular sm:text-[2.25rem]", tone === "signal" ? "text-signal-ink" : tone === "muted" ? "text-muted" : "text-ink")}>
         {value}
         {unit && <span className="ml-1.5 font-sans text-sm font-normal text-muted">{unit}</span>}
       </div>

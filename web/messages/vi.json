@@ -292,7 +292,25 @@
     "editPlaceholder": "Nhập câu trả lời của bạn",
     "answeredByYou": "Bạn đã trả lời",
     "lockedHint": "Từ hóa đơn của bạn — sửa số lượng trong bảng kiểm kê",
-    "addRevenue": "Thêm doanh thu ở phần Thiết lập để tính mục này"
+    "addRevenue": "Thêm doanh thu ở phần Thiết lập để tính mục này",
+    "dropTitle": "File Excel của khách hàng",
+    "dropBody": "Kéo file .xlsx vào đây hoặc chọn. Giữ nguyên bố cục, điền vào cột trả lời.",
+    "xlsxOnly": "Chỉ điền được sổ .xlsx.",
+    "filledToast": "Đã điền {n} câu từ bảng kiểm kê.",
+    "savedToast": "Đã lưu {ref}.",
+    "fromData": "Từ dữ liệu của bạn",
+    "legend": "Ô xanh lá lấy từ hóa đơn và máy tính. Ô xanh dương do bạn nhập. Ô vàng dành cho bạn hoàn thành; lý do ghi bên cạnh.",
+    "emptyTitle": "Chưa điền bảng câu hỏi nào",
+    "emptyBody": "Tải lên file Excel khách hàng gửi. Thử data/templates/cdp_sme_questionnaire.xlsx cho mô-đun khí hậu CDP SME.",
+    "ring": {
+      "auto": "Từ dữ liệu",
+      "yours": "Bạn trả lời",
+      "open": "Cần bạn hoàn thành"
+    },
+    "sections": {
+      "label": "Mục {key}",
+      "other": "Khác"
+    }
   },
   "common": {
     "loading": "Đang tải…",

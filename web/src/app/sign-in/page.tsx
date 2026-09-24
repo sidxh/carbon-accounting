@@ -83,7 +83,10 @@ export default function SignInPage() {
   const [resendIn, setResendIn] = useState(0);
   const recaptcha = useRef<RecaptchaVerifier | null>(null);
 
-  const phone = `${cc}${local.replace(/\D/g, "").replace(/^0+/, "")}`;
+  // A pasted international number ("+84 90…") wins over the country-code chip.
+  const phone = local.trim().startsWith("+")
+    ? "+" + local.replace(/\D/g, "")
+    : `${cc}${local.replace(/\D/g, "").replace(/^0+/, "")}`;
 
   useEffect(() => {
     if (!loading && user) router.replace("/documents");

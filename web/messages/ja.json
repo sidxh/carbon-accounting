@@ -292,7 +292,25 @@
     "editPlaceholder": "回答を入力",
     "answeredByYou": "ご自身で回答",
     "lockedHint": "請求書に基づく数値 — インベントリで数量を修正してください",
-    "addRevenue": "設定で売上高を入力すると算定できます"
+    "addRevenue": "設定で売上高を入力すると算定できます",
+    "dropTitle": "取引先のExcel",
+    "dropBody": ".xlsxをここにドロップまたは選択。レイアウトを保ち回答列に記入します。",
+    "xlsxOnly": "記入できるのは.xlsxのみです。",
+    "filledToast": "インベントリから{n}件を記入しました。",
+    "savedToast": "{ref} を保存しました。",
+    "fromData": "データから",
+    "legend": "緑のセルは請求書と計算機から。青はご自身の入力。黄はご自身で記入する項目で、理由を横に記載。",
+    "emptyTitle": "まだ質問票を記入していません",
+    "emptyBody": "取引先から届いたExcelをアップロード。CDP SME気候モジュールは data/templates/cdp_sme_questionnaire.xlsx で試せます。",
+    "ring": {
+      "auto": "データから",
+      "yours": "ご自身で回答",
+      "open": "未記入"
+    },
+    "sections": {
+      "label": "セクション {key}",
+      "other": "その他"
+    }
   },
   "common": {
     "loading": "読み込み中…",
