@@ -224,7 +224,7 @@ function Questionnaire({ uid }: { profile: SupplierProfile | null; uid: string }
       ) : (
         <AnimatePresence initial={false}>
           {sections.map((s, i) => (
-            <motion.section key={s.key} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} aria-labelledby={`sec-${s.key}`}>
+            <motion.section key={s.key} initial={{ opacity: 0, transform: "translateY(6px)" }} animate={{ opacity: 1, transform: "translateY(0px)" }} transition={{ duration: 0.2, delay: Math.min(i, 4) * 0.04, ease: [0.23, 1, 0.32, 1] }} aria-labelledby={`sec-${s.key}`}>
               <h2 id={`sec-${s.key}`} className="mb-2 flex items-center gap-2 px-1 text-xs font-semibold uppercase tracking-wider text-muted">
                 {t("sections.label", { key: s.key })}<span className="pill pill-muted tabular">{s.items.length}</span>
               </h2>

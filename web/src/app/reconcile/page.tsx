@@ -238,8 +238,9 @@ function Chat({ profile, uid }: { profile: SupplierProfile | null; uid: string }
                 {state.history.map((h, i) => (
                   <motion.div
                     key={i}
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, transform: "translateY(6px)" }}
+                    animate={{ opacity: 1, transform: "translateY(0px)" }}
+                    transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
                     className={clsx("max-w-[85%] rounded-2xl px-4 py-2.5 text-[15px] leading-relaxed", h.role === "agent" ? "bg-sunken text-ink" : "ml-auto bg-signal text-signal-on")}
                   >
                     {h.text}
@@ -248,7 +249,7 @@ function Chat({ profile, uid }: { profile: SupplierProfile | null; uid: string }
               </AnimatePresence>
               {busy && (
                 <div className="flex max-w-[85%] items-center gap-1 rounded-2xl bg-sunken px-4 py-3" aria-label={t("thinking")}>
-                  {[0, 1, 2].map((i) => <span key={i} className="size-1.5 animate-bounce rounded-full bg-muted" style={{ animationDelay: `${i * 120}ms` }} />)}
+                  {[0, 1, 2].map((i) => <span key={i} className="dot-pulse size-1.5 rounded-full bg-muted" style={{ animationDelay: `${i * 150}ms` }} />)}
                 </div>
               )}
               <div ref={bottom} />

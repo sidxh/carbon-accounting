@@ -227,7 +227,7 @@ function Row({ uid, line, market, activity, doc, assumptions, onChanged, open, o
         {open && (
           <tr id={id} className="bg-sunken/60">
             <td colSpan={6} className="px-4 pb-5 pt-1">
-              <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}>
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}>
                 <Calculation uid={uid} line={line} market={market} activity={activity} doc={doc} assumptions={assumptions} onChanged={onChanged} />
               </motion.div>
             </td>

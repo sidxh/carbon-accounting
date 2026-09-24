@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import NumberFlow from "@number-flow/react";
 import { cn as clsx } from "@/lib/cn";
@@ -55,8 +56,18 @@ export function EmptyState({ icon: Icon, title, body, action }: { icon?: LucideI
   );
 }
 
+/** Shimmer pauses while the placeholder is off-screen. */
 export function Skeleton({ className }: { className?: string }) {
-  return <div className={clsx("skeleton", className)} aria-hidden />;
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(true);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(([e]) => setVisible(e.isIntersecting));
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  return <div ref={ref} className={clsx("skeleton", className)} data-offscreen={visible ? undefined : ""} aria-hidden />;
 }
 
 export function SkeletonList({ rows = 3 }: { rows?: number }) {
@@ -82,7 +93,7 @@ export function MixBar({ segments, className }: { segments: { key: string; share
 export function CoverageStrip({ states, months, className }: { states: string[]; months?: string[]; className?: string }) {
   return (
     <div className={clsx("coverage", className)} role="img" aria-label={states.map((s, i) => `${months?.[i] ?? i + 1}: ${s}`).join(", ")}>
-      {states.map((s, i) => <span key={i} className={`cov-${s}`} title={`${months?.[i] ?? ""} ${s}`.trim()} />)}
+      {states.map((s, i) => <span key={i} className={`cov-${s}`} style={{ "--i": i } as React.CSSProperties} title={`${months?.[i] ?? ""} ${s}`.trim()} />)}
     </div>
   );
 }

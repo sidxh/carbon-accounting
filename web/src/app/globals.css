@@ -158,15 +158,18 @@ body {
   background: var(--signal);
   color: var(--signal-on);
   border: 1px solid transparent;
-  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+  transition: background-color var(--dur-fast) ease, color var(--dur-fast) ease, border-color var(--dur-fast) ease, transform var(--dur-press) var(--ease-out);
   cursor: pointer;
   white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
 }
-.btn:hover:not(:disabled) {
-  background: var(--signal-ink);
+@media (hover: hover) {
+  .btn:hover:not(:disabled) {
+    background: var(--signal-ink);
+  }
 }
 .btn:active:not(:disabled) {
-  transform: translateY(1px);
+  transform: scale(0.97);
 }
 .btn:disabled {
   background: var(--sunken);
@@ -178,26 +181,32 @@ body {
   color: var(--ink);
   border-color: var(--line-strong);
 }
-.btn-secondary:hover:not(:disabled) {
-  background: var(--sunken);
+@media (hover: hover) {
+  .btn-secondary:hover:not(:disabled) {
+    background: var(--sunken);
+  }
 }
 .btn-ghost {
   background: transparent;
   color: var(--ink-soft);
   border-color: transparent;
 }
-.btn-ghost:hover:not(:disabled) {
-  background: var(--sunken);
-  color: var(--ink);
+@media (hover: hover) {
+  .btn-ghost:hover:not(:disabled) {
+    background: var(--sunken);
+    color: var(--ink);
+  }
 }
 .btn-danger {
   background: var(--raised);
   color: var(--danger);
   border-color: var(--line-strong);
 }
-.btn-danger:hover:not(:disabled) {
-  background: var(--danger-bg);
-  border-color: var(--danger);
+@media (hover: hover) {
+  .btn-danger:hover:not(:disabled) {
+    background: var(--danger-bg);
+    border-color: var(--danger);
+  }
 }
 .btn-sm {
   min-height: 36px;
@@ -283,6 +292,11 @@ textarea.input {
 .pill-muted { background: var(--sunken); color: var(--muted); }
 .pill-secondary { background: var(--secondary-tier-bg); color: var(--secondary-tier); }
 .pill-danger { background: var(--danger-bg); color: var(--danger); }
+button.pill {
+  transition: transform var(--dur-press) var(--ease-out), background-color var(--dur-fast) ease;
+  -webkit-tap-highlight-color: transparent;
+}
+button.pill:active { transform: scale(0.97); }
 
 .hairline {
   border-color: var(--line);
@@ -315,6 +329,12 @@ textarea.input {
   height: 8px;
   border-radius: 2px;
   background: var(--sunken);
+  opacity: 1;
+  transition: opacity var(--dur-enter) var(--ease-out);
+  transition-delay: calc(var(--i, 0) * 20ms);
+  @starting-style {
+    opacity: 0;
+  }
 }
 .coverage > .cov-primary { background: var(--signal); }
 .coverage > .cov-secondary { background: var(--secondary-tier); }
@@ -338,14 +358,19 @@ textarea.input {
   background-size: 200% 100%;
   animation: shimmer 1.4s ease-in-out infinite;
 }
+.skeleton[data-offscreen] {
+  animation-play-state: paused;
+}
 
-@keyframes rise {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+/* Chat "thinking" indicator: an opacity pulse, not a bounce. */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 1; }
 }
-.rise {
-  animation: rise 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+.dot-pulse {
+  animation: pulse-dot 1.2s ease-in-out infinite;
 }
+
 
 @media (prefers-reduced-motion: reduce) {
   *,

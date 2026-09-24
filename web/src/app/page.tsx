@@ -2,47 +2,79 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { motion } from "motion/react";
+import { motion, useInView } from "motion/react";
+import NumberFlow from "@number-flow/react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowRight, BookOpenCheck, ClipboardList, FileSpreadsheet, Link2, MessageSquareText, Receipt, ShieldCheck, type LucideIcon } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { Wordmark } from "@/components/shell";
 
-const EASE = [0.22, 1, 0.36, 1] as const;
+// --ease-out from DESIGN.md; --dur-reveal (600 ms) is permitted only on this page.
+const EASE = [0.23, 1, 0.32, 1] as const;
+const REVEAL = 0.6;
 
 function Reveal({ children, delay = 0, className }: { children: React.ReactNode; delay?: number; className?: string }) {
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.05, margin: "0px 0px 20% 0px" }} transition={{ duration: 0.6, delay, ease: EASE }} className={className}>
+    <motion.div
+      initial={{ opacity: 0, transform: "translateY(20px)" }}
+      whileInView={{ opacity: 1, transform: "translateY(0px)" }}
+      viewport={{ once: true, amount: 0.05, margin: "0px 0px 20% 0px" }}
+      transition={{ duration: REVEAL, delay, ease: EASE }}
+      className={className}
+    >
       {children}
     </motion.div>
   );
 }
 
-/** A real-looking inventory row expanded: the product's core promise, drawn as UI. */
+/**
+ * A real-looking inventory row expanded: the product's core promise, drawn as
+ * UI. Explanatory animation, once, when scrolled into view: the four steps
+ * wipe in with clip-path in sequence and the total counts up as the last
+ * step lands.
+ */
 function LineageMock() {
   const t = useTranslations("landing.mock");
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, amount: 0.4 });
+  const [total, setTotal] = useState(0);
+  useEffect(() => {
+    if (!inView) return;
+    const id = setTimeout(() => setTotal(28.06), 4 * 220);
+    return () => clearTimeout(id);
+  }, [inView]);
+  const steps = [
+    [t("s1"), t("s1b")],
+    [t("s2"), t("s2b")],
+    [t("s3"), t("s3b")],
+    [t("s4"), "42,569 kWh × 0.6592 = 28,061 kgCO2e"],
+  ];
   return (
-    <div className="card overflow-hidden text-left shadow-[var(--shadow-float)]">
+    <div ref={ref} className="card overflow-hidden text-left shadow-[var(--shadow-float)]">
       <div className="flex items-center justify-between gap-2 border-b hairline px-4 py-2.5 text-xs text-muted">
         <span className="flex items-center gap-2"><ClipboardList className="size-3.5" aria-hidden />{t("header")}</span>
         <span className="pill pill-primary">{t("tier")}</span>
       </div>
       <div className="grid grid-cols-[1fr_auto] items-center gap-3 px-4 py-3 text-sm">
         <div><div className="font-medium">{t("row")}</div><div className="text-xs text-muted">{t("rowSub")}</div></div>
-        <div className="font-display text-2xl tabular">28.06 <span className="font-sans text-xs text-muted">tCO2e</span></div>
+        <div className="font-display text-2xl tabular">
+          <NumberFlow value={total} format={{ minimumFractionDigits: 2, maximumFractionDigits: 2 }} spinTiming={{ duration: 900, easing: "cubic-bezier(0.23, 1, 0.32, 1)" }} transformTiming={{ duration: 400, easing: "cubic-bezier(0.23, 1, 0.32, 1)" }} />
+          {" "}<span className="font-sans text-xs text-muted">tCO2e</span>
+        </div>
       </div>
       <ol className="space-y-3 border-t hairline bg-sunken/60 px-4 py-4 text-sm">
-        {[
-          [1, t("s1"), t("s1b")],
-          [2, t("s2"), t("s2b")],
-          [3, t("s3"), t("s3b")],
-          [4, t("s4"), "42,569 kWh × 0.6592 = 28,061 kgCO2e"],
-        ].map(([n, a, b]) => (
-          <motion.li key={String(n)} initial={{ opacity: 0, x: -8 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.4, delay: 0.15 * Number(n), ease: EASE }} className="flex gap-3">
-            <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-ink text-[10px] font-semibold text-raised">{n}</span>
-            <div><div className="text-xs font-semibold uppercase tracking-wider text-muted">{a}</div><div className={Number(n) === 4 ? "font-mono text-xs" : "text-xs text-ink-soft"}>{b}</div></div>
+        {steps.map(([a, b], i) => (
+          <motion.li
+            key={a}
+            initial={{ clipPath: "inset(0 100% 0 0)", opacity: 0 }}
+            animate={inView ? { clipPath: "inset(0 0% 0 0)", opacity: 1 } : undefined}
+            transition={{ duration: 0.45, delay: 0.22 * i, ease: EASE }}
+            className="flex gap-3"
+          >
+            <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-ink text-[10px] font-semibold text-raised">{i + 1}</span>
+            <div><div className="text-xs font-semibold uppercase tracking-wider text-muted">{a}</div><div className={i === 3 ? "font-mono text-xs" : "text-xs text-ink-soft"}>{b}</div></div>
           </motion.li>
         ))}
       </ol>
@@ -93,18 +125,18 @@ export default function Home() {
         {/* Hero ---------------------------------------------------------------------- */}
         <section className="relative mx-auto max-w-4xl px-4 pb-16 pt-32 text-center sm:pt-40">
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }} className="eyebrow justify-center">{t("eyebrow")}</motion.p>
-          <motion.h1 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.05, ease: EASE }} className="font-display mx-auto mt-5 max-w-3xl text-[2.75rem] leading-[0.98] text-ink sm:text-[4.5rem]">
+          <motion.h1 initial={{ opacity: 0, transform: "translateY(16px)" }} animate={{ opacity: 1, transform: "translateY(0px)" }} transition={{ duration: REVEAL, delay: 0.05, ease: EASE }} className="font-display mx-auto mt-5 max-w-3xl text-[2.75rem] leading-[0.98] text-ink sm:text-[4.5rem]">
             {t("h1a")}<br /><em className="italic text-signal-ink">{t("h1b")}</em>
           </motion.h1>
-          <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.15, ease: EASE }} className="mx-auto mt-6 max-w-xl text-[17px] leading-relaxed text-ink-soft">
+          <motion.p initial={{ opacity: 0, transform: "translateY(12px)" }} animate={{ opacity: 1, transform: "translateY(0px)" }} transition={{ duration: REVEAL, delay: 0.15, ease: EASE }} className="mx-auto mt-6 max-w-xl text-[17px] leading-relaxed text-ink-soft">
             {t("sub")}
           </motion.p>
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.25, ease: EASE }} className="mt-8 flex flex-col items-center gap-3">
+          <motion.div initial={{ opacity: 0, transform: "translateY(12px)" }} animate={{ opacity: 1, transform: "translateY(0px)" }} transition={{ duration: REVEAL, delay: 0.25, ease: EASE }} className="mt-8 flex flex-col items-center gap-3">
             <Link href="/sign-in" className="btn px-6 text-base">{t("cta")}<ArrowRight className="size-4" aria-hidden /></Link>
             <span className="text-sm text-muted">{t("ctaSub")}</span>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, y: 32 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.35, ease: EASE }} className="mx-auto mt-14 max-w-xl">
+          <motion.div initial={{ opacity: 0, transform: "translateY(32px)" }} animate={{ opacity: 1, transform: "translateY(0px)" }} transition={{ duration: REVEAL, delay: 0.35, ease: EASE }} className="mx-auto mt-14 max-w-xl">
             <LineageMock />
           </motion.div>
         </section>

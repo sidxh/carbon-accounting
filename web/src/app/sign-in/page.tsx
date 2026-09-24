@@ -163,7 +163,7 @@ export default function SignInPage() {
       </header>
 
       <main className="mx-auto grid w-full max-w-5xl gap-10 px-4 pb-16 pt-10 sm:px-6 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:pt-20">
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }} className="max-w-lg">
+        <motion.div initial={{ opacity: 0, transform: "translateY(8px)" }} animate={{ opacity: 1, transform: "translateY(0px)" }} transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }} className="max-w-lg">
           <p className="eyebrow">{t("eyebrow")}</p>
           <h1 className="font-display mt-4 text-4xl leading-[1.02] sm:text-5xl">{t("title")}</h1>
           <p className="mt-4 text-[15px] leading-relaxed text-muted">{t("lede")}</p>
@@ -172,7 +172,7 @@ export default function SignInPage() {
           </ul>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.08, ease: [0.22, 1, 0.36, 1] }} className="card w-full max-w-md p-6 shadow-[var(--shadow-float)] lg:ml-auto">
+        <motion.div initial={{ opacity: 0, transform: "translateY(8px) scale(0.98)" }} animate={{ opacity: 1, transform: "translateY(0px) scale(1)" }} transition={{ duration: 0.22, delay: 0.05, ease: [0.23, 1, 0.32, 1] }} className="card w-full max-w-md p-6 shadow-[var(--shadow-float)] lg:ml-auto">
           {!confirmation ? (
             <form onSubmit={sendCode} className="space-y-4">
               <div className="flex items-center gap-2 text-sm font-medium"><Smartphone className="size-4 text-muted" aria-hidden />{t("phoneLabel")}</div>
