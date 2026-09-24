@@ -333,19 +333,6 @@
     "sub": "Khách hàng gửi cho bạn bảng câu hỏi phát thải. Tải lên hóa đơn điện, nhiên liệu và gas lạnh; chúng tôi đọc, chỉ hỏi những gì hóa đơn không nói được, và trả lại bảng kiểm kê Phạm vi 1 và 2 với từng con số truy về tài liệu và hệ số đã công bố.",
     "cta": "Bắt đầu với hóa đơn",
     "ctaSub": "Không cần tạo tài khoản. Dùng trên điện thoại. Tiếng Việt, Nhật, Anh.",
-    "mock": {
-      "header": "Kiểm kê · 05/01 – 04/02",
-      "tier": "sơ cấp",
-      "row": "Điện · 42.569 kWh",
-      "rowSub": "Hóa đơn EVN, xưởng Nhơn Trạch",
-      "s1": "Tài liệu nguồn",
-      "s1b": "vn_evn_2025-01.png, đọc với độ tin cậy 100%",
-      "s2": "Số lượng hoạt động",
-      "s2b": "42.569 kWh, đúng như in trên hóa đơn",
-      "s3": "Hệ số phát thải",
-      "s3b": "0,6592 kgCO2e/kWh — hệ số lưới Việt Nam của MONRE, vintage 2025",
-      "s4": "Phép tính"
-    },
     "howEyebrow": "Cách hoạt động",
     "howTitle": "Bốn bước, một buổi chiều.",
     "steps": {
@@ -391,7 +378,40 @@
     "finalBody": "Đăng nhập bằng điện thoại và tải lên hóa đơn đầu tiên.",
     "footerNote": "Bản demo. Hóa đơn là dữ liệu tổng hợp; hệ số phát thải là thật và có trích dẫn.",
     "footerLangs": "Ngôn ngữ",
-    "dashboard": "Vào bảng điều khiển"
+    "dashboard": "Vào bảng điều khiển",
+    "demo": {
+      "aria": "Bản demo động: hóa đơn được tải lên và đọc, quý LPG còn thiếu được bổ sung sau một câu hỏi, tổng Phạm vi 1 và Phạm vi 2 tăng dần với phép tính truy vết được, và bảng câu hỏi của khách hàng được điền sẵn để tải về.",
+      "url": "suppliercarbon.app/requests/fy2025",
+      "steps": {
+        "bills": "Hóa đơn",
+        "questions": "Câu hỏi",
+        "inventory": "Kiểm kê",
+        "questionnaire": "Bảng hỏi"
+      },
+      "drop": "Thả hóa đơn vào đây",
+      "dropSub": "Ảnh, PDF hoặc bảng tính, bằng bất kỳ ngôn ngữ nào",
+      "electricity": "Điện",
+      "lpg": "LPG",
+      "water": "Nước",
+      "read": "Đã đọc",
+      "coverage": "Độ phủ LPG · 2025",
+      "estimated": "ước tính",
+      "ask": "Chưa có hóa đơn LPG cho tháng 7–9. Căng tin có hoạt động bình thường không?",
+      "reply": "Có, vẫn như mọi khi.",
+      "scope1": "Phạm vi 1",
+      "scope2": "Phạm vi 2",
+      "monthly": "Phát thải theo tháng",
+      "lineage": "Điện · tháng 1, hóa đơn EVN",
+      "q1": "Năm báo cáo",
+      "q2": "Phát thải Phạm vi 1",
+      "q3": "Phát thải Phạm vi 2",
+      "q4": "Năng lượng tiêu thụ",
+      "q5": "Mục tiêu giảm phát thải",
+      "q6": "Thay đổi so với năm trước",
+      "forYou": "Cần bạn",
+      "filled": "4/6 câu trả lời từ dữ liệu của bạn",
+      "download": "filled.xlsx"
+    }
   },
   "stepLock": {
     "documents": "",

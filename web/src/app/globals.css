@@ -80,6 +80,7 @@
   --color-signal: var(--signal);
   --color-signal-ink: var(--signal-ink);
   --color-signal-bg: var(--signal-bg);
+  --color-signal-on: var(--signal-on);
   --color-attention: var(--attention);
   --color-attention-bg: var(--attention-bg);
   --color-attention-strong: var(--attention-strong);

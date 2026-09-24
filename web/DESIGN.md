@@ -201,6 +201,8 @@ The schema has no motion tokens; these are declared in `globals.css` and are the
 
 Only `transform` and `opacity` animate. `ease-in` is never used. Nothing enters from `scale(0)`; entrances start at `scale(0.95)` or later with opacity. `reveal` is permitted only on the landing page, which is explanatory marketing rather than product UI.
 
+The landing hero (`components/landing/hero-demo.tsx`) is the one looping animation: a roughly 16-second demo of the whole flow (bills, questions, inventory, questionnaire) that restarts forever. It still animates only `transform` and `opacity`, pauses while it is off-screen or the tab is hidden, is exposed to assistive tech as a single `role="img"` with a written description, and shows its final frame, static, under reduced motion. Nothing in the product UI loops.
+
 Every animation respects `prefers-reduced-motion`; `globals.css` collapses all durations when it is set.
 
 ## Do's and Don'ts

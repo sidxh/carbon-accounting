@@ -2,13 +2,12 @@
 
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { motion, useInView } from "motion/react";
-import NumberFlow from "@number-flow/react";
-import { useEffect, useRef, useState } from "react";
+import { motion } from "motion/react";
 import { ArrowRight, BookOpenCheck, ClipboardList, FileSpreadsheet, Link2, MessageSquareText, Receipt, ShieldCheck, type LucideIcon } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { Wordmark } from "@/components/shell";
+import { HeroDemo } from "@/components/landing/hero-demo";
 
 // --ease-out from DESIGN.md; --dur-reveal (600 ms) is permitted only on this page.
 const EASE = [0.23, 1, 0.32, 1] as const;
@@ -25,59 +24,6 @@ function Reveal({ children, delay = 0, className }: { children: React.ReactNode;
     >
       {children}
     </motion.div>
-  );
-}
-
-/**
- * A real-looking inventory row expanded: the product's core promise, drawn as
- * UI. Explanatory animation, once, when scrolled into view: the four steps
- * wipe in with clip-path in sequence and the total counts up as the last
- * step lands.
- */
-function LineageMock() {
-  const t = useTranslations("landing.mock");
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, amount: 0.4 });
-  const [total, setTotal] = useState(0);
-  useEffect(() => {
-    if (!inView) return;
-    const id = setTimeout(() => setTotal(28.06), 4 * 220);
-    return () => clearTimeout(id);
-  }, [inView]);
-  const steps = [
-    [t("s1"), t("s1b")],
-    [t("s2"), t("s2b")],
-    [t("s3"), t("s3b")],
-    [t("s4"), "42,569 kWh × 0.6592 = 28,061 kgCO2e"],
-  ];
-  return (
-    <div ref={ref} className="card overflow-hidden text-left shadow-[var(--shadow-float)]">
-      <div className="flex items-center justify-between gap-2 border-b hairline px-4 py-2.5 text-xs text-muted">
-        <span className="flex items-center gap-2"><ClipboardList className="size-3.5" aria-hidden />{t("header")}</span>
-        <span className="pill pill-primary">{t("tier")}</span>
-      </div>
-      <div className="grid grid-cols-[1fr_auto] items-center gap-3 px-4 py-3 text-sm">
-        <div><div className="font-medium">{t("row")}</div><div className="text-xs text-muted">{t("rowSub")}</div></div>
-        <div className="font-display text-2xl tabular">
-          <NumberFlow value={total} format={{ minimumFractionDigits: 2, maximumFractionDigits: 2 }} spinTiming={{ duration: 900, easing: "cubic-bezier(0.23, 1, 0.32, 1)" }} transformTiming={{ duration: 400, easing: "cubic-bezier(0.23, 1, 0.32, 1)" }} />
-          {" "}<span className="font-sans text-xs text-muted">tCO2e</span>
-        </div>
-      </div>
-      <ol className="space-y-3 border-t hairline bg-sunken/60 px-4 py-4 text-sm">
-        {steps.map(([a, b], i) => (
-          <motion.li
-            key={a}
-            initial={{ clipPath: "inset(0 100% 0 0)", opacity: 0 }}
-            animate={inView ? { clipPath: "inset(0 0% 0 0)", opacity: 1 } : undefined}
-            transition={{ duration: 0.45, delay: 0.22 * i, ease: EASE }}
-            className="flex gap-3"
-          >
-            <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-ink text-[10px] font-semibold text-raised">{i + 1}</span>
-            <div><div className="text-xs font-semibold uppercase tracking-wider text-muted">{a}</div><div className={i === 3 ? "font-mono text-xs" : "text-xs text-ink-soft"}>{b}</div></div>
-          </motion.li>
-        ))}
-      </ol>
-    </div>
   );
 }
 
@@ -135,8 +81,8 @@ export default function Home() {
             <span className="text-sm text-muted">{t("ctaSub")}</span>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, transform: "translateY(32px)" }} animate={{ opacity: 1, transform: "translateY(0px)" }} transition={{ duration: REVEAL, delay: 0.35, ease: EASE }} className="mx-auto mt-14 max-w-xl">
-            <LineageMock />
+          <motion.div initial={{ opacity: 0, transform: "translateY(32px)" }} animate={{ opacity: 1, transform: "translateY(0px)" }} transition={{ duration: REVEAL, delay: 0.35, ease: EASE }} className="mx-auto mt-14 max-w-2xl">
+            <HeroDemo />
           </motion.div>
         </section>
 
