@@ -44,6 +44,21 @@ function Chat({ uid }: { profile: SupplierProfile | null; uid: string }) {
     }
   }
 
+  async function reset() {
+    if (!window.confirm(t("resetConfirm"))) return;
+    setBusy(true);
+    setError("");
+    try {
+      await api.resetData(uid, "chat");
+      setState(null);
+      setComputed(false);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function send(e: React.FormEvent) {
     e.preventDefault();
     const msg = text.trim();
@@ -80,6 +95,7 @@ function Chat({ uid }: { profile: SupplierProfile | null; uid: string }) {
             </span>
             {computed && <span className="text-[var(--accent)]">{t("computed")}</span>}
             <button className="ml-auto text-xs text-[var(--muted)] underline-offset-4 hover:underline" onClick={start} disabled={busy}>{t("start")}</button>
+            <button className="text-xs text-[var(--muted)] underline-offset-4 hover:underline" onClick={reset} disabled={busy}>{t("reset")}</button>
           </div>
 
           <div className="card max-h-[55vh] space-y-3 overflow-y-auto p-4">

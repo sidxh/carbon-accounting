@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import uuid
 
-from .agents.extractor import extract, to_activity_lines
+from .agents.extractor import ExtractedDocument, extract, to_activity_lines
 from .calculator import compute
 from .factor_library import get_library
 from .models import SupplierProfile
@@ -66,3 +66,29 @@ def compute_inventory(repo: Repo, profile: SupplierProfile) -> InventorySnapshot
     )
     repo.replace_inventory(profile.id, result.lines, snap)
     return snap
+
+
+def reset_questions(repo: Repo, profile: SupplierProfile) -> int:
+    """Back to the moment the bills were read.
+
+    Drops the chat, assumptions and inventory, then rebuilds the activity
+    lines from the extraction stored on each document. That undoes everything
+    the conversation did to the lines — estimated months, hour conversions,
+    exclusions, inline corrections — so the same bills can be reconciled
+    again with a different answer. Costs no model calls.
+    """
+    repo.clear_derived(profile.id)
+    lines = []
+    for rec in repo.list_documents(profile.id):
+        if rec.status != "extracted" or not rec.extraction:
+            continue
+        doc = ExtractedDocument.model_validate(rec.extraction)
+        lines.extend(to_activity_lines(doc, supplier_id=profile.id, source_doc_id=rec.id, site_id=rec.site_id))
+    repo.replace_activity_lines(profile.id, lines)
+    return len(lines)
+
+
+def reset_all(repo: Repo, profile: SupplierProfile) -> None:
+    """Remove every document, line, answer and output. The profile stays."""
+    repo.clear_supplier_data(profile.id)
+    get_storage().delete_prefix(f"suppliers/{profile.id}/")

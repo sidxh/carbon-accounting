@@ -43,7 +43,10 @@
     "revenue": "Doanh thu năm (tùy chọn, để tính cường độ)",
     "currency": "Đơn vị tiền",
     "save": "Lưu và tiếp tục",
-    "saved": "Đã lưu."
+    "saved": "Đã lưu.",
+    "startOver": "Bắt đầu lại",
+    "startOverLede": "Xóa toàn bộ hóa đơn, câu trả lời và kết quả của tài khoản này. Thông tin công ty được giữ lại.",
+    "startOverConfirm": "Xóa toàn bộ hóa đơn, câu trả lời và kết quả? Thông tin công ty sẽ được giữ lại."
   },
   "documents": {
     "title": "Hóa đơn của bạn",
@@ -73,6 +76,8 @@
     "done": "Hồ sơ đã đầy đủ.",
     "computed": "Đã tính xong.",
     "issues": "{count} mục cần giải quyết",
+    "reset": "Đặt lại câu hỏi",
+    "resetConfirm": "Xóa cuộc trò chuyện, câu trả lời và số liệu đã tính? Hóa đơn được giữ lại để bạn trả lời khác đi.",
     "next": "Xem bảng kiểm kê"
   },
   "inventory": {

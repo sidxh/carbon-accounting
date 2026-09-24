@@ -97,6 +97,66 @@ def test_questionnaire_and_methodology_need_inventory_first(client):
     assert client.get("/suppliers/sup-1/methodology", headers=_auth()).status_code == 409
 
 
+def _seed_reconciled_supplier(client):
+    """A supplier that has uploaded one bill, answered a gap question, and computed."""
+    from app.models import Assumption
+    from app.repo import DocumentRecord, ReconcileState
+
+    client.post("/suppliers", json={"fiscal_year_start": "2025-01-01", "fiscal_year_end": "2025-12-31", "country": "VN"}, headers=_auth())
+    extraction = {
+        "doc_type": "electricity_bill", "language": "vi", "vendor": "EVN", "customer": None, "site_hint": None,
+        "currency": "VND", "total_amount": 1.0, "confidence": 1.0, "warnings": [],
+        "lines": [{"energy_type": "electricity", "quantity": 10000, "unit": "kWh", "period_start": "2025-01-01",
+                   "period_end": "2025-01-31", "gas": None, "confidence": 1.0, "evidence": "10,000 kWh"}],
+    }
+    client.repo.put_document(DocumentRecord(id="doc-1", supplier_id="sup-1", storage_key="suppliers/sup-1/uploads/doc-1/a.png",
+                                            filename="a.png", mime_type="image/png", site_id="main", status="extracted",
+                                            extraction=extraction))
+    client.repo.add_activity_lines("sup-1", [
+        # the extracted line, corrected by the supplier in the inventory view
+        ActivityLine(id="a1", supplier_id="sup-1", source_doc_id="doc-1", site_id="main", energy_type=EnergyType.ELECTRICITY,
+                     quantity=12000, unit=Unit.KWH, period_start=date(2025, 1, 1), period_end=date(2025, 1, 31),
+                     tier="secondary", notes="corrected by supplier from 10000 to 12000"),
+        # an estimated month from a chat answer
+        ActivityLine(id="a2", supplier_id="sup-1", source_doc_id="assumption:asm-1", site_id="main",
+                     energy_type=EnergyType.ELECTRICITY, quantity=10000, unit=Unit.KWH, period_start=date(2025, 2, 1),
+                     period_end=date(2025, 2, 28), tier="estimated", assumption_ids=["asm-1"]),
+    ])
+    client.repo.add_assumption("sup-1", Assumption(id="asm-1", supplier_id="sup-1", question="q", answer="a", applied_to=["a2"], method="m"))
+    client.repo.put_reconcile(ReconcileState(supplier_id="sup-1", status="done"))
+    client.post("/suppliers/sup-1/compute", headers=_auth())
+    assert client.get("/suppliers/sup-1/inventory", headers=_auth()).json()["snapshot"] is not None
+
+
+def test_reset_chat_rebuilds_lines_from_extraction_and_keeps_documents(client):
+    _seed_reconciled_supplier(client)
+    r = client.delete("/suppliers/sup-1/data?scope=chat", headers=_auth())
+    assert r.status_code == 200 and r.json()["activity_lines"] == 1
+
+    lines = client.repo.list_activity_lines("sup-1")
+    assert len(lines) == 1
+    assert lines[0].source_doc_id == "doc-1" and lines[0].quantity == 10000 and lines[0].tier == "primary"
+    assert client.repo.list_assumptions("sup-1") == []
+    assert client.get("/suppliers/sup-1/reconcile", headers=_auth()).json() is None
+    inv = client.get("/suppliers/sup-1/inventory", headers=_auth()).json()
+    assert inv["snapshot"] is None and inv["lines"] == []
+    assert len(client.get("/suppliers/sup-1/documents", headers=_auth()).json()["documents"]) == 1
+    assert client.get("/suppliers/sup-1", headers=_auth()).status_code == 200
+
+
+def test_reset_all_keeps_only_profile(client):
+    _seed_reconciled_supplier(client)
+    r = client.delete("/suppliers/sup-1/data?scope=all", headers=_auth())
+    assert r.status_code == 200
+    assert client.get("/suppliers/sup-1/documents", headers=_auth()).json()["documents"] == []
+    assert client.repo.list_activity_lines("sup-1") == []
+    assert client.get("/suppliers/sup-1/inventory", headers=_auth()).json()["snapshot"] is None
+    assert client.get("/suppliers/sup-1", headers=_auth()).status_code == 200
+    # Another supplier cannot reset it; an unknown scope is rejected.
+    assert client.delete("/suppliers/sup-1/data", headers=_auth("sup-2")).status_code == 403
+    assert client.delete("/suppliers/sup-1/data?scope=everything", headers=_auth()).status_code == 400
+
+
 def test_unauthenticated_is_rejected_when_auth_enabled(monkeypatch):
     from app import settings as s
     s.get_settings.cache_clear()

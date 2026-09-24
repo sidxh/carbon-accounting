@@ -182,6 +182,10 @@ export const api = {
   upsertSupplier: (body: Omit<SupplierProfile, "id" | "sites"> & { sites: Omit<Site, "id">[] }) =>
     json<SupplierProfile>("/suppliers", "POST", body),
 
+  /** "chat" keeps the bills and rebuilds lines from their extractions; "all" keeps only the profile. */
+  resetData: (uid: string, scope: "chat" | "all") =>
+    request<{ scope: string; activity_lines: number }>(`/suppliers/${uid}/data?scope=${scope}`, { method: "DELETE" }),
+
   listDocuments: (uid: string) => request<{ documents: DocumentRecord[] }>(`/suppliers/${uid}/documents`),
   uploadDocuments: async (uid: string, files: File[], siteId?: string) => {
     const fd = new FormData();

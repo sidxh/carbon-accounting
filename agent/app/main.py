@@ -24,7 +24,7 @@ from .auth import Caller, current_caller, require_supplier
 from .exporters.methodology import build_pdf
 from .models import ActivityLine, Site, SupplierProfile
 from .repo import QuestionnaireRecord, ReconcileState, get_repo
-from .services import compute_inventory, register_and_extract
+from .services import compute_inventory, register_and_extract, reset_all, reset_questions
 from .settings import get_settings
 from .storage import LocalStorage, get_storage
 
@@ -121,6 +121,25 @@ def upsert_supplier(body: SupplierIn, caller: Caller = Depends(current_caller)):
 @app.get("/suppliers/{supplier_id}", response_model=SupplierProfile)
 def get_supplier(supplier_id: str, caller: Caller = Depends(require_supplier)):
     return _profile_or_404(supplier_id)
+
+
+@app.delete("/suppliers/{supplier_id}/data")
+def reset_data(supplier_id: str, scope: str = "all", caller: Caller = Depends(require_supplier)):
+    """Wipe the supplier's data so the same account can run the journey again.
+
+    scope=chat  keeps the uploaded bills and their extractions; drops the
+                conversation, assumptions and inventory and rebuilds the
+                activity lines from the extractions.
+    scope=all   drops everything except the profile, including stored files.
+    """
+    profile = _profile_or_404(supplier_id)
+    repo = get_repo()
+    if scope == "chat":
+        return {"scope": scope, "activity_lines": reset_questions(repo, profile)}
+    if scope == "all":
+        reset_all(repo, profile)
+        return {"scope": scope, "activity_lines": 0}
+    raise HTTPException(status.HTTP_400_BAD_REQUEST, "scope must be 'chat' or 'all'")
 
 
 @app.post("/suppliers/{supplier_id}/documents")

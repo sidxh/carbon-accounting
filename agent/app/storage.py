@@ -29,6 +29,9 @@ class Storage(ABC):
     @abstractmethod
     def url(self, key: str) -> str: ...
 
+    @abstractmethod
+    def delete_prefix(self, prefix: str) -> None: ...
+
 
 class LocalStorage(Storage):
     def __init__(self, root: Path, public_base: str = "/files"):
@@ -61,6 +64,13 @@ class LocalStorage(Storage):
         p.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(src, p)
 
+    def delete_prefix(self, prefix: str) -> None:
+        p = self._path(prefix.rstrip("/"))
+        if p.is_dir():
+            shutil.rmtree(p)
+        elif p.exists():
+            p.unlink()
+
 
 class GcsStorage(Storage):
     def __init__(self, bucket: str):
@@ -83,6 +93,10 @@ class GcsStorage(Storage):
 
     def url(self, key: str) -> str:
         return self.bucket.blob(key).generate_signed_url(expiration=timedelta(hours=6), version="v4")
+
+    def delete_prefix(self, prefix: str) -> None:
+        for blob in self.client.list_blobs(self.bucket, prefix=prefix):
+            blob.delete()
 
 
 _storage: Storage | None = None

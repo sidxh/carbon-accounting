@@ -141,6 +141,16 @@ class Repo(ABC):
     @abstractmethod
     def list_questionnaires(self, uid: str) -> list[QuestionnaireRecord]: ...
 
+    # reset
+    @abstractmethod
+    def clear_derived(self, uid: str) -> None:
+        """Drop everything the reconciler and calculator produced: chat state,
+        assumptions, inventory lines and snapshot. Documents and activity lines stay."""
+
+    @abstractmethod
+    def clear_supplier_data(self, uid: str) -> None:
+        """Drop everything under the supplier except the profile itself."""
+
 
 # --- Firestore ---------------------------------------------------------------
 
@@ -232,6 +242,27 @@ class FirestoreRepo(Repo):
     def list_questionnaires(self, uid):
         return [QuestionnaireRecord.model_validate(s.to_dict()) for s in self._sup(uid).collection("questionnaires").stream()]
 
+    def _delete_collections(self, uid: str, names: list[str]) -> None:
+        # Firestore batches cap at 500 writes; commit in chunks.
+        batch, n = self.db.batch(), 0
+        for name in names:
+            for s in self._sup(uid).collection(name).stream():
+                batch.delete(s.reference)
+                n += 1
+                if n >= 400:
+                    batch.commit()
+                    batch, n = self.db.batch(), 0
+        if n:
+            batch.commit()
+
+    def clear_derived(self, uid):
+        self._delete_collections(uid, ["reconcile", "assumptions", "inventoryLines", "inventory"])
+
+    def clear_supplier_data(self, uid):
+        self._delete_collections(
+            uid, ["reconcile", "assumptions", "inventoryLines", "inventory", "activityLines", "documents", "questionnaires"]
+        )
+
 
 # --- in-memory ---------------------------------------------------------------
 
@@ -298,6 +329,17 @@ class MemoryRepo(Repo):
 
     def list_questionnaires(self, uid):
         return list(self.questionnaires.get(uid, {}).values())
+
+    def clear_derived(self, uid):
+        self.reconcile.pop(uid, None)
+        self.assumptions.pop(uid, None)
+        self.inventory.pop(uid, None)
+
+    def clear_supplier_data(self, uid):
+        self.clear_derived(uid)
+        self.documents.pop(uid, None)
+        self.lines.pop(uid, None)
+        self.questionnaires.pop(uid, None)
 
 
 _repo: Repo | None = None

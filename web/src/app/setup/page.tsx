@@ -50,8 +50,19 @@ function Form({ profile, uid }: { profile: SupplierProfile | null; uid: string }
     }
   }
 
-  void uid;
+  async function startOver() {
+    if (!window.confirm(t("startOverConfirm"))) return;
+    setBusy(true);
+    try {
+      await api.resetData(uid, "all");
+      router.push("/documents");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
+    <>
     <form onSubmit={save} className="card space-y-5 p-6">
       <div>
         <h1 className="text-2xl font-semibold">{t("title")}</h1>
@@ -117,6 +128,17 @@ function Form({ profile, uid }: { profile: SupplierProfile | null; uid: string }
         {saved && <span className="text-sm text-[var(--accent)]">{t("saved")}</span>}
       </div>
     </form>
+
+    {profile && (
+      <div className="card mt-5 flex flex-wrap items-center justify-between gap-3 p-5 text-sm">
+        <div>
+          <div className="font-medium">{t("startOver")}</div>
+          <div className="mt-0.5 text-[var(--muted)]">{t("startOverLede")}</div>
+        </div>
+        <button type="button" className="btn btn-secondary px-4 py-1.5 text-sm" onClick={startOver} disabled={busy}>{t("startOver")}</button>
+      </div>
+    )}
+    </>
   );
 }
 

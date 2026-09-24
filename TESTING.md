@@ -47,6 +47,36 @@ Two facts that shape testing:
 Files referenced live in `data/golden/rendered/`. Ground truth for every file
 is in `data/golden/labels.json`.
 
+### Repeating a scenario
+
+Your phone number is your supplier: the Firebase uid is the Firestore
+document id, so signing in with the same number always opens the same data,
+and the emulator re-imports `emulator-data/` on every start. That is
+persistence working (scenario M), but it means "sign in again" is never a
+clean slate. Three reset levels, from lightest to heaviest:
+
+| Want to… | Use | What goes | What stays |
+|---|---|---|---|
+| Answer the chat differently on the same bills | **Reset questions** (small link on the Questions page, next to "Check my bills") | Conversation, assumptions, inventory, questionnaire results. Activity lines are rebuilt from each bill's stored extraction, so estimated months, hour conversions, exclusions and inline corrections are all undone. | Uploaded bills and their extractions. Zero model calls. |
+| Replay from the upload step | **Start over** (bottom of the Setup page) | Everything above plus documents and stored files | Company profile |
+| Factory-fresh emulator, no suppliers at all | `scripts/dev.sh reset` (with the emulators stopped) | `emulator-data/`, `agent/.local_storage/suppliers/`, e2e screenshots | Gemini cache, so re-uploading golden bills is still instant |
+
+Backend: `DELETE /suppliers/{uid}/data?scope=chat|all` in `agent/app/main.py`,
+implemented by `reset_questions` / `reset_all` in `agent/app/services.py`.
+Same auth as every other route: you can only reset your own supplier.
+
+Note that pressing "Check my bills" again without a reset re-runs the
+deterministic checks but keeps the chat history on purpose; if everything is
+already resolved it says "done" immediately. Use *Reset questions* when you
+want the first question asked again.
+
+For scenario H specifically: upload the 29 VN files once, then loop
+*Reset questions → Check my bills → answer* for each of the five answers.
+Each loop costs two or three Gemini calls and about 30 seconds.
+
+`+84901234567` is the account the automated e2e scripts use and carries days
+of their runs. Either *Start over* on it or pick any other number.
+
 ### A. Sign-in (Auth emulator)
 
 - Steps: `/sign-in`, enter any Vietnamese number such as `+84901234567`, Send
@@ -115,8 +145,8 @@ Over 20 MB gives 413.
 - Steps: "Continue to questions", then "Check my bills". Because LPG bills
   exist for Jan–Jun and Oct–Dec only, the first (and with the full set, only)
   question is in Vietnamese about LPG for 2025-07, 2025-08, 2025-09.
-- Try each of these answers on a fresh run (a new phone number is a new
-  supplier):
+- Try each of these answers, using *Reset questions* between runs (see
+  "Repeating a scenario" above):
   - `Có, dùng bình thường như các tháng khác.` → `extrapolate_average`: three
     estimated LPG lines with the average monthly kg, one assumption recorded,
     chat says done and links to the inventory.

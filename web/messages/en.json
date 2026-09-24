@@ -43,7 +43,10 @@
     "revenue": "Annual revenue (optional, for intensity)",
     "currency": "Currency",
     "save": "Save and continue",
-    "saved": "Saved."
+    "saved": "Saved.",
+    "startOver": "Start over",
+    "startOverLede": "Delete every bill, answer and result for this account. Your company details stay.",
+    "startOverConfirm": "Delete all bills, answers and results? Your company details will be kept."
   },
   "documents": {
     "title": "Your bills",
@@ -73,6 +76,8 @@
     "done": "All records are complete.",
     "computed": "Figures calculated.",
     "issues": "{count} item(s) to resolve",
+    "reset": "Reset questions",
+    "resetConfirm": "Clear the conversation, your answers and the calculated figures? Your bills are kept, so you can answer differently.",
     "next": "See the inventory"
   },
   "inventory": {
