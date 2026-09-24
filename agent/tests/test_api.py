@@ -74,6 +74,13 @@ def test_inventory_requires_compute_and_compute_writes_lineage(client):
     assert len(inv["lines"]) == 3  # diesel + electricity location + electricity market
     for l in inv["lines"]:
         assert l["source_doc_id"] and l["factor_id"] and l["factor_citation"]
+        assert l["factor_source_name"] and l["factor_source_url"].startswith("http") and l["factor_vintage"]
+    mkt = next(l for l in inv["lines"] if l["basis"] == "market")
+    assert mkt["fell_back_to"] == "location"  # Vietnam publishes no residual mix
+    by_month = inv["snapshot"]["totals"]["by_month"]
+    assert set(by_month) == {"2025-01", "2025-02"}
+    assert by_month["2025-01"]["scope2_location"] == pytest.approx(6592, rel=1e-3)
+    assert by_month["2025-02"]["scope1"] == pytest.approx(2660)
 
 
 def test_patch_line_marks_secondary_and_recomputes(client):

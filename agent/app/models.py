@@ -165,6 +165,19 @@ class InventoryLine(BaseModel):
     assumption_ids: list[str] = Field(default_factory=list)
     period_start: date
     period_end: date
+    # Factor provenance, broken out so the UI can render a factor card rather
+    # than parse the citation string.
+    factor_source_name: str = ""
+    factor_source_url: str = ""
+    factor_vintage: str = ""
+    factor_country: str = ""
+    factor_region: str | None = None
+    factor_year: int | None = None
+    factor_gas: str | None = None
+    exact_year: bool = True
+    exact_region: bool = True
+    fell_back_to: str | None = None
+    activity_notes: str = ""
 
 
 class InventoryTotals(BaseModel):
@@ -176,3 +189,7 @@ class InventoryTotals(BaseModel):
     by_energy_type: dict[str, float]
     tier_mix: dict[str, float] = Field(description="share of kgCO2e by tier")
     line_count: int
+    by_month: dict[str, dict[str, float]] = Field(
+        default_factory=dict,
+        description="YYYY-MM -> {scope1, scope2_location, estimated} kgCO2e; headline rows apportioned by days",
+    )

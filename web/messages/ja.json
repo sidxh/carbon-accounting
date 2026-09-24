@@ -187,7 +187,73 @@
     "notComputed": "まだ算定されていません。",
     "compute": "算定する",
     "skipped": "算定対象外",
-    "next": "質問票に記入"
+    "next": "質問票に記入",
+    "notComputedBody": "先に質問を完了するか、現在の請求書のまま今すぐ算定します。",
+    "shareOfTotal": "スコープ1+2の{pct}",
+    "marketNote": "併記。方法を参照",
+    "scope1short": "スコープ1",
+    "scope2short": "スコープ2",
+    "scopeN": "スコープ{n}",
+    "tierWhy": {
+      "primary": "請求書または検針値から読み取った数量",
+      "secondary": "ご自身で修正、または単位換算済み",
+      "estimated": "質問への回答から補完"
+    },
+    "step": {
+      "document": "根拠書類",
+      "quantity": "活動量",
+      "factor": "排出係数",
+      "result": "計算"
+    },
+    "factorCard": {
+      "source": "出典",
+      "open": "開く",
+      "vintage": "公表",
+      "year": "{year}年適用",
+      "geography": "地域 · 方法",
+      "id": "係数ID",
+      "nearestYear": "{year}年の係数は、報告年度に最も近い公表値です。",
+      "nationalFallback": "この拠点には地域別係数がないため全国係数を使用。",
+      "marketFallback": "残余ミックスや契約係数が未公表のため、マーケット基準は系統平均を使用（GHGプロトコル スコープ2階層）。"
+    },
+    "method": {
+      "title": "数値の算定方法",
+      "lede": "公表係数{n}件、前提{a}件。タップして方法を読む。",
+      "standard": "基準",
+      "standardValue": "GHGプロトコル コーポレート基準",
+      "boundary": "境界",
+      "boundaryValue": "操業支配 · {n}拠点",
+      "period": "報告期間",
+      "country": "国",
+      "scope2": "スコープ2",
+      "scope2Value": "スコープ2ガイダンスの二重報告要件に従い、ロケーション基準（主）とマーケット基準を併記。",
+      "sources": "使用した排出係数 · {n}",
+      "location": "ロケーション基準の系統平均",
+      "market": "マーケット基準",
+      "fuel": "燃料燃焼",
+      "gwp": "地球温暖化係数",
+      "biogenic": "バイオジェニック"
+    },
+    "noAssumptions": "この行に前提はありません。請求書からの直接読み取りです。",
+    "correctTitle": "この数量を修正しますか？",
+    "correctBody": "{from} {unit} を {to} {unit} に。ご自身で修正した行として記録し、合計を再計算します。",
+    "chart": {
+      "title": "月別"
+    },
+    "lines": {
+      "title": "{n}行",
+      "sortBy": "{key}で並べ替え",
+      "sort": {
+        "period": "期間順",
+        "emissions": "排出量順"
+      },
+      "filters": "フィルター",
+      "all": "すべて",
+      "noneMatch": "条件に合う行がありません。"
+    },
+    "bySite": "拠点別",
+    "site": "拠点",
+    "fixInQuestions": "質問で修正"
   },
   "questionnaire": {
     "title": "顧客の質問票",

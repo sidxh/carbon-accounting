@@ -187,7 +187,73 @@
     "notComputed": "Chưa tính.",
     "compute": "Tính",
     "skipped": "Chưa tính được",
-    "next": "Điền bảng câu hỏi"
+    "next": "Điền bảng câu hỏi",
+    "notComputedBody": "Hãy hoàn tất phần câu hỏi trước, hoặc tính ngay từ hóa đơn hiện có.",
+    "shareOfTotal": "{pct} của Phạm vi 1 + 2",
+    "marketNote": "Báo cáo song song; xem phương pháp",
+    "scope1short": "Phạm vi 1",
+    "scope2short": "Phạm vi 2",
+    "scopeN": "Phạm vi {n}",
+    "tierWhy": {
+      "primary": "Số lượng đọc từ hóa đơn hoặc chỉ số công tơ",
+      "secondary": "Bạn đã sửa hoặc đã đổi đơn vị",
+      "estimated": "Bù từ câu trả lời của bạn"
+    },
+    "step": {
+      "document": "Tài liệu nguồn",
+      "quantity": "Số lượng hoạt động",
+      "factor": "Hệ số phát thải",
+      "result": "Phép tính"
+    },
+    "factorCard": {
+      "source": "Nguồn",
+      "open": "mở",
+      "vintage": "Công bố",
+      "year": "áp dụng cho {year}",
+      "geography": "Địa lý · phương pháp",
+      "id": "Mã hệ số",
+      "nearestYear": "Hệ số {year} là vintage gần nhất đã công bố cho năm báo cáo của bạn.",
+      "nationalFallback": "Dùng hệ số quốc gia; không có hệ số vùng cho cơ sở này.",
+      "marketFallback": "Chưa có hệ số residual mix hay hợp đồng, nên số liệu theo thị trường dùng trung bình lưới (thứ bậc Phạm vi 2 của GHG Protocol)."
+    },
+    "method": {
+      "title": "Các con số này được tính thế nào",
+      "lede": "{n} hệ số đã công bố, {a} giả định. Nhấn để đọc phương pháp.",
+      "standard": "Tiêu chuẩn",
+      "standardValue": "GHG Protocol Corporate Standard",
+      "boundary": "Ranh giới",
+      "boundaryValue": "Kiểm soát vận hành · {n} cơ sở",
+      "period": "Kỳ báo cáo",
+      "country": "Quốc gia",
+      "scope2": "Phạm vi 2",
+      "scope2Value": "Báo cáo cả theo vị trí (chính) và theo thị trường, theo yêu cầu báo cáo kép của Hướng dẫn Phạm vi 2.",
+      "sources": "Hệ số phát thải đã dùng · {n}",
+      "location": "trung bình lưới theo vị trí",
+      "market": "theo thị trường",
+      "fuel": "đốt nhiên liệu",
+      "gwp": "tiềm năng nóng lên toàn cầu",
+      "biogenic": "sinh học"
+    },
+    "noAssumptions": "Không có giả định nào cho dòng này. Đọc thẳng từ hóa đơn.",
+    "correctTitle": "Sửa số lượng này?",
+    "correctBody": "{from} {unit} thành {to} {unit}. Dòng được đánh dấu do bạn sửa và mọi tổng sẽ được tính lại.",
+    "chart": {
+      "title": "Theo tháng"
+    },
+    "lines": {
+      "title": "{n} dòng",
+      "sortBy": "Sắp theo {key}",
+      "sort": {
+        "period": "Theo kỳ",
+        "emissions": "Theo phát thải"
+      },
+      "filters": "Bộ lọc",
+      "all": "Tất cả",
+      "noneMatch": "Không có dòng nào khớp bộ lọc."
+    },
+    "bySite": "Theo cơ sở",
+    "site": "Cơ sở",
+    "fixInQuestions": "Sửa ở phần Câu hỏi"
   },
   "questionnaire": {
     "title": "Bảng câu hỏi của khách hàng",

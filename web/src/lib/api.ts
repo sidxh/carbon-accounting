@@ -140,6 +140,17 @@ export interface InventoryLine {
   assumption_ids: string[];
   period_start: string;
   period_end: string;
+  factor_source_name: string;
+  factor_source_url: string;
+  factor_vintage: string;
+  factor_country: string;
+  factor_region?: string | null;
+  factor_year?: number | null;
+  factor_gas?: string | null;
+  exact_year: boolean;
+  exact_region: boolean;
+  fell_back_to?: string | null;
+  activity_notes: string;
 }
 
 export interface Totals {
@@ -151,6 +162,7 @@ export interface Totals {
   by_energy_type: Record<string, number>;
   tier_mix: Record<string, number>;
   line_count: number;
+  by_month: Record<string, { scope1: number; scope2_location: number; estimated: number }>;
 }
 
 export interface Snapshot {

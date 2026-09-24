@@ -139,10 +139,46 @@ def compute(
                     assumption_ids=list(line.assumption_ids),
                     period_start=line.period_start,
                     period_end=line.period_end,
+                    factor_source_name=f.source_name,
+                    factor_source_url=f.source_url,
+                    factor_vintage=f.vintage,
+                    factor_country=f.country,
+                    factor_region=f.region,
+                    factor_year=f.year,
+                    factor_gas=f.gas,
+                    exact_year=choice.exact_year,
+                    exact_region=choice.exact_region,
+                    fell_back_to=(str(choice.fell_back_to) if choice.fell_back_to else None),
+                    activity_notes=line.notes or "",
                 )
             )
 
     return ComputeResult(lines=out, totals=totals(out), skipped=skipped)
+
+
+def _by_month(headline: list[InventoryLine]) -> dict[str, dict[str, float]]:
+    """Spread each headline line over the months it covers, by days, so the
+    monthly chart shows a bill for 5 Jan–4 Feb mostly in January."""
+    import calendar
+    from datetime import date, timedelta
+
+    out: dict[str, dict[str, float]] = {}
+    for l in headline:
+        total_days = (l.period_end - l.period_start).days + 1
+        if total_days <= 0:
+            continue
+        cur = date(l.period_start.year, l.period_start.month, 1)
+        while cur <= l.period_end:
+            month_end = date(cur.year, cur.month, calendar.monthrange(cur.year, cur.month)[1])
+            s, e = max(cur, l.period_start), min(month_end, l.period_end)
+            share = ((e - s).days + 1) / total_days
+            ym = f"{cur.year:04d}-{cur.month:02d}"
+            bucket = out.setdefault(ym, {"scope1": 0.0, "scope2_location": 0.0, "estimated": 0.0})
+            bucket["scope1" if l.scope == 1 else "scope2_location"] += l.kg_co2e * share
+            if l.tier == "estimated":
+                bucket["estimated"] += l.kg_co2e * share
+            cur = month_end + timedelta(days=1)
+    return dict(sorted(out.items()))
 
 
 def totals(lines: list[InventoryLine]) -> InventoryTotals:
@@ -172,6 +208,7 @@ def totals(lines: list[InventoryLine]) -> InventoryTotals:
     tier_mix = {t: (kg / total_kg if total_kg else 0.0) for t, kg in tier_kg.items()}
 
     return InventoryTotals(
+        by_month=_by_month(headline),
         scope1_kg=sum(l.kg_co2e for l in s1),
         scope2_location_kg=sum(l.kg_co2e for l in s2_loc),
         scope2_market_kg=sum(l.kg_co2e for l in s2_mkt),

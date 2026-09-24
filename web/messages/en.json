@@ -187,7 +187,73 @@
     "notComputed": "Not yet calculated.",
     "compute": "Calculate",
     "skipped": "Not computed",
-    "next": "Fill the questionnaire"
+    "next": "Fill the questionnaire",
+    "notComputedBody": "Finish the questions first, or calculate now from the bills as they are.",
+    "shareOfTotal": "{pct} of Scope 1 + 2",
+    "marketNote": "Reported alongside; see method",
+    "scope1short": "Scope 1",
+    "scope2short": "Scope 2",
+    "scopeN": "Scope {n}",
+    "tierWhy": {
+      "primary": "Quantity read from an invoice or meter reading",
+      "secondary": "Corrected by you or converted from another unit",
+      "estimated": "Filled from your answer to a question"
+    },
+    "step": {
+      "document": "Source document",
+      "quantity": "Activity quantity",
+      "factor": "Emission factor",
+      "result": "Calculation"
+    },
+    "factorCard": {
+      "source": "Source",
+      "open": "open",
+      "vintage": "Published",
+      "year": "applies to {year}",
+      "geography": "Geography · method",
+      "id": "Factor id",
+      "nearestYear": "The {year} factor is the nearest published vintage for your reporting year.",
+      "nationalFallback": "National factor used; no sub-national factor exists for this site.",
+      "marketFallback": "No residual-mix or contract factor is published here, so the market-based figure uses the grid average (GHG Protocol Scope 2 hierarchy)."
+    },
+    "method": {
+      "location": "location-based grid average",
+      "market": "market-based",
+      "fuel": "fuel combustion",
+      "gwp": "global warming potential",
+      "biogenic": "biogenic",
+      "title": "How these figures were calculated",
+      "lede": "{n} published factor(s), {a} assumption(s). Tap to read the method.",
+      "standard": "Standard",
+      "standardValue": "GHG Protocol Corporate Standard",
+      "boundary": "Boundary",
+      "boundaryValue": "Operational control · {n} site(s)",
+      "period": "Reporting period",
+      "country": "Country",
+      "scope2": "Scope 2",
+      "scope2Value": "Reported both location-based (headline) and market-based, per the Scope 2 Guidance dual-reporting requirement.",
+      "sources": "Emission factors used · {n}"
+    },
+    "noAssumptions": "No assumptions touch this line. It is a straight read from the bill.",
+    "correctTitle": "Correct this quantity?",
+    "correctBody": "{from} {unit} becomes {to} {unit}. The line is marked as corrected by you and every total is recalculated.",
+    "chart": {
+      "title": "By month"
+    },
+    "lines": {
+      "title": "{n} line(s)",
+      "sortBy": "Sort by {key}",
+      "sort": {
+        "period": "By period",
+        "emissions": "By emissions"
+      },
+      "filters": "Filters",
+      "all": "All",
+      "noneMatch": "No lines match these filters."
+    },
+    "bySite": "By site",
+    "site": "Site",
+    "fixInQuestions": "Fix in Questions"
   },
   "questionnaire": {
     "title": "Your customer's questionnaire",
