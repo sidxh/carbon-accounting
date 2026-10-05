@@ -90,7 +90,7 @@ export function AccountMenu() {
                     <Menu.RadioItemIndicator className="grid size-4 place-items-center data-[unchecked]:opacity-0" keepMounted>
                       <Check className="size-3.5 text-signal" aria-hidden />
                     </Menu.RadioItemIndicator>
-                    {v}
+                    <span lang={k}>{v}</span>
                   </Menu.RadioItem>
                 ))}
               </Menu.RadioGroup>

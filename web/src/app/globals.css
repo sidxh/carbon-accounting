@@ -88,8 +88,8 @@
   --color-danger-bg: var(--danger-bg);
   --color-tier2: var(--secondary-tier);
   --color-tier2-bg: var(--secondary-tier-bg);
-  --font-sans: var(--font-figtree), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Noto Sans CJK JP", sans-serif;
-  --font-display: var(--font-garamond), "Noto Serif", "Noto Serif CJK JP", Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-figtree), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, "Noto Sans CJK JP", "Noto Sans JP", sans-serif;
+  --font-display: var(--font-garamond), "Noto Serif", "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif CJK JP", "Noto Serif JP", Georgia, "Times New Roman", serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --radius-card: var(--radius);
   --ease-out: var(--ease-out);
