@@ -27,7 +27,7 @@ function actOf(step: number) {
 const BARS = [0.62, 0.58, 0.66, 0.71, 0.84, 0.93, 1, 0.96, 0.82, 0.7, 0.64, 0.68];
 const GAP = new Set([6, 7, 8]);
 
-function usePageVisible() {
+export function usePageVisible() {
   const [visible, setVisible] = useState(true);
   useEffect(() => {
     const on = () => setVisible(document.visibilityState === "visible");

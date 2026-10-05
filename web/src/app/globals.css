@@ -383,6 +383,18 @@ button.pill:active { transform: scale(0.97); }
   animation: pulse-dot 1.2s ease-in-out infinite;
 }
 
+/* Landing hero globe (components/landing/hero-globe.tsx): the 3D scene runs in
+   WebGL; CSS only bobs the gas tags beside it. */
+@keyframes hg-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.hero-globe .hg-bob { animation: hg-bob 4s var(--ease-in-out) infinite; }
+.hero-globe .hg-bob-b { animation-duration: 5.2s; animation-delay: -1.3s; }
+.hero-globe .hg-bob-c { animation-duration: 4.6s; animation-delay: -2.6s; }
+.hero-globe[data-paused] * { animation-play-state: paused !important; }
+.hero-globe[data-still] * { animation: none !important; }
+
 
 @media (prefers-reduced-motion: reduce) {
   *,
