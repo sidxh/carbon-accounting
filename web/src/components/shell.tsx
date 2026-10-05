@@ -1,13 +1,11 @@
 "use client";
 
-import { signOut } from "firebase/auth";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { Menu } from "@base-ui/react";
 import { ArrowLeft, Check, ChevronDown, ClipboardList, FileSpreadsheet, Globe, Lock, LogOut, MessageSquareText, Receipt, Settings2, Users, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { firebaseAuth } from "@/lib/firebase";
 import type { Progress } from "@/lib/api";
 import { useAuth } from "./auth-provider";
 import { Wordmark } from "./brand/logo-mark";
@@ -55,7 +53,7 @@ export function AccountMenu() {
   const t = useTranslations();
   const router = useRouter();
   const locale = useLocale();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const who = user?.phoneNumber ?? user?.email ?? "";
 
   return (
@@ -96,7 +94,7 @@ export function AccountMenu() {
               </Menu.RadioGroup>
             </Menu.Group>
             <Menu.Separator className="my-1 border-t hairline" />
-            <Menu.Item className={menuItem} onClick={async () => { await signOut(firebaseAuth()); router.replace("/sign-in"); }}>
+            <Menu.Item className={menuItem} onClick={async () => { await signOut(); router.replace("/"); }}>
               <LogOut className="size-4 text-muted" aria-hidden />
               {t("app.signOut")}
             </Menu.Item>
