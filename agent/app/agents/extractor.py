@@ -19,7 +19,7 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 from ..gemini import ImagePart, get_gemini
-from ..models import ActivityLine, EnergyType, Unit
+from ..models import ActivityLine, EnergyType, MeterRegister, Unit
 
 DocType = Literal[
     "electricity_bill",
@@ -46,6 +46,20 @@ class ExtractedLine(BaseModel):
     gas: str | None = Field(default=None, description="Refrigerant blend such as R-410A, only for refrigerant lines")
     confidence: float = Field(ge=0, le=1)
     evidence: str = Field(description="The printed label or row the quantity was read from, verbatim")
+    quantity_box: list[int] | None = Field(
+        default=None,
+        description="Bounding box [ymin, xmin, ymax, xmax], each 0-1000 relative to the page image, tightly around "
+        "the printed TOTAL quantity figure for this line (digits and unit), not the whole row",
+    )
+    period_box: list[int] | None = Field(
+        default=None, description="Same format, around the printed billing period or delivery date"
+    )
+    page: int = Field(default=1, description="1-based page of the document the quantity is printed on")
+    registers: list[MeterRegister] = Field(
+        default_factory=list,
+        description="Electricity or gas bills only: every meter register with its previous and current index as "
+        "printed, the multiplier (1 when none is printed) and the consumption printed for that register",
+    )
 
 
 class ExtractedDocument(BaseModel):
@@ -79,6 +93,10 @@ Rules that matter for accounting:
   total kg printed, not the number of cylinders. Generator runtime in hours is "h".
 - energy_type: electricity for grid bills; diesel for dầu DO / 軽油 / diesel; lpg for gas LPG /
   LPガス / プロパン; natural_gas for city gas / piped gas; refrigerant for service slips charging gas.
+- Meter readings: when the bill prints meter indexes (chỉ số cũ / chỉ số mới, 前回指示数 / 今回指示数,
+  previous / current reading), list every register in `registers` exactly as printed. Never compute them.
+- Boxes: `quantity_box` is [ymin, xmin, ymax, xmax] on a 0-1000 scale of the page image (0,0 top-left),
+  tight around the printed total quantity. Omit a box rather than guess.
 - One document usually yields one line. Multiple fuel types on one invoice yield one line each.
 - Set confidence below 0.7 when a value is hard to read or ambiguous, and say why in warnings.
 - Do not invent fields. Leave optional fields null when absent."""
@@ -91,6 +109,19 @@ def extract(data: bytes, mime_type: str) -> ExtractedDocument:
     )
 
 
+def _clean_box(b: list[int] | None) -> list[int] | None:
+    """Clamp to 0..1000 and drop anything that is not a real rectangle."""
+    if not b or len(b) != 4:
+        return None
+    try:
+        y0, x0, y1, x1 = (max(0, min(1000, int(round(v)))) for v in b)
+    except (TypeError, ValueError):
+        return None
+    if y1 <= y0 or x1 <= x0:
+        return None
+    return [y0, x0, y1, x1]
+
+
 def _iso(s: str) -> date:
     return date.fromisoformat(s.strip()[:10])
 
@@ -101,6 +132,7 @@ def to_activity_lines(
     supplier_id: str,
     source_doc_id: str,
     site_id: str | None,
+    country: str | None = None,
 ) -> list[ActivityLine]:
     out: list[ActivityLine] = []
     for ln in doc.lines:
@@ -130,6 +162,10 @@ def to_activity_lines(
                 confidence=ln.confidence,
                 tier="primary",
                 notes=ln.evidence,
+                quantity_box=_clean_box(ln.quantity_box),
+                period_box=_clean_box(ln.period_box),
+                page=max(1, ln.page),
+                registers=list(ln.registers),
             )
         )
     return out

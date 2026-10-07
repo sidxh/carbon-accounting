@@ -13,7 +13,7 @@ from datetime import date
 from .agents.extractor import ExtractedDocument, extract, to_activity_lines
 from .calculator import compute
 from .factor_library import get_library
-from .models import ReportingPeriod, Request, RequestStatus, SupplierProfile
+from .models import InventoryLine, ReportingPeriod, Request, RequestStatus, SupplierProfile
 from .repo import DocumentRecord, InventorySnapshot, Repo
 from .storage import get_storage
 
@@ -93,7 +93,7 @@ def register_and_extract(
     repo.put_document(record)
     try:
         extracted = extract(data, mime_type)
-        lines = to_activity_lines(extracted, supplier_id=profile.id, source_doc_id=doc_id, site_id=site)
+        lines = to_activity_lines(extracted, supplier_id=profile.id, source_doc_id=doc_id, site_id=site, country=profile.country)
         repo.add_activity_lines(profile.id, period.id, lines)
         record.status = "extracted"
         record.extraction = extracted.model_dump()
@@ -119,7 +119,7 @@ def retry_extraction(repo: Repo, profile: SupplierProfile, period: ReportingPeri
     repo.put_document(rec)
     try:
         extracted = extract(data, rec.mime_type)
-        lines = to_activity_lines(extracted, supplier_id=profile.id, source_doc_id=doc_id, site_id=rec.site_id)
+        lines = to_activity_lines(extracted, supplier_id=profile.id, source_doc_id=doc_id, site_id=rec.site_id, country=profile.country)
         repo.add_activity_lines(profile.id, period.id, lines)
         rec.status = "extracted"
         rec.extraction = extracted.model_dump()
@@ -191,7 +191,7 @@ def reset_questions(repo: Repo, profile: SupplierProfile, period: ReportingPerio
         if rec.status != "extracted" or not rec.extraction:
             continue
         doc = ExtractedDocument.model_validate(rec.extraction)
-        lines.extend(to_activity_lines(doc, supplier_id=profile.id, source_doc_id=rec.id, site_id=rec.site_id))
+        lines.extend(to_activity_lines(doc, supplier_id=profile.id, source_doc_id=rec.id, site_id=rec.site_id, country=profile.country))
     repo.replace_activity_lines(profile.id, period.id, lines)
     return len(lines)
 
@@ -212,3 +212,53 @@ def reset_all(repo: Repo, profile: SupplierProfile) -> None:
     """Remove every period, request, questionnaire and file. The profile stays."""
     repo.clear_supplier_data(profile.id)
     get_storage().delete_prefix(f"suppliers/{profile.id}/")
+
+
+# --- evidence ----------------------------------------------------------------------
+
+def _png_size(png: bytes) -> tuple[int, int]:
+    import io
+
+    from PIL import Image
+
+    with Image.open(io.BytesIO(png)) as im:
+        return im.size
+
+
+def build_evidence(repo: Repo, uid: str, pid: str, lines: list[InventoryLine], *, limit: int = 36) -> list[dict]:
+    """Cropped, outlined source snippets for the methodology note.
+
+    One per headline inventory line (Scope 1, and Scope 2 location-based) whose
+    document and printed-value box are known. Lines that came from an
+    assumption, or whose bill could not be rendered, simply have no snippet.
+    """
+    import base64
+
+    from .evidence import crop_evidence
+
+    acts = {a.id: a for a in repo.list_activity_lines(uid, pid)}
+    docs = {d.id: d for d in repo.list_documents(uid, pid)}
+    storage = get_storage()
+    out: list[dict] = []
+    blobs: dict[str, bytes] = {}
+    for l in sorted((x for x in lines if x.scope == 1 or x.basis == "location"), key=lambda x: (x.period_start, x.energy_type.value)):
+        act, doc = acts.get(l.activity_line_id), docs.get(l.source_doc_id)
+        if act is None or doc is None or not act.quantity_box:
+            continue
+        try:
+            if doc.id not in blobs:
+                blobs[doc.id] = storage.get(doc.storage_key)
+            png = crop_evidence(blobs[doc.id], doc.mime_type, act.page, act.quantity_box)
+        except Exception:
+            continue
+        out.append({
+            "period": f"{l.period_start:%d %b} – {l.period_end:%d %b %Y}" if l.period_start != l.period_end else f"{l.period_start:%d %b %Y}",
+            "carrier": l.energy_type.value.replace("_", " "),
+            "quantity": f"{l.quantity:,.1f} {l.unit.value}",
+            "filename": doc.filename,
+            "png": base64.b64encode(png).decode(),
+            "w": 420, "h": round(_png_size(png)[1] * 420 / _png_size(png)[0]),   # explicit size: the PDF engine misjudges tall images
+        })
+        if len(out) >= limit:
+            break
+    return out

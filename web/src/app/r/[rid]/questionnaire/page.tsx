@@ -2,14 +2,16 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { AnimatePresence, motion } from "motion/react";
-import { Download, FileSpreadsheet, FileText, Lock, Pencil, UploadCloud } from "lucide-react";
+import { Download, FileSpreadsheet, FileText, Lock, Pencil, ScanSearch, UploadCloud } from "lucide-react";
 import { cn as clsx } from "@/lib/cn";
 import { useRequest } from "@/components/request-context";
 import { EmptyState, PageTitle, SkeletonList } from "@/components/ui/bits";
 import { useToast } from "@/components/ui/toast";
+import { EvidenceViewer, type EvidenceItem } from "@/components/evidence-viewer";
 import { api, ApiError, type Answer, type QuestionnaireRecord } from "@/lib/api";
+import { hasBillsBehind, itemsForLines, linesForField } from "@/lib/evidence";
 
 /** Three-segment ring: answered from data, answered by you, still open. */
 function ProgressRing({ auto, yours, open }: { auto: number; yours: number; open: number }) {
@@ -43,7 +45,7 @@ function ProgressRing({ auto, yours, open }: { auto: number; yours: number; open
   );
 }
 
-function AnswerRow({ uid, rid, qid, a, onSaved }: { uid: string; rid: string; qid: string; a: Answer; onSaved: (r: QuestionnaireRecord) => void }) {
+function AnswerRow({ uid, rid, qid, a, onSaved, onShowBills }: { uid: string; rid: string; qid: string; a: Answer; onSaved: (r: QuestionnaireRecord) => void; onShowBills: (a: Answer) => void }) {
   const t = useTranslations("questionnaire");
   const toast = useToast();
   const [editing, setEditing] = useState(false);
@@ -95,6 +97,9 @@ function AnswerRow({ uid, rid, qid, a, onSaved }: { uid: string; rid: string; qi
             ) : (
               <Link href={`/r/${rid}/inventory`} className="inline-flex min-h-8 items-center gap-1 underline-offset-4 hover:underline"><Lock className="size-3" aria-hidden />{t("lockedHint")}</Link>
             )}
+            {!a.flagged && a.value !== null && hasBillsBehind(a.field) && (
+              <button className="inline-flex min-h-8 items-center gap-1 text-signal-ink underline-offset-4 hover:underline" onClick={() => onShowBills(a)}><ScanSearch className="size-3" aria-hidden />{t("showBills")}</button>
+            )}
             {missingRevenue && <Link href="/setup" className="inline-flex min-h-8 items-center text-signal-ink underline-offset-4 hover:underline">{t("addRevenue")}</Link>}
           </div>
         </>
@@ -114,7 +119,10 @@ function Questionnaire() {
   const { uid, period, request, reload } = useRequest();
   const rid = request.id;
   const t = useTranslations("questionnaire");
+  const locale = useLocale();
   const toast = useToast();
+  const [evidence, setEvidence] = useState<{ heading: string; items: EvidenceItem[]; index: number } | null>(null);
+  const [evidenceOpen, setEvidenceOpen] = useState(false);
   const [latest, setLatest] = useState<QuestionnaireRecord | null | undefined>(undefined);
   const [share, setShare] = useState(request.customer_share != null ? String(Math.round(request.customer_share * 100)) : "");
   const [busy, setBusy] = useState(false);
@@ -126,6 +134,25 @@ function Questionnaire() {
   useEffect(() => {
     api.getQuestionnaire(uid, rid).then((r) => setLatest(r.questionnaire)).catch((e) => { setLatest(null); setError((e as Error).message); });
   }, [uid, rid]);
+
+  /** The bills behind a calculator answer: read the inventory and documents on first use. */
+  async function showBills(a: Answer) {
+    try {
+      const [inv, docs] = await Promise.all([api.inventory(uid, period.id), api.listDocuments(uid, period.id)]);
+      const lines = linesForField(a.field, inv.lines) ?? [];
+      const items = itemsForLines(
+        lines,
+        Object.fromEntries(inv.activityLines.map((x) => [x.id, x])),
+        Object.fromEntries(docs.documents.map((d) => [d.id, d])),
+        locale,
+      );
+      if (!items.length) { toast(t("noBills")); return; }
+      setEvidence({ heading: `${a.ref ? a.ref + " · " : ""}${t("billsBehind")}`, items, index: 0 });
+      setEvidenceOpen(true);
+    } catch (e) {
+      toast((e as Error).message, "danger");
+    }
+  }
 
   async function onFile(list: FileList | null) {
     const f = list?.[0];
@@ -251,12 +278,25 @@ function Questionnaire() {
               </h2>
               <ul className="card divide-y divide-line overflow-hidden">
                 {s.items.map((a) => (
-                  <AnswerRow key={a.question_id} uid={uid} rid={rid} qid={latest.id} a={a} onSaved={(r) => setLatest(r)} />
+                  <AnswerRow key={a.question_id} uid={uid} rid={rid} qid={latest.id} a={a} onSaved={(r) => setLatest(r)} onShowBills={showBills} />
                 ))}
               </ul>
             </motion.section>
           ))}
         </AnimatePresence>
+      )}
+
+      {evidence && (
+        <EvidenceViewer
+          uid={uid}
+          pid={period.id}
+          items={evidence.items}
+          index={evidence.index}
+          onIndex={(i) => setEvidence((e) => (e ? { ...e, index: i } : e))}
+          open={evidenceOpen}
+          onClose={() => setEvidenceOpen(false)}
+          heading={evidence.heading}
+        />
       )}
     </div>
   );

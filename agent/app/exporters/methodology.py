@@ -122,8 +122,9 @@ def _draft(facts: dict) -> Narrative:
     return get_gemini().generate_structured(prompt, Narrative)
 
 
-def render_html(profile: SupplierProfile, snap: InventorySnapshot, lines: list[InventoryLine], asms: list[Assumption], *, n_docs: int, dropped: int) -> str:
+def render_html(profile: SupplierProfile, snap: InventorySnapshot, lines: list[InventoryLine], asms: list[Assumption], *, n_docs: int, dropped: int, evidence: list[dict] | None = None) -> str:
     facts = _facts(profile, snap, lines, asms, n_docs, dropped)
+    facts["evidence"] = evidence or []
     facts["narrative"] = _draft(facts)
     facts["font_path"] = _font_path()
     return env.get_template("methodology.html").render(**facts)
@@ -156,5 +157,5 @@ def html_to_pdf(html: str) -> bytes:
         return out.getvalue()
 
 
-def build_pdf(profile: SupplierProfile, snap: InventorySnapshot, lines: list[InventoryLine], asms: list[Assumption], *, n_docs: int, dropped: int) -> bytes:
-    return html_to_pdf(render_html(profile, snap, lines, asms, n_docs=n_docs, dropped=dropped))
+def build_pdf(profile: SupplierProfile, snap: InventorySnapshot, lines: list[InventoryLine], asms: list[Assumption], *, n_docs: int, dropped: int, evidence: list[dict] | None = None) -> bytes:
+    return html_to_pdf(render_html(profile, snap, lines, asms, n_docs=n_docs, dropped=dropped, evidence=evidence))

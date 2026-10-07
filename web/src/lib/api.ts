@@ -180,6 +180,21 @@ export interface Assumption {
   method: string;
 }
 
+export interface MeterRegister {
+  label: string;
+  previous?: number | null;
+  current?: number | null;
+  multiplier: number;
+  consumption?: number | null;
+}
+
+/** One deterministic plausibility check on a bill line. */
+export interface LineCheck {
+  id: "index" | "price" | "season";
+  status: "pass" | "fail" | "confirmed";
+  detail: string;
+}
+
 export interface ActivityLine {
   id: string;
   source_doc_id: string;
@@ -193,6 +208,12 @@ export interface ActivityLine {
   tier: string;
   assumption_ids: string[];
   notes: string;
+  /** [ymin, xmin, ymax, xmax] on a 0..1000 scale of the source page: where the printed value sits. */
+  quantity_box?: number[] | null;
+  period_box?: number[] | null;
+  page?: number;
+  registers?: MeterRegister[];
+  checks?: LineCheck[];
 }
 
 export interface Answer {
@@ -326,6 +347,14 @@ export const api = {
     // browser <img> we fetch and hand back a blob URL instead.
     const res = await fetch(`${AGENT_URL}${P(uid, pid)}/documents/${docId}/file`, { headers: { Authorization: `Bearer ${t}` } });
     if (!res.ok) throw new ApiError(res.status, "file");
+    return URL.createObjectURL(await res.blob());
+  },
+
+  /** One page of a stored bill as a PNG blob URL (PDFs are rendered by the agent). */
+  documentPageUrl: async (uid: string, pid: string, docId: string, page = 1) => {
+    const t = await token();
+    const res = await fetch(`${AGENT_URL}${P(uid, pid)}/documents/${docId}/page/${page}`, { headers: { Authorization: `Bearer ${t}` } });
+    if (!res.ok) throw new ApiError(res.status, "page");
     return URL.createObjectURL(await res.blob());
   },
 

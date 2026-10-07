@@ -274,7 +274,9 @@
     },
     "bySite": "By site",
     "site": "Site",
-    "fixInQuestions": "Fix in Questions"
+    "fixInQuestions": "Fix in Questions",
+    "showMe": "Show me where",
+    "showMeShort": "Show me"
   },
   "questionnaire": {
     "title": "Your customer's questionnaire",
@@ -317,7 +319,10 @@
       "other": "Other"
     },
     "attachedTemplate": "Attached to this request: {name}. Fill it, or choose a different file.",
-    "fillAttached": "Fill the attached questionnaire"
+    "fillAttached": "Fill the attached questionnaire",
+    "showBills": "Show the bills behind this",
+    "billsBehind": "Bills behind this number",
+    "noBills": "No bill is behind this number."
   },
   "common": {
     "loading": "Loading…",
@@ -508,6 +513,36 @@
       "creating": "Creating…",
       "cancel": "Cancel",
       "created": "Request for {name} created."
+    }
+  },
+  "evidence": {
+    "title": "Where this number comes from",
+    "hint": "The spotlight marks the figure printed on your bill.",
+    "noBox": "We did not record where this value sits on the page, so the whole bill is shown.",
+    "close": "Close",
+    "page": "Page {n}",
+    "counted": "Counted",
+    "alt": "Your bill {name}",
+    "loadError": "The bill could not be displayed.",
+    "bills": "Bills behind this number",
+    "prev": "Previous bill",
+    "next": "Next bill",
+    "checks": {
+      "index": {
+        "pass": "Meter readings add up",
+        "fail": "Meter readings do not add up",
+        "confirmed": "Meter mismatch, confirmed by you"
+      },
+      "price": {
+        "pass": "Price per unit plausible",
+        "fail": "Price per unit looks off",
+        "confirmed": "Price looked off, confirmed by you"
+      },
+      "season": {
+        "pass": "In line with other months",
+        "fail": "Unusual against other months",
+        "confirmed": "Unusual month, confirmed by you"
+      }
     }
   }
 }

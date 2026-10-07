@@ -16,6 +16,8 @@
   .headline td { font-size: 11pt; }
   .headline td.num { font-weight: bold; }
   .muted { color: #666; font-size: 9pt; }
+  .evid { margin: 0 0 10pt 0; }
+  .evid p { margin: 0 0 3pt 0; }
   .box { border: 1px solid #ccc; padding: 6pt 8pt; margin: 6pt 0; background: #fafaf8; }
   p { margin: 4pt 0 6pt 0; }
 </style>
@@ -87,7 +89,18 @@
 <ul>{% for s in skipped %}<li class="muted">{{ s[0] }} — {{ s[1] }}</li>{% endfor %}</ul>
 {% endif %}
 
-<h2>7. Verification</h2>
+{% if evidence %}
+<h2>7. Source evidence</h2>
+<p class="muted">Each snippet is cut from the supplier's own document; the printed quantity the inventory line uses is outlined in red.</p>
+{% for e in evidence %}
+<div class="evid">
+  <p class="muted"><b>{{ e.carrier }}</b> · {{ e.period }} · {{ e.quantity }} · {{ e.filename }}</p>
+  <img src="data:image/png;base64,{{ e.png }}" width="{{ e.w }}" height="{{ e.h }}">
+</div>
+{% endfor %}
+{% endif %}
+
+<h2>{% if evidence %}8{% else %}7{% endif %}. Verification</h2>
 <p>These figures are self-reported and have not been verified by a third party. Every inventory line carries a reference to its source document, the emission factor applied and any assumption used, and the evidence pack (documents, factor library with citations, assumption log) is available to an assurance provider on request.</p>
 
 <p class="muted">Prepared with the supplier carbon reporting agent. Calculations are deterministic; the model was used only to read documents, converse with the supplier, and draft the narrative sections above.</p>

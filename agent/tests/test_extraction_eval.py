@@ -38,3 +38,22 @@ def test_golden_set_core_accuracy_at_least_90_percent():
     acc = sum(sum(1 for r in rows if r.get(f)) for f in core) / (len(rows) * len(core))
     assert acc >= 0.90, f"core extraction accuracy {acc:.1%} below 90%"
     assert all(r.get("energy_type") for r in rows), "energy type misread on some documents"
+
+
+@pytest.mark.slow
+def test_golden_set_boxes_land_on_the_printed_value():
+    """The box the extractor reports must overlap the printed figure (IoU >= 0.5)
+    on at least 90% of the rendered bills; this is what "Show me where" draws."""
+    from app.agents.extractor import extract
+    from scripts.eval_extraction import score_box
+
+    labels = json.loads((GOLDEN / "labels.json").read_text(encoding="utf-8"))
+    rows = []
+    for label in labels:
+        path = GOLDEN / "rendered" / label["files"]["png"]
+        got = extract(path.read_bytes(), mimetypes.guess_type(path.name)[0] or "image/png")
+        rows.append(score_box(label, got))
+    boxed = [r for r in rows if "box" in r]
+    assert len(boxed) >= 40
+    hit = sum(1 for r in boxed if r["box"]) / len(boxed)
+    assert hit >= 0.90, f"only {hit:.1%} of boxes land on the printed value"

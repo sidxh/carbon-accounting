@@ -17,7 +17,7 @@
 
 <table style="margin-top:16px">
   <tr><th>STT</th><th>Tên hàng hóa</th><th>ĐVT</th><th class="num">Số lượng</th><th class="num">Đơn giá (đ/kg)</th><th class="num">Thành tiền</th></tr>
-  <tr><td>1</td><td>Khí hóa lỏng LPG công nghiệp (bình {{ cyl_kg }} kg × {{ cylinders }} bình)</td><td>kg</td><td class="num mono">{{ '{:,}'.format(kg) }}</td><td class="num mono">{{ '{:,}'.format(price) }}</td><td class="num mono">{{ '{:,}'.format(kg*price) }}</td></tr>
+  <tr><td>1</td><td>Khí hóa lỏng LPG công nghiệp (bình {{ cyl_kg }} kg × {{ cylinders }} bình)</td><td>kg</td><td class="num mono" data-gt="quantity">{{ '{:,}'.format(kg) }}</td><td class="num mono">{{ '{:,}'.format(price) }}</td><td class="num mono">{{ '{:,}'.format(kg*price) }}</td></tr>
   <tr><td colspan="5">Cộng tiền hàng</td><td class="num mono">{{ '{:,}'.format(subtotal) }}</td></tr>
   <tr><td colspan="5">Thuế GTGT 10%</td><td class="num mono">{{ '{:,}'.format(vat) }}</td></tr>
   <tr><td colspan="5" class="total">Tổng cộng</td><td class="num mono total">{{ '{:,}'.format(total) }} đ</td></tr>

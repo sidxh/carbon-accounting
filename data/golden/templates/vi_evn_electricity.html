@@ -26,7 +26,7 @@
   <tr><td>Giờ bình thường</td><td class="num mono">{{ '{:,}'.format(old_normal) }}</td><td class="num mono">{{ '{:,}'.format(new_normal) }}</td><td class="num">1</td><td class="num mono">{{ '{:,}'.format(kwh_normal) }}</td></tr>
   <tr><td>Giờ cao điểm</td><td class="num mono">{{ '{:,}'.format(old_peak) }}</td><td class="num mono">{{ '{:,}'.format(new_peak) }}</td><td class="num">1</td><td class="num mono">{{ '{:,}'.format(kwh_peak) }}</td></tr>
   <tr><td>Giờ thấp điểm</td><td class="num mono">{{ '{:,}'.format(old_low) }}</td><td class="num mono">{{ '{:,}'.format(new_low) }}</td><td class="num">1</td><td class="num mono">{{ '{:,}'.format(kwh_low) }}</td></tr>
-  <tr><td colspan="4"><b>Tổng điện năng tiêu thụ</b></td><td class="num mono total">{{ '{:,}'.format(kwh_total) }} kWh</td></tr>
+  <tr><td colspan="4"><b>Tổng điện năng tiêu thụ</b></td><td class="num mono total" data-gt="quantity">{{ '{:,}'.format(kwh_total) }} kWh</td></tr>
 </table>
 
 <h2>Thành tiền</h2>

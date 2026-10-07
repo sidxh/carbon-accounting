@@ -12,7 +12,7 @@
   <tr><th>Register</th><th class="num">Previous</th><th class="num">Current</th><th class="num">Usage (kWh)</th></tr>
   <tr><td>Peak</td><td class="num mono">{{ '{:,}'.format(old_peak) }}</td><td class="num mono">{{ '{:,}'.format(new_peak) }}</td><td class="num mono">{{ '{:,}'.format(kwh_peak) }}</td></tr>
   <tr><td>Off-peak</td><td class="num mono">{{ '{:,}'.format(old_off) }}</td><td class="num mono">{{ '{:,}'.format(new_off) }}</td><td class="num mono">{{ '{:,}'.format(kwh_off) }}</td></tr>
-  <tr><td colspan="3"><b>Total usage</b></td><td class="num mono total">{{ '{:,}'.format(kwh_total) }} kWh</td></tr>
+  <tr><td colspan="3"><b>Total usage</b></td><td class="num mono total" data-gt="quantity">{{ '{:,}'.format(kwh_total) }} kWh</td></tr>
 </table>
 <h2>Charges</h2>
 <table>

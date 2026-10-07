@@ -274,7 +274,9 @@
     },
     "bySite": "Theo cơ sở",
     "site": "Cơ sở",
-    "fixInQuestions": "Sửa ở phần Câu hỏi"
+    "fixInQuestions": "Sửa ở phần Câu hỏi",
+    "showMe": "Chỉ cho tôi chỗ này",
+    "showMeShort": "Xem"
   },
   "questionnaire": {
     "title": "Bảng câu hỏi của khách hàng",
@@ -317,7 +319,10 @@
       "other": "Khác"
     },
     "attachedTemplate": "Đã đính kèm cho yêu cầu này: {name}. Điền file này hoặc chọn file khác.",
-    "fillAttached": "Điền bảng câu hỏi đã đính kèm"
+    "fillAttached": "Điền bảng câu hỏi đã đính kèm",
+    "showBills": "Xem hóa đơn của con số này",
+    "billsBehind": "Hóa đơn của con số này",
+    "noBills": "Không có hóa đơn nào cho con số này."
   },
   "common": {
     "loading": "Đang tải…",
@@ -508,6 +513,36 @@
       "creating": "Đang tạo…",
       "cancel": "Hủy",
       "created": "Đã tạo yêu cầu cho {name}."
+    }
+  },
+  "evidence": {
+    "title": "Con số này đến từ đâu",
+    "hint": "Vùng sáng đánh dấu con số in trên hóa đơn của bạn.",
+    "noBox": "Chúng tôi chưa ghi lại vị trí của giá trị này trên trang, nên hiển thị cả hóa đơn.",
+    "close": "Đóng",
+    "page": "Trang {n}",
+    "counted": "Đã tính",
+    "alt": "Hóa đơn {name}",
+    "loadError": "Không thể hiển thị hóa đơn.",
+    "bills": "Hóa đơn của con số này",
+    "prev": "Hóa đơn trước",
+    "next": "Hóa đơn sau",
+    "checks": {
+      "index": {
+        "pass": "Chỉ số công tơ khớp",
+        "fail": "Chỉ số công tơ không khớp",
+        "confirmed": "Chỉ số công tơ lệch, bạn đã xác nhận"
+      },
+      "price": {
+        "pass": "Đơn giá hợp lý",
+        "fail": "Đơn giá có vẻ bất thường",
+        "confirmed": "Đơn giá bất thường, bạn đã xác nhận"
+      },
+      "season": {
+        "pass": "Phù hợp với các tháng khác",
+        "fail": "Bất thường so với các tháng khác",
+        "confirmed": "Tháng bất thường, bạn đã xác nhận"
+      }
     }
   }
 }

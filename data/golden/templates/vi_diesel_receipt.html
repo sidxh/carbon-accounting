@@ -18,7 +18,7 @@
 
 <table style="margin-top:16px">
   <tr><th>STT</th><th>Tên hàng hóa, dịch vụ</th><th>Đơn vị tính</th><th class="num">Số lượng</th><th class="num">Đơn giá</th><th class="num">Thành tiền</th></tr>
-  <tr><td>1</td><td>Dầu Diesel DO 0,05S-II (giao tại kho khách hàng, xe bồn)</td><td>Lít</td><td class="num mono">{{ '{:,}'.format(litres) }}</td><td class="num mono">{{ '{:,}'.format(price) }}</td><td class="num mono">{{ '{:,}'.format(litres*price) }}</td></tr>
+  <tr><td>1</td><td>Dầu Diesel DO 0,05S-II (giao tại kho khách hàng, xe bồn)</td><td>Lít</td><td class="num mono" data-gt="quantity">{{ '{:,}'.format(litres) }}</td><td class="num mono">{{ '{:,}'.format(price) }}</td><td class="num mono">{{ '{:,}'.format(litres*price) }}</td></tr>
   {% if with_delivery %}<tr><td>2</td><td>Phí vận chuyển</td><td>Chuyến</td><td class="num mono">1</td><td class="num mono">{{ '{:,}'.format(delivery) }}</td><td class="num mono">{{ '{:,}'.format(delivery) }}</td></tr>{% endif %}
   <tr><td colspan="5">Cộng tiền hàng</td><td class="num mono">{{ '{:,}'.format(subtotal) }}</td></tr>
   <tr><td colspan="5">Thuế suất GTGT 10% · Tiền thuế GTGT</td><td class="num mono">{{ '{:,}'.format(vat) }}</td></tr>

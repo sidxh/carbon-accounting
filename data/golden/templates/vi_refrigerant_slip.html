@@ -19,7 +19,7 @@
 <table>
   <tr><th>Hạng mục</th><th>ĐVT</th><th class="num">Số lượng</th><th class="num">Đơn giá</th><th class="num">Thành tiền</th></tr>
   <tr><td>Kiểm tra rò rỉ, vệ sinh dàn nóng/dàn lạnh</td><td>Lần</td><td class="num">1</td><td class="num mono">{{ '{:,}'.format(labour) }}</td><td class="num mono">{{ '{:,}'.format(labour) }}</td></tr>
-  <tr><td>Nạp bổ sung gas lạnh {{ gas }}</td><td>kg</td><td class="num mono" style="font-weight:700">{{ kg }}</td><td class="num mono">{{ '{:,}'.format(gas_price) }}</td><td class="num mono">{{ '{:,}'.format((kg*gas_price)|int) }}</td></tr>
+  <tr><td>Nạp bổ sung gas lạnh {{ gas }}</td><td>kg</td><td class="num mono" style="font-weight:700" data-gt="quantity">{{ kg }}</td><td class="num mono">{{ '{:,}'.format(gas_price) }}</td><td class="num mono">{{ '{:,}'.format((kg*gas_price)|int) }}</td></tr>
   <tr><td colspan="4" class="total">Tổng cộng (đã gồm VAT)</td><td class="num mono total">{{ '{:,}'.format(total) }} đ</td></tr>
 </table>
 

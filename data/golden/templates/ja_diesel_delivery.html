@@ -12,7 +12,7 @@
 
 <table style="margin-top:16px">
   <tr><th>品名</th><th>単位</th><th class="num">数量</th><th class="num">単価</th><th class="num">金額</th></tr>
-  <tr><td>軽油（JIS 2号）ローリー配送</td><td>L</td><td class="num mono">{{ '{:,}'.format(litres) }}</td><td class="num mono">{{ price }}</td><td class="num mono">{{ '{:,}'.format((litres*price)|int) }}</td></tr>
+  <tr><td>軽油（JIS 2号）ローリー配送</td><td>L</td><td class="num mono" data-gt="quantity">{{ '{:,}'.format(litres) }}</td><td class="num mono">{{ price }}</td><td class="num mono">{{ '{:,}'.format((litres*price)|int) }}</td></tr>
   <tr><td colspan="4">小計</td><td class="num mono">{{ '{:,}'.format(subtotal) }}</td></tr>
   <tr><td colspan="4">消費税（10%）</td><td class="num mono">{{ '{:,}'.format(vat) }}</td></tr>
   <tr><td colspan="4" class="total">合計金額</td><td class="num mono total">{{ '{:,}'.format(total) }} 円</td></tr>

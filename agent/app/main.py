@@ -28,6 +28,7 @@ from .models import ReportingPeriod, Request, Site, SupplierProfile
 from .reconcile_tools import summarise
 from .repo import QuestionnaireRecord, ReconcileState, get_repo
 from .services import (
+    build_evidence,
     compute_inventory,
     default_period,
     make_period,
@@ -418,6 +419,23 @@ def document_file(supplier_id: str, pid: str, doc_id: str, caller: Caller = Depe
     return _file_response(rec.storage_key, rec.filename)
 
 
+@app.get("/suppliers/{supplier_id}/periods/{pid}/documents/{doc_id}/page/{page}")
+def document_page(supplier_id: str, pid: str, doc_id: str, page: int = 1, caller: Caller = Depends(require_supplier)):
+    """The bill as a PNG, so the browser can draw a printed value's box over it.
+    Photos come back as they are (one page); PDFs are rendered page by page."""
+    from .evidence import page_png
+
+    rec = get_repo().get_document(supplier_id, pid, doc_id)
+    storage = get_storage()
+    if rec is None or not storage.exists(rec.storage_key):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Document not found.")
+    try:
+        png = page_png(storage.get(rec.storage_key), rec.mime_type, page)
+    except Exception:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "This document could not be rendered.")
+    return Response(content=png, media_type="image/png", headers={"Cache-Control": "private, max-age=300"})
+
+
 # --- routes: reconcile (period) --------------------------------------------------------------
 
 def _reconcile_view(profile: SupplierProfile, period: ReportingPeriod, state: ReconcileState | None) -> dict:
@@ -519,6 +537,7 @@ def methodology(supplier_id: str, pid: str, caller: Caller = Depends(require_sup
     pdf = build_pdf(
         profile.for_period(period), snap, lines, repo.list_assumptions(supplier_id, pid),
         n_docs=len(repo.list_documents(supplier_id, pid)), dropped=len(state.dropped_outside_fy) if state else 0,
+        evidence=build_evidence(repo, supplier_id, pid, lines),
     )
     key = f"{period_prefix(supplier_id, pid)}outputs/methodology-note.pdf"
     get_storage().put(key, pdf, "application/pdf")

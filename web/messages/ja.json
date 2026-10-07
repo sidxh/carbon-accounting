@@ -274,7 +274,9 @@
     },
     "bySite": "拠点別",
     "site": "拠点",
-    "fixInQuestions": "質問で修正"
+    "fixInQuestions": "質問で修正",
+    "showMe": "該当箇所を表示",
+    "showMeShort": "表示"
   },
   "questionnaire": {
     "title": "顧客の質問票",
@@ -317,7 +319,10 @@
       "other": "その他"
     },
     "attachedTemplate": "この依頼に添付済み: {name}。これを記入するか、別のファイルを選択。",
-    "fillAttached": "添付の質問票を記入"
+    "fillAttached": "添付の質問票を記入",
+    "showBills": "根拠の請求書を見る",
+    "billsBehind": "この数字の根拠となる請求書",
+    "noBills": "この数字の根拠となる請求書はありません。"
   },
   "common": {
     "loading": "読み込み中…",
@@ -508,6 +513,36 @@
       "creating": "作成中…",
       "cancel": "キャンセル",
       "created": "{name} の依頼を作成しました。"
+    }
+  },
+  "evidence": {
+    "title": "この数字の出どころ",
+    "hint": "スポットライトは請求書に印字された数値を示しています。",
+    "noBox": "この値のページ上の位置は記録されていないため、請求書全体を表示しています。",
+    "close": "閉じる",
+    "page": "{n}ページ",
+    "counted": "計上値",
+    "alt": "請求書 {name}",
+    "loadError": "請求書を表示できませんでした。",
+    "bills": "この数字の根拠となる請求書",
+    "prev": "前の請求書",
+    "next": "次の請求書",
+    "checks": {
+      "index": {
+        "pass": "検針値が一致",
+        "fail": "検針値が一致しません",
+        "confirmed": "検針値の不一致を確認済み"
+      },
+      "price": {
+        "pass": "単価は妥当",
+        "fail": "単価が不自然です",
+        "confirmed": "単価の違和感を確認済み"
+      },
+      "season": {
+        "pass": "他の月と整合",
+        "fail": "他の月と比べて異常",
+        "confirmed": "異常な月を確認済み"
+      }
     }
   }
 }

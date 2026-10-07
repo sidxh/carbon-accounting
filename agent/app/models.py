@@ -142,6 +142,24 @@ class Request(BaseModel):
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
+class MeterRegister(BaseModel):
+    """One register of a meter as printed on a bill (normal / peak / night ...)."""
+
+    label: str = ""
+    previous: float | None = None
+    current: float | None = None
+    multiplier: float = 1.0
+    consumption: float | None = Field(default=None, description="Consumption printed for this register")
+
+
+class LineCheck(BaseModel):
+    """Result of one deterministic plausibility check on an activity line."""
+
+    id: Literal["index", "price", "season"]
+    status: Literal["pass", "fail", "confirmed"]
+    detail: str = ""
+
+
 class ActivityLine(BaseModel):
     """One consumption record read from one document, before reconciliation."""
 
@@ -162,6 +180,13 @@ class ActivityLine(BaseModel):
     tier: Tier = "primary"
     assumption_ids: list[str] = Field(default_factory=list)
     notes: str = ""
+    # Where the printed quantity sits on the source page, [ymin, xmin, ymax, xmax]
+    # normalised to 0..1000, so the UI can show the value on the original bill.
+    quantity_box: list[int] | None = None
+    period_box: list[int] | None = None
+    page: int = 1
+    registers: list[MeterRegister] = Field(default_factory=list)
+    checks: list[LineCheck] = Field(default_factory=list)
 
 
 class Assumption(BaseModel):

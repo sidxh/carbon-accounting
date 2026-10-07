@@ -329,7 +329,48 @@ def au_documents() -> list[dict]:
     return docs
 
 
+def chk_documents(vn: list[dict]) -> list[dict]:
+    """Bills for the self-check tests. Prefixed `chk_` so the end-to-end flows,
+    which upload every `vn_` bill, never see them.
+
+    `chk_evn_2025-06_typo` is June's EVN bill with a stray digit in the printed
+    total (28,512 becomes 285,120) while the meter indexes and the amount still
+    describe 28,512 kWh. Ground truth is what is *printed*; `expect_checks`
+    says what the deterministic checks must make of it.
+    """
+    june = next(d for d in vn if d["name"] == "vn_evn_2025-06")
+    real = june["lines"][0]["quantity"]
+    bad = int(f"{real}0")
+    return [{
+        **june, "name": "chk_evn_2025-06_typo", "pdf": False, "photo": None,
+        "ctx": {**june["ctx"], "kwh_total": bad},
+        "lines": [{**june["lines"][0], "quantity": bad}],
+        "expect_checks": {"index": "fail", "price": "fail"},
+    }]
+
+
 # --- render ---------------------------------------------------------------------
+
+def quantity_box(page) -> list[int] | None:
+    """Where the text of the element marked `data-gt="quantity"` sits on the screenshot, as
+    [ymin, xmin, ymax, xmax] on a 0..1000 scale, the format the extractor uses."""
+    r = page.evaluate("""() => {
+        const el = document.querySelector('[data-gt="quantity"]');
+        if (!el) return null;
+        // The text itself, not the table cell around it: a right-aligned figure in a wide cell
+        // would otherwise be a box three times wider than anything a reader would point at.
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        const b = range.getBoundingClientRect();
+        const d = document.documentElement;
+        return {x0: b.left + scrollX, y0: b.top + scrollY, x1: b.right + scrollX, y1: b.bottom + scrollY,
+                w: Math.max(innerWidth, d.scrollWidth), h: Math.max(innerHeight, d.scrollHeight)};
+    }""")
+    if not r:
+        return None
+    return [round(r["y0"] / r["h"] * 1000), round(r["x0"] / r["w"] * 1000),
+            round(r["y1"] / r["h"] * 1000), round(r["x1"] / r["w"] * 1000)]
+
 
 def render(docs: list[dict], limit: int | None) -> list[dict]:
     from playwright.sync_api import sync_playwright
@@ -344,6 +385,7 @@ def render(docs: list[dict], limit: int | None) -> list[dict]:
             page.set_content(html, wait_until="load")
             png = OUT / f"{d['name']}.png"
             page.screenshot(path=str(png), full_page=True)
+            box = quantity_box(page)
             files = {"png": png.name}
             if d.get("pdf"):
                 pdf = OUT / f"{d['name']}.pdf"
@@ -352,7 +394,8 @@ def render(docs: list[dict], limit: int | None) -> list[dict]:
             labels.append({
                 "name": d["name"], "files": files, "template": d["template"], "lang": d["lang"],
                 "doc_type": d["doc_type"], "vendor": d["vendor"], "customer": d["customer"], "site_hint": d["site_hint"],
-                "lines": d["lines"], "amount": d["amount"], "currency": d["currency"],
+                "lines": [{**d["lines"][0], "box": box}, *d["lines"][1:]], "amount": d["amount"], "currency": d["currency"],
+                **({"expect_checks": d["expect_checks"]} if d.get("expect_checks") else {}),
                 "duplicate_of": d.get("duplicate_of"), "photo": bool(d.get("photo")),
             })
             print(f"rendered {d['name']}")
@@ -364,7 +407,8 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int, default=None)
     args = ap.parse_args()
-    docs = vn_documents() + jp_documents() + au_documents()
+    vn = vn_documents()
+    docs = vn + jp_documents() + au_documents() + chk_documents(vn)
     labels = render(docs, args.limit)
     (HERE / "labels.json").write_text(json.dumps(labels, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"\n{len(labels)} documents → {OUT.relative_to(HERE.parents[1])}, labels.json written")

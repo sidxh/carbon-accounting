@@ -50,6 +50,7 @@ class Settings(BaseSettings):
 
     # Data
     factors_dir: Path = REPO_ROOT / "data" / "factors"
+    price_bands_dir: Path = REPO_ROOT / "data" / "price_bands"
 
     @property
     def cors_origin_list(self) -> list[str]:

@@ -21,7 +21,7 @@
   <tr><th>区分</th><th class="num">前回指示数</th><th class="num">今回指示数</th><th class="num">ご使用量</th></tr>
   <tr><td>昼間</td><td class="num mono">{{ '{:,}'.format(old_day) }}</td><td class="num mono">{{ '{:,}'.format(new_day) }}</td><td class="num mono">{{ '{:,}'.format(kwh_day) }} kWh</td></tr>
   <tr><td>夜間</td><td class="num mono">{{ '{:,}'.format(old_night) }}</td><td class="num mono">{{ '{:,}'.format(new_night) }}</td><td class="num mono">{{ '{:,}'.format(kwh_night) }} kWh</td></tr>
-  <tr><td colspan="3"><b>ご使用量合計</b></td><td class="num mono total">{{ '{:,}'.format(kwh_total) }} kWh</td></tr>
+  <tr><td colspan="3"><b>ご使用量合計</b></td><td class="num mono total" data-gt="quantity">{{ '{:,}'.format(kwh_total) }} kWh</td></tr>
 </table>
 
 <h2>ご請求金額</h2>

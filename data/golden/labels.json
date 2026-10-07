@@ -18,7 +18,13 @@
         "unit": "kWh",
         "period_start": "2025-01-05",
         "period_end": "2025-02-04",
-        "gas": null
+        "gas": null,
+        "box": [
+          397,
+          774,
+          411,
+          874
+        ]
       }
     ],
     "amount": 97084063,
@@ -44,7 +50,13 @@
         "unit": "kWh",
         "period_start": "2025-02-05",
         "period_end": "2025-03-04",
-        "gas": null
+        "gas": null,
+        "box": [
+          397,
+          774,
+          411,
+          874
+        ]
       }
     ],
     "amount": 105734623,
@@ -70,7 +82,13 @@
         "unit": "kWh",
         "period_start": "2025-03-05",
         "period_end": "2025-04-04",
-        "gas": null
+        "gas": null,
+        "box": [
+          397,
+          774,
+          411,
+          874
+        ]
       }
     ],
     "amount": 105648601,
@@ -96,7 +114,13 @@
         "unit": "kWh",
         "period_start": "2025-04-05",
         "period_end": "2025-05-04",
-        "gas": null
+        "gas": null,
+        "box": [
+          397,
+          774,
+          411,
+          874
+        ]
       }
     ],
     "amount": 100551718,
@@ -122,7 +146,13 @@
         "unit": "kWh",
         "period_start": "2025-05-05",
         "period_end": "2025-06-04",
-        "gas": null
+        "gas": null,
+        "box": [
+          397,
+          774,
+          411,
+          874
+        ]
       }
     ],
     "amount": 97565547,
@@ -148,7 +178,13 @@
         "unit": "kWh",
         "period_start": "2025-06-05",
         "period_end": "2025-07-04",
-        "gas": null
+        "gas": null,
+        "box": [
+          397,
+          774,
+          411,
+          874
+        ]
       }
     ],
     "amount": 101173866,
@@ -175,7 +211,13 @@
         "unit": "kWh",
         "period_start": "2025-07-05",
         "period_end": "2025-08-04",
-        "gas": null
+        "gas": null,
+        "box": [
+          397,
+          774,
+          411,
+          874
+        ]
       }
     ],
     "amount": 99194427,
@@ -201,7 +243,13 @@
         "unit": "kWh",
         "period_start": "2025-08-05",
         "period_end": "2025-09-04",
-        "gas": null
+        "gas": null,
+        "box": [
+          397,
+          774,
+          411,
+          874
+        ]
       }
     ],
     "amount": 99149631,
@@ -227,7 +275,13 @@
         "unit": "kWh",
         "period_start": "2025-09-05",
         "period_end": "2025-10-04",
-        "gas": null
+        "gas": null,
+        "box": [
+          397,
+          774,
+          411,
+          874
+        ]
       }
     ],
     "amount": 92824756,
@@ -253,7 +307,13 @@
         "unit": "kWh",
         "period_start": "2025-10-05",
         "period_end": "2025-11-04",
-        "gas": null
+        "gas": null,
+        "box": [
+          397,
+          774,
+          411,
+          874
+        ]
       }
     ],
     "amount": 98827886,
@@ -279,7 +339,13 @@
         "unit": "kWh",
         "period_start": "2025-11-05",
         "period_end": "2025-12-04",
-        "gas": null
+        "gas": null,
+        "box": [
+          397,
+          774,
+          411,
+          874
+        ]
       }
     ],
     "amount": 101829581,
@@ -305,7 +371,13 @@
         "unit": "kWh",
         "period_start": "2025-12-05",
         "period_end": "2026-01-04",
-        "gas": null
+        "gas": null,
+        "box": [
+          397,
+          774,
+          411,
+          874
+        ]
       }
     ],
     "amount": 101746637,
@@ -331,7 +403,13 @@
         "unit": "kWh",
         "period_start": "2025-03-05",
         "period_end": "2025-04-04",
-        "gas": null
+        "gas": null,
+        "box": [
+          393,
+          774,
+          409,
+          874
+        ]
       }
     ],
     "amount": 105648601,
@@ -358,7 +436,13 @@
         "unit": "L",
         "period_start": "2025-01-19",
         "period_end": "2025-01-19",
-        "gas": null
+        "gas": null,
+        "box": [
+          320,
+          621,
+          331,
+          662
+        ]
       }
     ],
     "amount": 77530200,
@@ -384,7 +468,13 @@
         "unit": "L",
         "period_start": "2025-03-23",
         "period_end": "2025-03-23",
-        "gas": null
+        "gas": null,
+        "box": [
+          320,
+          625,
+          331,
+          667
+        ]
       }
     ],
     "amount": 71214000,
@@ -410,7 +500,13 @@
         "unit": "L",
         "period_start": "2025-05-11",
         "period_end": "2025-05-11",
-        "gas": null
+        "gas": null,
+        "box": [
+          320,
+          621,
+          331,
+          662
+        ]
       }
     ],
     "amount": 76531400,
@@ -436,7 +532,13 @@
         "unit": "L",
         "period_start": "2025-07-06",
         "period_end": "2025-07-06",
-        "gas": null
+        "gas": null,
+        "box": [
+          319,
+          626,
+          331,
+          668
+        ]
       }
     ],
     "amount": 78490500,
@@ -462,7 +564,13 @@
         "unit": "L",
         "period_start": "2025-09-18",
         "period_end": "2025-09-18",
-        "gas": null
+        "gas": null,
+        "box": [
+          320,
+          621,
+          331,
+          662
+        ]
       }
     ],
     "amount": 85415000,
@@ -488,7 +596,13 @@
         "unit": "L",
         "period_start": "2025-11-21",
         "period_end": "2025-11-21",
-        "gas": null
+        "gas": null,
+        "box": [
+          320,
+          625,
+          331,
+          667
+        ]
       }
     ],
     "amount": 60825600,
@@ -514,7 +628,13 @@
         "unit": "kg",
         "period_start": "2025-01-01",
         "period_end": "2025-01-31",
-        "gas": null
+        "gas": null,
+        "box": [
+          287,
+          598,
+          299,
+          623
+        ]
       }
     ],
     "amount": 17532900,
@@ -540,7 +660,13 @@
         "unit": "kg",
         "period_start": "2025-02-01",
         "period_end": "2025-02-28",
-        "gas": null
+        "gas": null,
+        "box": [
+          287,
+          598,
+          299,
+          623
+        ]
       }
     ],
     "amount": 22477950,
@@ -566,7 +692,13 @@
         "unit": "kg",
         "period_start": "2025-03-01",
         "period_end": "2025-03-31",
-        "gas": null
+        "gas": null,
+        "box": [
+          287,
+          598,
+          299,
+          623
+        ]
       }
     ],
     "amount": 17745750,
@@ -592,7 +724,13 @@
         "unit": "kg",
         "period_start": "2025-04-01",
         "period_end": "2025-04-30",
-        "gas": null
+        "gas": null,
+        "box": [
+          287,
+          598,
+          299,
+          623
+        ]
       }
     ],
     "amount": 22096800,
@@ -618,7 +756,13 @@
         "unit": "kg",
         "period_start": "2025-05-01",
         "period_end": "2025-05-31",
-        "gas": null
+        "gas": null,
+        "box": [
+          287,
+          598,
+          299,
+          623
+        ]
       }
     ],
     "amount": 12276000,
@@ -644,7 +788,13 @@
         "unit": "kg",
         "period_start": "2025-06-01",
         "period_end": "2025-06-30",
-        "gas": null
+        "gas": null,
+        "box": [
+          288,
+          603,
+          300,
+          628
+        ]
       }
     ],
     "amount": 15379650,
@@ -670,7 +820,13 @@
         "unit": "kg",
         "period_start": "2025-10-01",
         "period_end": "2025-10-31",
-        "gas": null
+        "gas": null,
+        "box": [
+          287,
+          598,
+          299,
+          623
+        ]
       }
     ],
     "amount": 18414000,
@@ -696,7 +852,13 @@
         "unit": "kg",
         "period_start": "2025-11-01",
         "period_end": "2025-11-30",
-        "gas": null
+        "gas": null,
+        "box": [
+          287,
+          598,
+          299,
+          623
+        ]
       }
     ],
     "amount": 13503600,
@@ -722,7 +884,13 @@
         "unit": "kg",
         "period_start": "2025-12-01",
         "period_end": "2025-12-31",
-        "gas": null
+        "gas": null,
+        "box": [
+          287,
+          598,
+          299,
+          623
+        ]
       }
     ],
     "amount": 15958800,
@@ -749,7 +917,13 @@
         "unit": "kg",
         "period_start": "2025-04-26",
         "period_end": "2025-04-26",
-        "gas": "R-410A"
+        "gas": "R-410A",
+        "box": [
+          318,
+          576,
+          330,
+          601
+        ]
       }
     ],
     "amount": 3670000,
@@ -775,7 +949,13 @@
         "unit": "kg",
         "period_start": "2025-09-17",
         "period_end": "2025-09-17",
-        "gas": "R-22"
+        "gas": "R-22",
+        "box": [
+          318,
+          576,
+          330,
+          601
+        ]
       }
     ],
     "amount": 3780000,
@@ -802,7 +982,13 @@
         "unit": "kWh",
         "period_start": "2025-04-01",
         "period_end": "2025-04-30",
-        "gas": null
+        "gas": null,
+        "box": [
+          379,
+          774,
+          393,
+          874
+        ]
       }
     ],
     "amount": 1769820,
@@ -828,7 +1014,13 @@
         "unit": "kWh",
         "period_start": "2025-05-01",
         "period_end": "2025-05-31",
-        "gas": null
+        "gas": null,
+        "box": [
+          379,
+          774,
+          393,
+          874
+        ]
       }
     ],
     "amount": 1651843,
@@ -854,7 +1046,13 @@
         "unit": "kWh",
         "period_start": "2025-06-01",
         "period_end": "2025-06-30",
-        "gas": null
+        "gas": null,
+        "box": [
+          379,
+          774,
+          393,
+          874
+        ]
       }
     ],
     "amount": 1644125,
@@ -880,7 +1078,13 @@
         "unit": "kWh",
         "period_start": "2025-07-01",
         "period_end": "2025-07-31",
-        "gas": null
+        "gas": null,
+        "box": [
+          379,
+          774,
+          393,
+          874
+        ]
       }
     ],
     "amount": 1752005,
@@ -906,7 +1110,13 @@
         "unit": "kWh",
         "period_start": "2025-08-01",
         "period_end": "2025-08-31",
-        "gas": null
+        "gas": null,
+        "box": [
+          379,
+          774,
+          393,
+          874
+        ]
       }
     ],
     "amount": 1579083,
@@ -932,7 +1142,13 @@
         "unit": "kWh",
         "period_start": "2025-09-01",
         "period_end": "2025-09-30",
-        "gas": null
+        "gas": null,
+        "box": [
+          379,
+          774,
+          393,
+          874
+        ]
       }
     ],
     "amount": 1776558,
@@ -958,7 +1174,13 @@
         "unit": "L",
         "period_start": "2025-04-07",
         "period_end": "2025-04-07",
-        "gas": null
+        "gas": null,
+        "box": [
+          252,
+          555,
+          264,
+          597
+        ]
       }
     ],
     "amount": 282370,
@@ -984,7 +1206,13 @@
         "unit": "L",
         "period_start": "2025-06-14",
         "period_end": "2025-06-14",
-        "gas": null
+        "gas": null,
+        "box": [
+          252,
+          555,
+          264,
+          597
+        ]
       }
     ],
     "amount": 348810,
@@ -1010,7 +1238,13 @@
         "unit": "L",
         "period_start": "2025-08-09",
         "period_end": "2025-08-09",
-        "gas": null
+        "gas": null,
+        "box": [
+          252,
+          555,
+          264,
+          597
+        ]
       }
     ],
     "amount": 401500,
@@ -1036,7 +1270,13 @@
         "unit": "kg",
         "period_start": "2025-05-01",
         "period_end": "2025-05-31",
-        "gas": null
+        "gas": null,
+        "box": [
+          286,
+          493,
+          297,
+          543
+        ]
       }
     ],
     "amount": 221197,
@@ -1062,7 +1302,13 @@
         "unit": "kg",
         "period_start": "2025-08-01",
         "period_end": "2025-08-31",
-        "gas": null
+        "gas": null,
+        "box": [
+          286,
+          493,
+          297,
+          543
+        ]
       }
     ],
     "amount": 203694,
@@ -1089,7 +1335,13 @@
         "unit": "kWh",
         "period_start": "2024-07-01",
         "period_end": "2024-09-30",
-        "gas": null
+        "gas": null,
+        "box": [
+          375,
+          774,
+          389,
+          874
+        ]
       }
     ],
     "amount": 25995.75,
@@ -1115,7 +1367,13 @@
         "unit": "kWh",
         "period_start": "2024-10-01",
         "period_end": "2024-12-31",
-        "gas": null
+        "gas": null,
+        "box": [
+          375,
+          774,
+          389,
+          874
+        ]
       }
     ],
     "amount": 28138.68,
@@ -1141,7 +1399,13 @@
         "unit": "kWh",
         "period_start": "2025-01-01",
         "period_end": "2025-03-31",
-        "gas": null
+        "gas": null,
+        "box": [
+          375,
+          774,
+          389,
+          874
+        ]
       }
     ],
     "amount": 26509.15,
@@ -1167,7 +1431,13 @@
         "unit": "kWh",
         "period_start": "2025-04-01",
         "period_end": "2025-06-30",
-        "gas": null
+        "gas": null,
+        "box": [
+          375,
+          774,
+          389,
+          874
+        ]
       }
     ],
     "amount": 29862.05,
@@ -1193,7 +1463,13 @@
         "unit": "L",
         "period_start": "2024-08-14",
         "period_end": "2024-08-14",
-        "gas": null
+        "gas": null,
+        "box": [
+          255,
+          548,
+          267,
+          590
+        ]
       }
     ],
     "amount": 11649.55,
@@ -1219,7 +1495,13 @@
         "unit": "L",
         "period_start": "2024-12-03",
         "period_end": "2024-12-03",
-        "gas": null
+        "gas": null,
+        "box": [
+          255,
+          556,
+          267,
+          598
+        ]
       }
     ],
     "amount": 8408.4,
@@ -1245,11 +1527,53 @@
         "unit": "L",
         "period_start": "2025-04-22",
         "period_end": "2025-04-22",
-        "gas": null
+        "gas": null,
+        "box": [
+          255,
+          556,
+          267,
+          598
+        ]
       }
     ],
     "amount": 7294.32,
     "currency": "AUD",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "chk_evn_2025-06_typo",
+    "files": {
+      "png": "chk_evn_2025-06_typo.png"
+    },
+    "template": "vi_evn_electricity.html",
+    "lang": "vi",
+    "doc_type": "electricity_bill",
+    "vendor": "EVN SPC",
+    "customer": "CÔNG TY TNHH CƠ KHÍ MINH PHÁT",
+    "site_hint": "Nhơn Trạch",
+    "lines": [
+      {
+        "energy_type": "electricity",
+        "quantity": 446990,
+        "unit": "kWh",
+        "period_start": "2025-06-05",
+        "period_end": "2025-07-04",
+        "gas": null,
+        "box": [
+          397,
+          764,
+          411,
+          874
+        ]
+      }
+    ],
+    "amount": 101173866,
+    "currency": "VND",
+    "expect_checks": {
+      "index": "fail",
+      "price": "fail"
+    },
     "duplicate_of": null,
     "photo": false
   }

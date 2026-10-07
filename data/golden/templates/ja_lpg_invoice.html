@@ -10,7 +10,7 @@
 <div class="kv"><div><b>御中</b> {{ customer }}</div><div><b>供給場所</b> {{ address }}</div><div><b>供給方式</b> バルク供給（{{ cyl_kg }} kg 容器）</div></div>
 <table style="margin-top:16px">
   <tr><th>項目</th><th class="num">数量</th><th class="num">単価</th><th class="num">金額</th></tr>
-  <tr><td>LPガス（プロパン）ご使用量</td><td class="num mono">{{ '{:,}'.format(kg) }} kg</td><td class="num mono">{{ price }} 円/kg</td><td class="num mono">{{ '{:,}'.format((kg*price)|int) }}</td></tr>
+  <tr><td>LPガス（プロパン）ご使用量</td><td class="num mono" data-gt="quantity">{{ '{:,}'.format(kg) }} kg</td><td class="num mono">{{ price }} 円/kg</td><td class="num mono">{{ '{:,}'.format((kg*price)|int) }}</td></tr>
   <tr><td>基本料金</td><td class="num"></td><td class="num"></td><td class="num mono">{{ '{:,}'.format(basic) }}</td></tr>
   <tr><td colspan="3">消費税（10%）</td><td class="num mono">{{ '{:,}'.format(vat) }}</td></tr>
   <tr><td colspan="3" class="total">ご請求金額</td><td class="num mono total">{{ '{:,}'.format(total) }} 円</td></tr>

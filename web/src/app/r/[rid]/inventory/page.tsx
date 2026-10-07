@@ -4,12 +4,14 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowRight, ArrowUpDown, Calculator, ChevronDown, ExternalLink, FileText, Info, Pencil, RefreshCw } from "lucide-react";
+import { ArrowRight, ArrowUpDown, Calculator, ChevronDown, ExternalLink, FileText, Info, Pencil, RefreshCw, ScanSearch } from "lucide-react";
 import { cn as clsx } from "@/lib/cn";
 import { useRequest } from "@/components/request-context";
 import { SharedNotice } from "@/components/shared-notice";
 import { EmptyState, MixBar, PageTitle, SkeletonList, Stat, TIER_BAR, TIER_PILL } from "@/components/ui/bits";
 import { Dialog } from "@/components/ui/dialog";
+import { CheckPills, EvidenceViewer } from "@/components/evidence-viewer";
+import { evidenceFor } from "@/lib/evidence";
 import { useToast } from "@/components/ui/toast";
 import { api, type ActivityLine, type Assumption, type DocumentRecord, type InventoryLine, type Snapshot } from "@/lib/api";
 import { ENERGY_ORDER, energyLabel, shortMonth } from "@/lib/coverage";
@@ -61,6 +63,9 @@ function Calculation({ uid, pid, line, market, activity, doc, assumptions, onCha
   const [qty, setQty] = useState(String(line.quantity));
   const [confirm, setConfirm] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [showing, setShowing] = useState(false);
+  const locale = useLocale();
+  const evidence = evidenceFor(line, activity, doc, locale);
   const asms = assumptions.filter((a) => line.assumption_ids.includes(a.id));
   const notes = (line.activity_notes || activity?.notes || "").split(" | ").map((s) => s.trim()).filter(Boolean);
   const where = line.factor_region || line.factor_country;
@@ -87,7 +92,14 @@ function Calculation({ uid, pid, line, market, activity, doc, assumptions, onCha
       <ol className="space-y-4">
         <Step n={1} title={t("step.document")}>
           <div className="flex items-start gap-3">
-            <SourceThumb uid={uid} pid={pid} docId={line.source_doc_id} doc={doc} />
+            {evidence ? (
+              <button type="button" onClick={() => setShowing(true)} className="group relative shrink-0 rounded-lg" aria-label={t("showMe")}>
+                <SourceThumb uid={uid} pid={pid} docId={line.source_doc_id} doc={doc} />
+                <span className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1 rounded-b-lg bg-ink/70 py-0.5 text-[10px] font-medium text-raised"><ScanSearch className="size-3" aria-hidden />{t("showMeShort")}</span>
+              </button>
+            ) : (
+              <SourceThumb uid={uid} pid={pid} docId={line.source_doc_id} doc={doc} />
+            )}
             <div className="min-w-0">
               {doc?.filename && <div className="font-medium">{doc.filename}</div>}
               <div className="font-mono text-xs text-muted">{line.source_doc_id}</div>
@@ -107,6 +119,12 @@ function Calculation({ uid, pid, line, market, activity, doc, assumptions, onCha
             <span className={clsx("pill", TIER_PILL[line.tier])}>{t(`tier.${line.tier}`)}</span>
             <span className="text-xs text-muted">{t(`tierWhy.${line.tier}`)}</span>
           </div>
+          {activity?.checks && activity.checks.length > 0 && <CheckPills checks={activity.checks} className="mt-2" />}
+          {evidence && (
+            <button type="button" className="btn btn-secondary btn-sm mt-2 gap-1.5" onClick={() => setShowing(true)}>
+              <ScanSearch className="size-3.5" aria-hidden />{t("showMe")}
+            </button>
+          )}
           {line.basis !== "market" && (
             <div className="mt-2">
               {editing ? (
@@ -187,6 +205,8 @@ function Calculation({ uid, pid, line, market, activity, doc, assumptions, onCha
         )}
         <div className="text-xs text-muted">{line.period_start} → {line.period_end}{line.site_id ? ` · ${line.site_id}` : ""}</div>
       </aside>
+
+      {evidence && <EvidenceViewer uid={uid} pid={pid} items={[evidence]} index={0} onIndex={() => {}} open={showing} onClose={() => setShowing(false)} />}
 
       <Dialog
         open={confirm}

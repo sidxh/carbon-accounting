@@ -9,7 +9,7 @@
 <div class="kv"><div><b>Customer</b> {{ customer }}</div><div><b>Delivery site</b> {{ address }}</div><div><b>Delivered</b> {{ delivery_date.strftime('%d %b %Y') }} by tanker {{ truck }}</div></div>
 <table style="margin-top:16px">
   <tr><th>Description</th><th>Unit</th><th class="num">Qty</th><th class="num">Unit price</th><th class="num">Amount</th></tr>
-  <tr><td>Diesel (ULSD 10ppm) delivered to site tank</td><td>litres</td><td class="num mono">{{ '{:,}'.format(litres) }}</td><td class="num mono">{{ price }}</td><td class="num mono">{{ '{:,.2f}'.format(litres*price) }}</td></tr>
+  <tr><td>Diesel (ULSD 10ppm) delivered to site tank</td><td>litres</td><td class="num mono" data-gt="quantity">{{ '{:,}'.format(litres) }}</td><td class="num mono">{{ price }}</td><td class="num mono">{{ '{:,.2f}'.format(litres*price) }}</td></tr>
   <tr><td colspan="4">Subtotal</td><td class="num mono">{{ '{:,.2f}'.format(subtotal) }}</td></tr>
   <tr><td colspan="4">GST 10%</td><td class="num mono">{{ '{:,.2f}'.format(vat) }}</td></tr>
   <tr><td colspan="4" class="total">Total</td><td class="num mono total">{{ currency }} {{ '{:,.2f}'.format(total) }}</td></tr>
