@@ -332,7 +332,6 @@
     "h1b": "Nhận lại bảng câu hỏi đã điền.",
     "sub": "Khách hàng gửi cho bạn bảng câu hỏi phát thải. Tải lên hóa đơn điện, nhiên liệu và gas lạnh; chúng tôi đọc, chỉ hỏi những gì hóa đơn không nói được, và trả lại bảng kiểm kê Phạm vi 1 và 2 với từng con số truy về tài liệu và hệ số đã công bố.",
     "cta": "Bắt đầu với hóa đơn",
-    "ctaSub": "Không cần tạo tài khoản. Dùng trên điện thoại. Tiếng Việt, Nhật, Anh.",
     "howEyebrow": "Cách hoạt động",
     "howTitle": "Bốn bước, một buổi chiều.",
     "steps": {
@@ -411,6 +410,28 @@
       "forYou": "Cần bạn",
       "filled": "4/6 câu trả lời từ dữ liệu của bạn",
       "download": "filled.xlsx"
+    },
+    "globe": {
+      "aria": "Một quả địa cầu 3D quay chậm, lục địa xanh trên đại dương nhạt màu. Một nhà máy trên đó bốc khói, một xe tải chạy qua và một máy bay bay vòng quanh, tất cả đều nhả khí thải, trong khi các thẻ bên cạnh ghi CO₂, N₂O và CH₄ với số liệu tăng giảm."
+    },
+    "stats": {
+      "factors": {
+        "value": "8",
+        "label": "nguồn hệ số công bố, mỗi nguồn đều được trích dẫn"
+      },
+      "ai": {
+        "value": "0",
+        "label": "con số do AI viết; mã tính toán mọi thứ"
+      },
+      "langs": {
+        "value": "3",
+        "label": "ngôn ngữ: Anh, Việt, Nhật"
+      }
+    },
+    "scrollCue": "Cuộn xuống để xem cách hoạt động",
+    "story": {
+      "eyebrow": "Phạm vi 1 và 2, từ hóa đơn của bạn",
+      "title": "Mỗi tấn đều truy được về một hóa đơn."
     }
   },
   "stepLock": {

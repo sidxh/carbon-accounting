@@ -8,6 +8,7 @@ import { useAuth } from "@/components/auth-provider";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { Wordmark } from "@/components/shell";
 import { HeroDemo } from "@/components/landing/hero-demo";
+import { EarthHero } from "@/components/landing/earth-hero";
 
 // --ease-out from DESIGN.md; --dur-reveal (600 ms) is permitted only on this page.
 const EASE = [0.23, 1, 0.32, 1] as const;
@@ -67,24 +68,7 @@ export default function Home() {
       </header>
 
       <main>
-        {/* Hero ---------------------------------------------------------------------- */}
-        <section className="relative mx-auto max-w-4xl px-4 pb-16 pt-32 text-center sm:pt-40">
-          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }} className="eyebrow justify-center">{t("eyebrow")}</motion.p>
-          <motion.h1 initial={{ opacity: 0, transform: "translateY(16px)" }} animate={{ opacity: 1, transform: "translateY(0px)" }} transition={{ duration: REVEAL, delay: 0.05, ease: EASE }} className="font-display mx-auto mt-5 max-w-3xl text-[2.75rem] leading-[0.98] text-ink sm:text-[4.5rem]">
-            {t("h1a")}<br /><em className="italic text-signal-ink">{t("h1b")}</em>
-          </motion.h1>
-          <motion.p initial={{ opacity: 0, transform: "translateY(12px)" }} animate={{ opacity: 1, transform: "translateY(0px)" }} transition={{ duration: REVEAL, delay: 0.15, ease: EASE }} className="mx-auto mt-6 max-w-xl text-[17px] leading-relaxed text-ink-soft">
-            {t("sub")}
-          </motion.p>
-          <motion.div initial={{ opacity: 0, transform: "translateY(12px)" }} animate={{ opacity: 1, transform: "translateY(0px)" }} transition={{ duration: REVEAL, delay: 0.25, ease: EASE }} className="mt-8 flex flex-col items-center gap-3">
-            <Link href={go} className="btn px-6 text-base">{cta}<ArrowRight className="size-4" aria-hidden /></Link>
-            <span className="text-sm text-muted">{t("ctaSub")}</span>
-          </motion.div>
-
-          <motion.div initial={{ opacity: 0, transform: "translateY(32px)" }} animate={{ opacity: 1, transform: "translateY(0px)" }} transition={{ duration: REVEAL, delay: 0.35, ease: EASE }} className="mx-auto mt-14 max-w-2xl">
-            <HeroDemo />
-          </motion.div>
-        </section>
+        <EarthHero go={go} cta={cta} />
 
         {/* How it works ---------------------------------------------------------------- */}
         <section className="mx-auto max-w-5xl px-4 py-16" aria-labelledby="how-h">
@@ -92,7 +76,10 @@ export default function Home() {
             <p className="eyebrow justify-center">{t("howEyebrow")}</p>
             <h2 id="how-h" className="font-display mt-3 text-3xl text-balance sm:text-4xl">{t("howTitle")}</h2>
           </Reveal>
-          <ol className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Reveal className="mx-auto mt-10 max-w-2xl">
+            <HeroDemo />
+          </Reveal>
+          <ol className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {STEPS.map(({ icon: Icon, key }, i) => (
               <Reveal key={key} delay={i * 0.08}>
                 <li className="card flex h-full flex-col gap-3 p-5">

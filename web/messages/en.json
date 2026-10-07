@@ -332,7 +332,6 @@
     "h1b": "Get the questionnaire back.",
     "sub": "Your customer sent an emissions questionnaire. Upload your electricity, fuel and refrigerant bills; we read them, ask only what the bills cannot tell us, and hand back a Scope 1 and 2 inventory with every number traced to a document and a published factor.",
     "cta": "Start with your bills",
-    "ctaSub": "No account to create. Works on a phone. Vietnamese, Japanese, English.",
     "howEyebrow": "How it works",
     "howTitle": "Four steps, one afternoon.",
     "steps": {
@@ -411,6 +410,28 @@
       "forYou": "For you",
       "filled": "4 of 6 answered from your data",
       "download": "filled.xlsx"
+    },
+    "globe": {
+      "aria": "A 3D earth slowly turning, with green continents on a pale ocean. A factory on it sends up smoke, a truck drives over it and a plane circles it, all leaving puffs of emissions, while tags beside it tally CO₂, N₂O and CH₄ with numbers that rise and fall."
+    },
+    "stats": {
+      "factors": {
+        "value": "8",
+        "label": "published factor sources, each one cited"
+      },
+      "ai": {
+        "value": "0",
+        "label": "numbers written by the AI; code does the maths"
+      },
+      "langs": {
+        "value": "3",
+        "label": "languages: English, Vietnamese, Japanese"
+      }
+    },
+    "scrollCue": "Scroll to see how it works",
+    "story": {
+      "eyebrow": "Scope 1 and 2, from your bills",
+      "title": "Every tonne, traced back to a bill."
     }
   },
   "stepLock": {

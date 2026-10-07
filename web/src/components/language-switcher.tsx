@@ -27,7 +27,7 @@ export function LanguageSwitcher({ className = "" }: { className?: string }) {
         onChange={(e) => { setLocaleCookie(e.target.value); router.refresh(); }}
       >
         {Object.entries(LANGUAGE_NAMES).map(([k, v]) => (
-          <option key={k} value={k}>{v}</option>
+          <option key={k} value={k} lang={k}>{v}</option>
         ))}
       </select>
       <span className="pointer-events-none absolute right-3 text-[10px] text-muted" aria-hidden>▼</span>

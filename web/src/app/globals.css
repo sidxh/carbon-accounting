@@ -88,8 +88,8 @@
   --color-danger-bg: var(--danger-bg);
   --color-tier2: var(--secondary-tier);
   --color-tier2-bg: var(--secondary-tier-bg);
-  --font-sans: var(--font-figtree), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Noto Sans CJK JP", sans-serif;
-  --font-display: var(--font-garamond), "Noto Serif", "Noto Serif CJK JP", Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-figtree), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, "Noto Sans CJK JP", "Noto Sans JP", sans-serif;
+  --font-display: var(--font-garamond), "Noto Serif", "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif CJK JP", "Noto Serif JP", Georgia, "Times New Roman", serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --radius-card: var(--radius);
   --ease-out: var(--ease-out);
@@ -382,6 +382,18 @@ button.pill:active { transform: scale(0.97); }
 .dot-pulse {
   animation: pulse-dot 1.2s ease-in-out infinite;
 }
+
+/* Landing hero globe (components/landing/hero-globe.tsx): the 3D scene runs in
+   WebGL; CSS only bobs the gas tags beside it. */
+@keyframes hg-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.hero-globe .hg-bob { animation: hg-bob 4s var(--ease-in-out) infinite; }
+.hero-globe .hg-bob-b { animation-duration: 5.2s; animation-delay: -1.3s; }
+.hero-globe .hg-bob-c { animation-duration: 4.6s; animation-delay: -2.6s; }
+.hero-globe[data-paused] * { animation-play-state: paused !important; }
+.hero-globe[data-still] * { animation: none !important; }
 
 
 @media (prefers-reduced-motion: reduce) {

@@ -153,7 +153,7 @@ def main() -> int:
         page.locator("header button[aria-haspopup=menu]").click()
         page.get_by_role("menuitem", name=re.compile("Sign out")).click()
         page.wait_for_timeout(300)
-        page.wait_for_url(re.compile(r"/sign-in"))
+        page.wait_for_url(f"{WEB}/")
         sign_in(page, PHONE2)
         page.goto(f"{WEB}/home")
         page.get_by_text("Toyota Boshoku").first.wait_for(timeout=20000)

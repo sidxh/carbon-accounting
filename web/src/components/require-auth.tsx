@@ -9,12 +9,13 @@ import { useAuth } from "./auth-provider";
 import { SkeletonList } from "./ui/bits";
 
 /**
- * Gate for every page after sign-in. Sends anonymous visitors to /sign-in and
+ * Gate for every page after sign-in. Sends anonymous visitors to /sign-in (or to
+ * the landing page right after they sign out) and
  * signed-in users without a profile to /setup. Hands the profile down so pages
  * do not each refetch it.
  */
 export function RequireAuth({ children }: { children: (p: SupplierProfile | null, uid: string) => React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, loading, signedOut } = useAuth();
   const router = useRouter();
   const path = usePathname();
   const t = useTranslations("common");
@@ -25,7 +26,7 @@ export function RequireAuth({ children }: { children: (p: SupplierProfile | null
   useEffect(() => {
     if (loading) return;
     if (!user) {
-      router.replace("/sign-in");
+      router.replace(signedOut ? "/" : "/sign-in");
       return;
     }
     setError(null);
@@ -42,7 +43,7 @@ export function RequireAuth({ children }: { children: (p: SupplierProfile | null
         // endless spinner.
         setError(e instanceof Error ? e.message : String(e));
       });
-  }, [user, loading, router, path, attempt]);
+  }, [user, loading, signedOut, router, path, attempt]);
 
   if (error) {
     return (
