@@ -170,7 +170,10 @@
     "issue": {
       "gap": "Không có bản ghi {energy} cho {months} ({n} tháng)",
       "unitHours": "{energy} ghi theo giờ chạy; cần lít/giờ",
-      "lowConfidence": "Một giá trị {energy} khó đọc; hãy xác nhận"
+      "lowConfidence": "Một giá trị {energy} khó đọc; hãy xác nhận",
+      "indexMismatch": "Một hóa đơn {energy}: chỉ số công tơ không khớp với tổng; hãy kiểm tra",
+      "priceImplausible": "Một hóa đơn {energy}: đơn giá có vẻ bất thường; hãy kiểm tra",
+      "outlier": "Một tháng {energy} lệch nhiều so với mức thường lệ; hãy kiểm tra"
     },
     "resetShared": "Năm này dùng chung với {names}: số liệu của họ cũng sẽ được tính lại."
   },

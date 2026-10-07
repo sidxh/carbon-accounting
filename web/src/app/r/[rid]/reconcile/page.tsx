@@ -14,7 +14,7 @@ import { useToast } from "@/components/ui/toast";
 import { api, type Issue, type ReconcileState } from "@/lib/api";
 import { energyLabel, shortMonth } from "@/lib/coverage";
 
-const ASKABLE = new Set(["gap", "unit_hours", "low_confidence"]);
+const ASKABLE = new Set(["gap", "unit_hours", "low_confidence", "index_mismatch", "price_implausible", "outlier"]);
 
 function issueLabel(i: Issue, t: ReturnType<typeof useTranslations>, locale: string): string {
   const et = i.energy_type ? energyLabel(i.energy_type) : "";
@@ -25,6 +25,9 @@ function issueLabel(i: Issue, t: ReturnType<typeof useTranslations>, locale: str
   }
   if (i.kind === "unit_hours") return t("issue.unitHours", { energy: et });
   if (i.kind === "low_confidence") return t("issue.lowConfidence", { energy: et });
+  if (i.kind === "index_mismatch") return t("issue.indexMismatch", { energy: et });
+  if (i.kind === "price_implausible") return t("issue.priceImplausible", { energy: et });
+  if (i.kind === "outlier") return t("issue.outlier", { energy: et });
   return i.detail;
 }
 

@@ -18,6 +18,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from ..checks import check_index, check_price, with_check
 from ..gemini import ImagePart, get_gemini
 from ..models import ActivityLine, EnergyType, MeterRegister, Unit
 
@@ -144,7 +145,7 @@ def to_activity_lines(
             continue
         if pe < ps:
             ps, pe = pe, ps
-        out.append(
+        line = (
             ActivityLine(
                 id=f"al_{uuid.uuid4().hex[:10]}",
                 supplier_id=supplier_id,
@@ -168,4 +169,10 @@ def to_activity_lines(
                 registers=list(ln.registers),
             )
         )
+        # The bill checks itself. The amount is the whole invoice's, so the price
+        # check only means something when this is the only energy line on it.
+        line = with_check(line, check_index(line.registers, line.quantity, line.unit.value))
+        if len(doc.lines) == 1:
+            line = with_check(line, check_price(line.amount, line.currency, line.quantity, line.unit.value, et.value, country))
+        out.append(line)
     return out

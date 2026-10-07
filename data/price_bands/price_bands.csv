@@ -1,0 +1,9 @@
+country,energy_type,currency,unit,min,max,source_name,source_url,note
+VN,electricity,VND,kWh,1200,4500,Plausibility envelope (analyst-set),,"All-in price per kWh incl. VAT for industrial and commercial tariffs; a bill outside this is more likely a misread than a tariff. VERIFY against the current EVN schedule"
+VN,diesel,VND,L,15000,30000,Plausibility envelope (analyst-set),,"Retail DO 0.05S incl. VAT; delivery fees can lift the average. VERIFY"
+VN,lpg,VND,kg,15000,50000,Plausibility envelope (analyst-set),,"Industrial bulk and cylinder LPG incl. VAT. VERIFY"
+JP,electricity,JPY,kWh,12,60,Plausibility envelope (analyst-set),,"All-in price per kWh incl. fuel adjustment and renewable levy. VERIFY"
+JP,diesel,JPY,L,120,220,Plausibility envelope (analyst-set),,"Light oil (keiyu) delivered. VERIFY"
+JP,lpg,JPY,kg,250,1200,Plausibility envelope (analyst-set),,"Wide: delivered cylinder prices vary strongly by region and volume. VERIFY"
+AU,electricity,AUD,kWh,0.15,0.70,Plausibility envelope (analyst-set),,"Average c/kWh across peak and off-peak plus supply charges, excl. demand charges. VERIFY"
+AU,diesel,AUD,L,1.4,2.8,Plausibility envelope (analyst-set),,"Delivered bulk diesel. VERIFY"

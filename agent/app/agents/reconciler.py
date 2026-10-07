@@ -27,6 +27,7 @@ from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from google.genai import types
 
+from ..checks import confirm_failed_checks
 from ..gemini import get_gemini
 from ..models import ActivityLine, Assumption, ReportingPeriod, SupplierProfile
 from ..reconcile_tools import (
@@ -54,6 +55,10 @@ def _export_genai_env() -> None:
         os.environ.setdefault("GOOGLE_API_KEY", s.google_api_key)
 
 
+# Issues raised by the bill checking itself; all are answered by confirming or correcting the quantity.
+CHECK_KINDS = ("index_mismatch", "price_implausible", "outlier")
+
+
 # --- question phrasing -----------------------------------------------------------
 
 def _issue_brief(issue: Issue, profile: SupplierProfile) -> str:
@@ -68,6 +73,9 @@ def _issue_brief(issue: Issue, profile: SupplierProfile) -> str:
                 "rated consumption in litres per hour (from its nameplate or the last service report).")
     if issue.kind == "low_confidence":
         return (f"One value was hard to read: {issue.detail}. We need the supplier to confirm or correct the quantity.")
+    if issue.kind in CHECK_KINDS:
+        return (f"One bill does not add up when checked against itself: {issue.detail}. Ask the owner to look at the bill "
+                "again and either confirm the quantity is right (some bills really are unusual) or give the correct quantity.")
     if issue.kind == "site_unknown":
         return "A document does not say which site it belongs to."
     return issue.detail
@@ -148,15 +156,16 @@ def _build_agent(ctx: _TurnContext) -> LlmAgent:
         return {"recorded": True, "excluded": len(ctx.issue.line_ids)}
 
     def confirm_or_correct_tool(quantity: float | None = None) -> dict:
-        """For a hard-to-read value: pass the corrected quantity, or omit it to confirm the
-        value as read."""
+        """For a hard-to-read or doubtful value: pass the corrected quantity, or omit it to
+        confirm the value as read."""
         asm = Assumption(id=f"asm_{uuid.uuid4().hex[:8]}", supplier_id=sid, question=ctx.question, answer=ctx.answer,
                          applied_to=list(ctx.issue.line_ids),
                          method="supplier confirmed value" if quantity is None else f"supplier corrected to {quantity:g}")
         updated = []
         for l in ctx.lines:
             if l.id in ctx.issue.line_ids:
-                upd = {"confidence": 1.0, "assumption_ids": l.assumption_ids + [asm.id]}
+                upd = {"confidence": 1.0, "assumption_ids": l.assumption_ids + [asm.id],
+                       "checks": confirm_failed_checks(l).checks}
                 if quantity is not None:
                     upd["quantity"] = quantity
                     upd["tier"] = "secondary"
@@ -181,6 +190,7 @@ def _build_agent(ctx: _TurnContext) -> LlmAgent:
         "gap": [resolve_gap_tool, exclude_tool],
         "unit_hours": [resolve_hours_tool, exclude_tool],
         "low_confidence": [confirm_or_correct_tool, exclude_tool],
+        **{k: [confirm_or_correct_tool, exclude_tool] for k in CHECK_KINDS},
     }.get(ctx.issue.kind, [exclude_tool])
 
     return LlmAgent(
@@ -210,7 +220,7 @@ async def _run_agent(agent: LlmAgent, user_text: str) -> str:
 
 def _first_open(state: ReconcileState) -> Issue | None:
     for i in state.issue_objects():
-        if not i.resolved and i.kind in ("gap", "unit_hours", "low_confidence"):
+        if not i.resolved and i.kind in ("gap", "unit_hours", "low_confidence", *CHECK_KINDS):
             return i
     return None
 

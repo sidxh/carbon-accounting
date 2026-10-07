@@ -170,7 +170,10 @@
     "issue": {
       "gap": "{months}の{energy}記録なし（{n}か月）",
       "unitHours": "{energy}が運転時間で記録。L/hが必要",
-      "lowConfidence": "{energy}の値が読み取りづらい。確認をお願いします"
+      "lowConfidence": "{energy}の値が読み取りづらい。確認をお願いします",
+      "indexMismatch": "{energy}の請求書：検針値が合計と合いません。ご確認ください",
+      "priceImplausible": "{energy}の請求書：単価が不自然です。ご確認ください",
+      "outlier": "{energy}のある月が通常の傾向から大きく外れています。ご確認ください"
     },
     "resetShared": "この年度は{names}と共有中です。相手の数値も再計算されます。"
   },

@@ -23,6 +23,7 @@ from pydantic import BaseModel, Field
 from .agents import reconciler
 from .agents.filler import LOCKED_FIELDS, Answer, fill_workbook, write_answers
 from .auth import Caller, current_caller, require_supplier
+from .checks import confirm_failed_checks
 from .exporters.methodology import build_pdf
 from .models import ReportingPeriod, Request, Site, SupplierProfile
 from .reconcile_tools import summarise
@@ -520,6 +521,8 @@ def patch_line(supplier_id: str, pid: str, line_id: str, body: LinePatch, caller
         notes.append(body.note)
     upd["notes"] = " | ".join(n for n in notes if n)
     upd["confidence"] = 1.0
+    # The supplier has looked at this bill and decided; a failed self-check no longer stands.
+    upd["checks"] = confirm_failed_checks(line).checks
     repo.update_activity_line(supplier_id, pid, line.model_copy(update=upd))
     snap = compute_inventory(repo, profile, period)
     return {"line": repo.list_activity_lines(supplier_id, pid), "snapshot": snap}

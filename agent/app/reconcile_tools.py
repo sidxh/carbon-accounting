@@ -13,7 +13,8 @@ import uuid
 from dataclasses import dataclass, field
 from datetime import date, timedelta
 
-from .models import ActivityLine, Assumption, EnergyType, Unit
+from .checks import failed, with_check
+from .models import ActivityLine, Assumption, EnergyType, LineCheck, Unit
 from .units import ConversionError, convert
 
 # Energy carriers that arrive as periodic bills and therefore *should* cover
@@ -31,7 +32,7 @@ PERIODIC: set[EnergyType] = {
 @dataclass
 class Issue:
     id: str
-    kind: str  # gap | unit_hours | duplicate | site_unknown | low_confidence
+    kind: str  # gap | unit_hours | duplicate | site_unknown | low_confidence | index_mismatch | price_implausible | outlier
     energy_type: EnergyType | None
     line_ids: list[str] = field(default_factory=list)
     months: list[str] = field(default_factory=list)  # YYYY-MM
@@ -205,6 +206,65 @@ def find_gaps(lines: list[ActivityLine], fy_start: date, fy_end: date) -> list[I
             issues.append(Issue(_new_id("iss"), "gap", et, [l.id for l in ls], months=missing,
                                 detail=f"no {et} records for {', '.join(missing)}" + (f" at site {site}" if site else "")))
     return issues
+
+
+# --- 4b. a month against the carrier's own pattern -----------------------------------------
+
+SEASON_MIN_LINES = 5       # need a pattern before calling anything off it
+SEASON_MIN_DAYS = 20       # shorter periods are too noisy per day
+SEASON_HIGH = 2.5
+SEASON_LOW = 0.35
+
+
+def seasonal_outliers(lines: list[ActivityLine]) -> list[ActivityLine]:
+    """Add a `season` check to each periodic bill: its use per day against the median of its own series.
+
+    Only bills read from documents count (not assumptions), and only when the
+    carrier has enough of them to have a pattern. A bill more than 2.5x or less
+    than 0.35x the median per day fails; the rest pass. Idempotent, and a check
+    the supplier already confirmed is left as it is.
+    """
+    groups: dict[tuple[EnergyType, str, str], list[ActivityLine]] = {}
+    for ln in lines:
+        days = (ln.period_end - ln.period_start).days + 1
+        if ln.energy_type in PERIODIC and ln.tier == "primary" and days >= SEASON_MIN_DAYS and ln.quantity > 0:
+            groups.setdefault((ln.energy_type, ln.site_id or "", ln.unit.value), []).append(ln)
+    verdicts: dict[str, LineCheck] = {}
+    for (et, _site, unit), ls in groups.items():
+        if len(ls) < SEASON_MIN_LINES:
+            continue
+        per_day = {l.id: l.quantity / ((l.period_end - l.period_start).days + 1) for l in ls}
+        vals = sorted(per_day.values())
+        n = len(vals)
+        median = vals[n // 2] if n % 2 else (vals[n // 2 - 1] + vals[n // 2]) / 2
+        if median <= 0:
+            continue
+        for l in ls:
+            ratio = per_day[l.id] / median
+            what = f"{ratio:.1f}x the {et.value.replace('_', ' ')} median of this site ({len(ls)} bills)"
+            if ratio >= SEASON_HIGH or ratio <= SEASON_LOW:
+                verdicts[l.id] = LineCheck(id="season", status="fail", detail=f"{l.period_start:%b %Y} is {what}")
+            else:
+                verdicts[l.id] = LineCheck(id="season", status="pass", detail=f"{l.period_start:%b %Y} is in line with the other months ({what})")
+    return [with_check(l, verdicts.get(l.id)) for l in lines]
+
+
+def check_issues(lines: list[ActivityLine], skip_line_ids: set[str]) -> list[Issue]:
+    """One question per bill that failed a check, whatever number of checks it failed.
+
+    The first failing check names the kind (index, then price, then season); the
+    detail lists every reason so the question can say all of them at once.
+    """
+    kinds = {"index": "index_mismatch", "price": "price_implausible", "season": "outlier"}
+    out: list[Issue] = []
+    for l in lines:
+        bad = failed(l)
+        if not bad or l.id in skip_line_ids:
+            continue
+        first = sorted(bad, key=lambda c: list(kinds).index(c.id))[0]
+        out.append(Issue(_new_id("iss"), kinds[first.id], l.energy_type, [l.id],
+                         detail="; ".join(c.detail for c in bad)))
+    return out
 
 
 # --- 5. assumptions -------------------------------------------------------------------
@@ -393,9 +453,12 @@ def prepare(lines: list[ActivityLine], fy_start: date, fy_end: date) -> Prepared
     lines, dup_issues = dedupe_overlaps(lines)
     lines, dropped = apportion_to_fiscal_year(lines, fy_start, fy_end)
     gap_issues = find_gaps(lines, fy_start, fy_end)
+    lines = seasonal_outliers(lines)
     low_conf = [
         Issue(_new_id("iss"), "low_confidence", l.energy_type, [l.id],
               detail=f"read with confidence {l.confidence:.2f}: {l.quantity:g} {l.unit} {l.period_start}")
         for l in lines if l.confidence < 0.7 and l.tier == "primary"
     ]
-    return Prepared(lines=lines, issues=unit_issues + dup_issues + gap_issues + low_conf, dropped_outside_fy=dropped)
+    # A bill we already doubt for its legibility is asked about once, not twice.
+    self_check = check_issues(lines, {i.line_ids[0] for i in low_conf})
+    return Prepared(lines=lines, issues=unit_issues + dup_issues + gap_issues + low_conf + self_check, dropped_outside_fy=dropped)

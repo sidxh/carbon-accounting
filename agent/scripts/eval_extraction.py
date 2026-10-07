@@ -53,6 +53,25 @@ def score_box(label: dict, got, kind: str = "png") -> dict:
     return {"box": v >= BOX_HIT, "box_iou": round(v, 3)}
 
 
+COUNTRY_BY_CURRENCY = {"VND": "VN", "JPY": "JP", "AUD": "AU"}
+
+
+def score_checks(label: dict, got) -> dict:
+    """Do the bill's self-checks behave? A clean bill must raise none (a false alarm
+    costs the supplier a question); a bill with a planted misread must fail the
+    checks the label names. Index needs meter registers and price needs the bill's
+    amount, so both are exercised by the real extraction rather than by the label."""
+    from app.agents.extractor import to_activity_lines
+
+    lines = to_activity_lines(got, supplier_id="eval", source_doc_id=label["name"], site_id=None,
+                              country=COUNTRY_BY_CURRENCY.get(label.get("currency") or ""))
+    status = {c.id: c.status for l in lines for c in l.checks}
+    expect = label.get("expect_checks")
+    if expect:
+        return {"check_planted": True, "check_ok": all(status.get(k) == v for k, v in expect.items()), "checks": status}
+    return {"check_planted": False, "check_ok": "fail" not in status.values(), "checks": status}
+
+
 def score_doc(label: dict, got) -> dict:
     exp = label["lines"][0]
     if not got.lines:
@@ -94,7 +113,7 @@ def main() -> int:
             path = GOLDEN / "rendered" / fname
             mime = mimetypes.guess_type(path.name)[0] or "image/png"
             got = extract(path.read_bytes(), mime)
-            s = score_doc(label, got) | score_box(label, got, kind)
+            s = score_doc(label, got) | score_box(label, got, kind) | score_checks(label, got)
             rows.append({"name": label["name"], "kind": kind, "lang": label["lang"], **s,
                          "got": got.model_dump(), "expected": label["lines"][0]})
             mark = "ok " if s.get("all") else "BAD"
@@ -111,6 +130,12 @@ def main() -> int:
         hit = sum(1 for r in boxed if r["box"]) / len(boxed)
         mean = sum(r["box_iou"] for r in boxed) / len(boxed)
         print(f"  box on printed value (IoU >= {BOX_HIT}): {hit:6.1%}   mean IoU {mean:.2f}   ({len(boxed)} images)")
+    clean = [r for r in rows if r.get("check_planted") is False]
+    planted = [r for r in rows if r.get("check_planted")]
+    if clean:
+        print(f"  self-checks raise no false alarm on clean bills: {sum(1 for r in clean if r['check_ok'])}/{len(clean)}")
+    if planted:
+        print(f"  self-checks catch the planted misread: {sum(1 for r in planted if r['check_ok'])}/{len(planted)}")
     by_lang = {}
     for r in rows:
         by_lang.setdefault(r["lang"], []).append(r["all"])

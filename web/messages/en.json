@@ -170,7 +170,10 @@
     "issue": {
       "gap": "No {energy} records for {months} ({n} month(s))",
       "unitHours": "{energy} recorded in running hours; litres per hour needed",
-      "lowConfidence": "A {energy} value was hard to read; please confirm"
+      "lowConfidence": "A {energy} value was hard to read; please confirm",
+      "indexMismatch": "A {energy} bill: the meter readings do not add up to its total; please check",
+      "priceImplausible": "A {energy} bill: the price per unit looks off; please check",
+      "outlier": "A {energy} month is far from your usual pattern; please check"
     },
     "resetShared": "This year is shared with {names}: their figures will be recalculated too."
   },
