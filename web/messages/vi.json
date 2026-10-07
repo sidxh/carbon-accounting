@@ -340,8 +340,6 @@
     "h1b": "Nhận lại bảng câu hỏi đã điền.",
     "sub": "Khách hàng gửi cho bạn bảng câu hỏi phát thải. Tải lên hóa đơn điện, nhiên liệu và gas lạnh; chúng tôi đọc, chỉ hỏi những gì hóa đơn không nói được, và trả lại bảng kiểm kê Phạm vi 1 và 2 với từng con số truy về tài liệu và hệ số đã công bố.",
     "cta": "Bắt đầu với hóa đơn",
-    "howEyebrow": "Cách hoạt động",
-    "howTitle": "Bốn bước, một buổi chiều.",
     "steps": {
       "bills": {
         "title": "Hóa đơn",
@@ -388,7 +386,6 @@
     "dashboard": "Vào bảng điều khiển",
     "demo": {
       "aria": "Bản demo động: hóa đơn được tải lên và đọc, quý LPG còn thiếu được bổ sung sau một câu hỏi, tổng Phạm vi 1 và Phạm vi 2 tăng dần với phép tính truy vết được, và bảng câu hỏi của khách hàng được điền sẵn để tải về.",
-      "url": "suppliercarbon.app/requests/fy2025",
       "steps": {
         "bills": "Hóa đơn",
         "questions": "Câu hỏi",
@@ -440,6 +437,50 @@
     "story": {
       "eyebrow": "Phạm vi 1 và 2, từ hóa đơn của bạn",
       "title": "Mỗi tấn đều truy được về một hóa đơn."
+    },
+    "howTitle": "Bốn bước, một buổi chiều.",
+    "flow": {
+      "on": "Supplier Carbon đã bật.",
+      "aria": "Supplier Carbon hoạt động: hóa đơn được tải lên và đọc, một hóa đơn được quét và hỏi về tháng còn thiếu, bảng kiểm kê Phạm vi 1 và 2 được lập, và bảng câu hỏi của khách hàng được điền.",
+      "words": {
+        "bills": "Đọc hóa đơn",
+        "questions": "Hỏi phần còn thiếu",
+        "inventory": "Lập bảng kiểm kê",
+        "questionnaire": "Điền bảng câu hỏi"
+      },
+      "upload": {
+        "drop": "Thả hóa đơn vào đây",
+        "dropSub": "Ảnh, PDF hoặc bảng tính, ngôn ngữ nào cũng được",
+        "read": "Đã đọc",
+        "bills": "hóa đơn",
+        "reading": "Đang đọc hóa đơn…",
+        "done": "Đã đọc 12 hóa đơn",
+        "doneSub": "Điện, LPG và dầu diesel · T1–T12 2025"
+      },
+      "scan": {
+        "scanning": "Đang quét…",
+        "done": "Đã quét xong",
+        "period": "Kỳ",
+        "energy": "Năng lượng",
+        "electricity": "Điện",
+        "quantity": "Lượng",
+        "site": "Cơ sở",
+        "gap": "Không có hóa đơn điện tháng 3/2025",
+        "ask": "Nhà máy Biên Hòa có đóng cửa trong tháng 3 không?",
+        "yes": "Có, đã đóng cửa",
+        "no": "Không, hóa đơn bị mất",
+        "resolved": "Tháng 3: nhà máy đóng cửa, 0 kWh"
+      },
+      "inv": {
+        "total": "Phạm vi 1 + 2 · 2025",
+        "trace": "T1 · 42.569 kWh × 0,659 kg/kWh = 28,1 tCO₂e · từ hóa đơn EVN"
+      },
+      "form": {
+        "title": "Bảng câu hỏi khách hàng.xlsx",
+        "answered": "đã trả lời",
+        "ready": "Sẵn sàng gửi",
+        "file": "bang_cau_hoi_da_dien.xlsx"
+      }
     }
   },
   "stepLock": {

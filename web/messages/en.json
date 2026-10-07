@@ -340,8 +340,6 @@
     "h1b": "Get the questionnaire back.",
     "sub": "Your customer sent an emissions questionnaire. Upload your electricity, fuel and refrigerant bills; we read them, ask only what the bills cannot tell us, and hand back a Scope 1 and 2 inventory with every number traced to a document and a published factor.",
     "cta": "Start with your bills",
-    "howEyebrow": "How it works",
-    "howTitle": "Four steps, one afternoon.",
     "steps": {
       "bills": {
         "title": "Bills",
@@ -388,7 +386,6 @@
     "dashboard": "Go to your dashboard",
     "demo": {
       "aria": "Animated product demo: bills are uploaded and read, a missing LPG quarter is filled after a question, Scope 1 and Scope 2 totals count up with a traceable calculation, and the customer questionnaire is filled for download.",
-      "url": "suppliercarbon.app/requests/fy2025",
       "steps": {
         "bills": "Bills",
         "questions": "Questions",
@@ -440,6 +437,50 @@
     "story": {
       "eyebrow": "Scope 1 and 2, from your bills",
       "title": "Every tonne, traced back to a bill."
+    },
+    "howTitle": "Four steps, one afternoon.",
+    "flow": {
+      "on": "Supplier Carbon is on.",
+      "aria": "Supplier Carbon at work: bills are uploaded and read, a bill is scanned and a missing month is asked about, the Scope 1 and 2 inventory builds, and the customer's questionnaire is filled.",
+      "words": {
+        "bills": "Reads your bills",
+        "questions": "Asks what's missing",
+        "inventory": "Builds the inventory",
+        "questionnaire": "Fills the questionnaire"
+      },
+      "upload": {
+        "drop": "Drop your bills",
+        "dropSub": "Photos, PDFs or spreadsheets, any language",
+        "read": "Read",
+        "bills": "bills",
+        "reading": "Reading your bills…",
+        "done": "12 bills read",
+        "doneSub": "Electricity, LPG and diesel · Jan–Dec 2025"
+      },
+      "scan": {
+        "scanning": "Scanning…",
+        "done": "Scan complete",
+        "period": "Period",
+        "energy": "Energy",
+        "electricity": "Electricity",
+        "quantity": "Quantity",
+        "site": "Site",
+        "gap": "No electricity bill for March 2025",
+        "ask": "Was the Biên Hòa plant shut in March?",
+        "yes": "Yes, it was closed",
+        "no": "No, the bill is lost",
+        "resolved": "March: plant closed, 0 kWh"
+      },
+      "inv": {
+        "total": "Scope 1 + 2 · 2025",
+        "trace": "Jan · 42,569 kWh × 0.659 kg/kWh = 28.1 tCO₂e · from the EVN bill"
+      },
+      "form": {
+        "title": "Customer questionnaire.xlsx",
+        "answered": "answered",
+        "ready": "Ready to send",
+        "file": "questionnaire_filled.xlsx"
+      }
     }
   },
   "stepLock": {

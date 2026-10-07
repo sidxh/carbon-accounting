@@ -12,11 +12,15 @@ const enter = { duration: 0.22, ease: EASE };
 
 // Milliseconds each step holds before the next. Acts: 0–4 bills, 5–7 questions,
 // 8–9 inventory, 10–11 questionnaire, 12 fade before looping.
-const TIMELINE = [400, 450, 450, 600, 1300, 1900, 1300, 1700, 2300, 1600, 1900, 2000, 500];
-const LAST = TIMELINE.length - 1;
-const FINAL = 11;
+export const TIMELINE = [400, 450, 450, 600, 1300, 1900, 1300, 1700, 2300, 1600, 1900, 2000, 500];
+export const LAST = TIMELINE.length - 1;
+export const FINAL = 11;
+/** First step of each act, for jumping straight to one. */
+export const ACT_START = [0, 5, 8, 10];
+/** Last step of each act: its fully built frame, shown still under reduced motion. */
+export const ACT_END = [4, 7, 9, 11];
 
-function actOf(step: number) {
+export function actOf(step: number) {
   if (step <= 4) return 0;
   if (step <= 7) return 1;
   if (step <= 9) return 2;
@@ -56,7 +60,12 @@ function Counter({ to, still }: { to: number; still: boolean }) {
   );
 }
 
-export function HeroDemo() {
+/**
+ * Runs its own loop, or, given `step`, just renders that step: the "How it works"
+ * steps flow drives it one act at a time. `bare` drops the stepper and the card
+ * frame, leaving just the scene to fill whatever holds it.
+ */
+export function HeroDemo({ step: controlled, bare = false }: { step?: number; bare?: boolean } = {}) {
   const t = useTranslations("landing.demo");
   const locale = useLocale();
   const ref = useRef<HTMLDivElement>(null);
@@ -67,12 +76,12 @@ export function HeroDemo() {
   const running = inView && visible && !reduce;
 
   useEffect(() => {
-    if (!running) return;
+    if (!running || controlled !== undefined) return;
     const id = setTimeout(() => setStep((s) => (s === LAST ? 0 : s + 1)), TIMELINE[step]);
     return () => clearTimeout(id);
-  }, [step, running]);
+  }, [step, running, controlled]);
 
-  const s = reduce ? FINAL : step;
+  const s = controlled ?? (reduce ? FINAL : step);
   const act = actOf(s);
   const months = useMemo(() => {
     const f = new Intl.DateTimeFormat(locale, { month: "narrow" });
@@ -82,37 +91,35 @@ export function HeroDemo() {
   const stepper = [t("steps.bills"), t("steps.questions"), t("steps.inventory"), t("steps.questionnaire")];
 
   return (
-    <div ref={ref} role="img" aria-label={t("aria")} className="card overflow-hidden text-left shadow-[var(--shadow-float)]">
-      <div aria-hidden>
-        <div className="flex items-center gap-3 border-b hairline bg-sunken/60 px-3 py-2">
-          <span className="flex gap-1.5">
-            <span className="size-2.5 rounded-full bg-line-strong" />
-            <span className="size-2.5 rounded-full bg-line-strong" />
-            <span className="size-2.5 rounded-full bg-line-strong" />
-          </span>
-          <span className="min-w-0 flex-1 truncate rounded-md bg-raised px-2.5 py-1 text-center font-mono text-[11px] text-muted">{t("url")}</span>
-        </div>
+    <div ref={ref} role="img" aria-label={t("aria")} className={bare ? "h-full text-left" : "card p-2 text-left shadow-[var(--shadow-float)]"}>
+      <div aria-hidden className={bare ? "h-full" : "rounded-[14px] border border-dashed border-line-strong"}>
+        {/* Progress stepper: circles on a line that fills as the demo moves through the four acts. */}
+        {!bare && <ol className="relative grid grid-cols-4 px-2 pb-4 pt-6">
+          <span className="absolute left-[12.5%] right-[12.5%] top-[calc(1.5rem+15px)] h-[3px] -translate-y-1/2 rounded-full bg-sunken" />
+          <span
+            className="absolute left-[12.5%] right-[12.5%] top-[calc(1.5rem+15px)] h-[3px] origin-left -translate-y-1/2 rounded-full bg-signal transition-transform duration-500 ease-[var(--ease-in-out)]"
+            style={{ transform: `translateY(-50%) scaleX(${act === -1 ? 1 : act / 3})` }}
+          />
+          {stepper.map((label, i) => {
+            const done = act > i || act === -1;
+            const current = act === i;
+            return (
+              <li key={i} className="relative flex flex-col items-center gap-2">
+                <span
+                  className={cn(
+                    "grid size-[30px] place-items-center rounded-full text-xs font-semibold transition-colors duration-300",
+                    done ? "bg-signal text-signal-on" : current ? "bg-signal text-signal-on ring-[5px] ring-signal-bg" : "bg-sunken text-muted",
+                  )}
+                >
+                  {done ? <Check className="size-3.5" strokeWidth={3} /> : i + 1}
+                </span>
+                <span className={cn("text-[11px] transition-colors duration-300 sm:text-xs", current ? "font-medium text-signal-ink" : done ? "text-ink-soft" : "text-muted")}>{label}</span>
+              </li>
+            );
+          })}
+        </ol>}
 
-        <ol className="grid grid-cols-4 gap-1 border-b hairline px-2 py-2">
-          {stepper.map((label, i) => (
-            <li key={i} className="relative flex items-center justify-center gap-1.5 rounded-lg px-1 py-1.5 text-[11px] font-medium sm:text-xs">
-              {act === i && (
-                <motion.span layoutId="demo-step" transition={{ duration: 0.35, ease: EASE }} className="absolute inset-0 rounded-lg bg-signal-bg" />
-              )}
-              <span
-                className={cn(
-                  "relative hidden size-4 shrink-0 place-items-center sm:grid rounded-full text-[9px] font-semibold transition-colors duration-200",
-                  act > i || act === -1 ? "bg-signal text-signal-on" : act === i ? "bg-ink text-raised" : "bg-sunken text-muted",
-                )}
-              >
-                {act > i || act === -1 ? <Check className="size-2.5" strokeWidth={3} /> : i + 1}
-              </span>
-              <span className={cn("relative truncate", act === i ? "text-signal-ink" : "text-muted")}>{label}</span>
-            </li>
-          ))}
-        </ol>
-
-        <div className="relative h-[300px] px-4 py-4 sm:px-5">
+        <div className={bare ? "relative h-full" : "relative h-[300px] px-4 py-4 sm:px-5"}>
           <AnimatePresence mode="wait" initial={false}>
             {act === 0 && (
               <Scene key="bills">

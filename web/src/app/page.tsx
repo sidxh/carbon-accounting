@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { motion } from "motion/react";
-import { ArrowRight, BookOpenCheck, ClipboardList, FileSpreadsheet, Link2, MessageSquareText, Receipt, ShieldCheck, type LucideIcon } from "lucide-react";
+import { ArrowRight, BookOpenCheck, FileSpreadsheet, Link2, ShieldCheck, type LucideIcon } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { Wordmark } from "@/components/shell";
-import { HeroDemo } from "@/components/landing/hero-demo";
 import { EarthHero } from "@/components/landing/earth-hero";
+import { GreenWash, LeafField } from "@/components/landing/leaves";
+import { StepsFlow } from "@/components/landing/steps-flow";
 
 // --ease-out from DESIGN.md; --dur-reveal (600 ms) is permitted only on this page.
 const EASE = [0.23, 1, 0.32, 1] as const;
@@ -28,13 +29,6 @@ function Reveal({ children, delay = 0, className }: { children: React.ReactNode;
   );
 }
 
-const STEPS: { icon: LucideIcon; key: string }[] = [
-  { icon: Receipt, key: "bills" },
-  { icon: MessageSquareText, key: "questions" },
-  { icon: ClipboardList, key: "inventory" },
-  { icon: FileSpreadsheet, key: "questionnaire" },
-];
-
 const TRUST: { icon: LucideIcon; key: string }[] = [
   { icon: BookOpenCheck, key: "factors" },
   { icon: Link2, key: "lineage" },
@@ -53,7 +47,9 @@ export default function Home() {
 
 
   return (
-    <div className="min-h-dvh overflow-x-clip">
+    <div className="relative min-h-dvh overflow-x-clip">
+      {/* Leaves run behind the whole page; main and footer are positioned so they paint above. */}
+      <LeafField />
       {/* Floating nav ------------------------------------------------------------ */}
       <header className="pointer-events-none fixed inset-x-0 top-3 z-header flex justify-center px-3">
         <nav className="card pointer-events-auto flex w-full max-w-4xl items-center justify-between gap-3 px-3 py-2 shadow-[var(--shadow-raised)] sm:px-4" aria-label={t("navLabel")}>
@@ -67,33 +63,23 @@ export default function Home() {
         </nav>
       </header>
 
-      <main>
+      <main className="relative">
         <EarthHero go={go} cta={cta} />
 
-        {/* How it works ---------------------------------------------------------------- */}
-        <section className="mx-auto max-w-5xl px-4 py-16" aria-labelledby="how-h">
-          <Reveal className="text-center">
-            <p className="eyebrow justify-center">{t("howEyebrow")}</p>
-            <h2 id="how-h" className="font-display mt-3 text-3xl text-balance sm:text-4xl">{t("howTitle")}</h2>
-          </Reveal>
-          <Reveal className="mx-auto mt-10 max-w-2xl">
-            <HeroDemo />
-          </Reveal>
-          <ol className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {STEPS.map(({ icon: Icon, key }, i) => (
-              <Reveal key={key} delay={i * 0.08}>
-                <li className="card flex h-full flex-col gap-3 p-5">
-                  <div className="flex items-center justify-between">
-                    <span className="grid size-10 place-items-center rounded-[10px] bg-signal-bg text-signal-ink"><Icon className="size-5" aria-hidden /></span>
-                    <span className="font-display text-2xl text-faint">0{i + 1}</span>
-                  </div>
-                  <div className="font-display text-xl">{t(`steps.${key}.title`)}</div>
-                  <p className="text-sm leading-relaxed text-muted">{t(`steps.${key}.body`)}</p>
-                </li>
-              </Reveal>
-            ))}
-          </ol>
-        </section>
+        {/* How it works: big rising title, a pinned list that opens each step as you
+            scroll (with that step's demo), then the steps carousel. ------------------- */}
+        {/* Pulled up into the space under the pinned scene's centred story. */}
+        <div className="relative -mt-20">
+          <GreenWash />
+          <section className="relative mx-auto max-w-6xl px-4 pb-24 pt-10" aria-labelledby="how-h">
+            <Reveal className="text-center">
+              <h2 id="how-h" className="font-display text-3xl text-balance sm:text-4xl">{t("howTitle")}</h2>
+            </Reveal>
+            <Reveal className="mt-10">
+              <StepsFlow />
+            </Reveal>
+          </section>
+        </div>
 
         {/* Trust ------------------------------------------------------------------------- */}
         <section className="mx-auto max-w-5xl px-4 py-16" aria-labelledby="trust-h">
@@ -126,7 +112,7 @@ export default function Home() {
         </section>
       </main>
 
-      <footer className="border-t hairline">
+      <footer className="relative border-t hairline">
         <div className="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-8 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
           <span>{t("footerNote")}</span>
           <div className="flex items-center gap-3"><span>{t("footerLangs")}</span><LanguageSwitcher /></div>
