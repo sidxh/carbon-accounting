@@ -72,12 +72,8 @@ export default function Home() {
         <div className="relative -mt-20">
           <GreenWash />
           <section className="relative mx-auto max-w-6xl px-4 pb-24 pt-10" aria-labelledby="how-h">
-            <Reveal className="text-center">
-              <h2 id="how-h" className="font-display text-3xl text-balance sm:text-4xl">{t("howTitle")}</h2>
-            </Reveal>
-            <Reveal className="mt-10">
-              <StepsFlow />
-            </Reveal>
+            {/* Pins and plays as the page scrolls. */}
+            <StepsFlow title={t("howTitle")} />
           </section>
         </div>
 
