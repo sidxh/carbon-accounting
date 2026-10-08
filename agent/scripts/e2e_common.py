@@ -49,16 +49,18 @@ def sign_in(page, phone: str, wrong_first: bool = False) -> None:
         pass
 
 
-def fill_setup(page, name: str, site: str, language: str = "vi") -> None:
+def fill_setup(page, name: str, site: str, language: str = "vi", country: str = "VN", address: str | None = None) -> None:
     page.wait_for_selector("form.card")
     page.locator("form.card input").first.fill(name)
     selects = page.locator("form.card select")
-    selects.nth(0).select_option("VN")
+    selects.nth(0).select_option(country)
     selects.nth(1).select_option(language)
     dates = page.locator("form.card input[type=date]")
     dates.nth(0).fill("2025-01-01")
     dates.nth(1).fill("2025-12-31")
     page.locator("form.card input[placeholder]").nth(0).fill(site)
+    if address:
+        page.locator("form.card input[placeholder]").nth(2).fill(address)
     page.get_by_role("button", name=re.compile("Save|Lưu|保存")).click()
     page.wait_for_url(re.compile(r"/home"), timeout=20000)
 

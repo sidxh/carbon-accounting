@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowRight, ArrowUpDown, Calculator, ChevronDown, ExternalLink, FileText, Info, Pencil, RefreshCw, ScanSearch } from "lucide-react";
+import { ArrowRight, ArrowUpDown, Calculator, ChevronDown, ExternalLink, FileText, Info, Pencil, RefreshCw, ScanSearch, Sun } from "lucide-react";
 import { cn as clsx } from "@/lib/cn";
 import { useRequest } from "@/components/request-context";
 import { SharedNotice } from "@/components/shared-notice";
@@ -305,6 +305,7 @@ function Inventory() {
   const { uid, profile, period, request, view: rv, reload } = useRequest();
   const pid = period.id;
   const t = useTranslations("inventory");
+  const tReduce = useTranslations("reduce.card");
   const toast = useToast();
   const [data, setData] = useState<{ lines: InventoryLine[]; snapshot: Snapshot | null; assumptions: Assumption[]; activityLines: ActivityLine[] } | null>(null);
   const [docs, setDocs] = useState<Record<string, DocumentRecord>>({});
@@ -396,6 +397,15 @@ function Inventory() {
       </div>
 
       <MonthlyChart byMonth={tot.by_month ?? {}} />
+
+      <Link href={`/r/${request.id}/reduce`} className="card flex items-center gap-4 p-4 transition-colors hover:bg-sunken sm:p-5">
+        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-attention-bg text-attention"><Sun className="size-5" aria-hidden /></span>
+        <span className="min-w-0 flex-1">
+          <span className="block font-display text-xl text-balance">{tReduce("title")}</span>
+          <span className="mt-0.5 block text-sm text-pretty text-muted">{tReduce("body")}</span>
+        </span>
+        <span className="hidden shrink-0 items-center gap-1.5 text-sm font-medium text-signal-ink sm:inline-flex">{tReduce("cta")}<ArrowRight className="size-4" aria-hidden /></span>
+      </Link>
 
       {/* Method card ------------------------------------------------------------------- */}
       <section className="card" aria-labelledby="method-h">

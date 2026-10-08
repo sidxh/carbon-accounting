@@ -50,6 +50,10 @@ export interface Site {
   country: string;
   region?: string | null;
   address?: string | null;
+  lat?: number | null;
+  lng?: number | null;
+  formatted_address?: string | null;
+  roof_area_m2?: number | null;
 }
 
 export interface SupplierProfile {
@@ -297,6 +301,65 @@ export interface HomeView {
 
 // --- calls ---------------------------------------------------------------------
 
+export interface SolarOption {
+  available: boolean;
+  precision: "solar_api" | "pvgis_estimate" | null;
+  needs_roof_area: boolean;
+  kwp: number;
+  panels: number | null;
+  annual_kwh: number;
+  share_of_electricity: number;
+  avoided_location_kg: number;
+  avoided_market_kg: number;
+  roof_area_m2: number | null;
+  imagery_quality: string | null;
+  imagery_date: string | null;
+  capex: number | null;
+  currency: string | null;
+  tariff: number | null;
+  tariff_source: string;
+  annual_saving: number | null;
+  payback_years: number | null;
+  notes: string[];
+}
+
+export interface LeverResult {
+  id: string;
+  name: string;
+  kind: string;
+  basis: "location" | "market" | "scope1";
+  baseline_kg: number;
+  saved_min_kg: number;
+  saved_max_kg: number;
+  saved_mid_kg: number;
+  beneficial: boolean;
+  cost_class: "low" | "medium" | "high";
+  cost_note: string;
+  source_name: string;
+  source_url: string;
+  note: string;
+}
+
+export interface Advice {
+  site_id: string | null;
+  annual_electricity_kwh: number;
+  scope1_kg: number;
+  scope2_location_kg: number;
+  scope2_market_kg: number;
+  grid_factor: number | null;
+  market_factor: number | null;
+  solar: SolarOption;
+  levers: LeverResult[];
+}
+
+export interface AdvisorView {
+  site: Site | null;
+  located: boolean;
+  coverage: "solar_api" | "pvgis" | "none";
+  error: string | null;
+  advice: Advice;
+}
+
 const P = (uid: string, pid: string) => `/suppliers/${uid}/periods/${pid}`;
 const R = (uid: string, rid: string) => `/suppliers/${uid}/requests/${rid}`;
 
@@ -367,6 +430,10 @@ export const api = {
     request<{ lines: InventoryLine[]; snapshot: Snapshot | null; assumptions: Assumption[]; activityLines: ActivityLine[] }>(`${P(uid, pid)}/inventory`),
   patchLine: (uid: string, pid: string, lineId: string, patch: { quantity?: number; energy_type?: string; note?: string }) =>
     json<{ snapshot: Snapshot }>(`${P(uid, pid)}/activity-lines/${lineId}`, "PATCH", patch),
+  advisor: (uid: string, pid: string, siteId?: string) =>
+    request<AdvisorView>(`${P(uid, pid)}/advisor${siteId ? `?site_id=${encodeURIComponent(siteId)}` : ""}`),
+  locateSite: (uid: string, siteId: string, body: { address?: string; roof_area_m2?: number }) =>
+    json<SupplierProfile>(`/suppliers/${uid}/sites/${siteId}/locate`, "POST", body),
   methodology: (uid: string, pid: string) => request<{ download: string; bytes: number }>(`${P(uid, pid)}/methodology`),
 
   // questionnaire (request)

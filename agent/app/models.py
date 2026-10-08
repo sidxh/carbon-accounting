@@ -90,6 +90,11 @@ class Site(BaseModel):
     country: str
     region: str | None = None
     address: str | None = None
+    # Filled in by the reduction advisor's "locate" step; the roof area is the supplier's own figure.
+    lat: float | None = None
+    lng: float | None = None
+    formatted_address: str | None = None
+    roof_area_m2: float | None = None
 
 
 class SupplierProfile(BaseModel):

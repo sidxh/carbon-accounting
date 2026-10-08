@@ -33,6 +33,10 @@ class Settings(BaseSettings):
     gemini_rpd: int = 500
     gemini_cache_dir: Path = Path(".cache/gemini")
 
+    # Google Maps Platform (Geocoding + Solar API). Server-side only; never sent to the browser.
+    google_maps_api_key: str = ""
+    solar_cache_dir: Path = Path(".cache/solar")
+
     # Firebase
     firebase_project_id: str = "fir-testing-f96b1"
     firestore_emulator_host: str = ""
@@ -51,6 +55,7 @@ class Settings(BaseSettings):
     # Data
     factors_dir: Path = REPO_ROOT / "data" / "factors"
     price_bands_dir: Path = REPO_ROOT / "data" / "price_bands"
+    levers_dir: Path = REPO_ROOT / "data" / "levers"
 
     @property
     def cors_origin_list(self) -> list[str]:

@@ -73,7 +73,8 @@
     "sitesHint": "One row per factory or office whose bills you will upload.",
     "removeSite": "Remove site {n}",
     "cancel": "Cancel",
-    "startedOver": "All bills, answers and results removed."
+    "startedOver": "All bills, answers and results removed.",
+    "siteAddress": "Street address (optional, used to look up your roof)"
   },
   "documents": {
     "title": "Your bills",
@@ -546,6 +547,70 @@
         "fail": "Unusual against other months",
         "confirmed": "Unusual month, confirmed by you"
       }
+    }
+  },
+  "reduce": {
+    "title": "Where you could cut emissions",
+    "lede": "Rooftop solar sized to what your site actually uses, and the other changes that would move your numbers most. Estimates, with sources.",
+    "sites": "Site",
+    "needInventory": "Calculate your inventory first",
+    "needInventoryBody": "Ideas for cutting emissions are based on your own figures, so they appear once the inventory is calculated.",
+    "toInventory": "Back to your inventory",
+    "locate": {
+      "title": "Where is this site?",
+      "hint": "We use the address to look up your roof and the sunshine it gets. It is used only for this.",
+      "address": "Site address",
+      "placeholder": "Street, district, city",
+      "find": "Find on map",
+      "again": "Look up again",
+      "matched": "Matched:"
+    },
+    "solar": {
+      "title": "Rooftop solar",
+      "error": "The roof lookup did not work just now: {msg}",
+      "headline": "Solar could cover about {pct}% of your electricity and avoid about {t} tCO2e a year.",
+      "payback": "It would pay back in about {years} years.",
+      "measured": "Measured from Google roof imagery ({quality}, {year})",
+      "estimated": "Estimate from sunshine data and the roof area you gave",
+      "size": "Size",
+      "sizeValue": "{kwp} kWp, {kwh} kWh a year",
+      "panels": "{n} panels",
+      "cost": "Installed cost",
+      "costValue": "about {amount} {cur}",
+      "saving": "Yearly saving",
+      "savingValue": "about {amount} {cur} at {price} {cur}/kWh, from {source}",
+      "market": "Market-based Scope 2",
+      "marketValue": "about {t} tCO2e avoided",
+      "roofHint": "Google has no roof imagery for this location, so we use sunshine data. Tell us the roof area you could use and we will estimate.",
+      "roofLabel": "Roof area (m2)",
+      "roofSave": "Estimate",
+      "unavailable": "No rooftop estimate for this site yet."
+    },
+    "levers": {
+      "title": "Other ways to cut",
+      "range": "about {lo}-{hi} tCO2e a year",
+      "single": "about {n} tCO2e a year",
+      "worse": "Would add about {n} tCO2e a year on your electricity grid",
+      "marketOnly": "Market-based only",
+      "how": "How we estimated this",
+      "cost": {
+        "low": "Low cost",
+        "medium": "Medium cost",
+        "high": "High cost"
+      }
+    },
+    "scenario": {
+      "title": "If you did these",
+      "before": "Today",
+      "after": "After",
+      "saves": "Saves about {t} tCO2e a year, {pct}% of your Scope 1 and 2.",
+      "market": "Certificates would lower market-based Scope 2 by about {t} tCO2e more."
+    },
+    "disclaimer": "These are estimates to help you decide, not commitments. Get a quote before you invest.",
+    "card": {
+      "title": "Where you could cut emissions",
+      "body": "Rooftop solar sized to your own use, plus the changes that would move your numbers most.",
+      "cta": "See reduction ideas"
     }
   }
 }
