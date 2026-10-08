@@ -100,7 +100,7 @@ export function StepsFlow({ title }: { title: string }) {
 
   return (
     // A tall track to scroll through; the scene itself stays pinned in view.
-    <div ref={track} className="relative" style={{ height: `calc(100dvh + ${(SCENES.length - 1) * STEP_VH}dvh)` }}>
+    <div ref={track} id="how" className="relative" style={{ height: `calc(100dvh + ${(SCENES.length - 1) * STEP_VH}dvh)` }}>
       <div ref={stage} className="sticky top-0 flex h-dvh flex-col justify-center gap-6 pt-20 md:gap-8">
         <h2 id="how-h" className="font-display text-center text-3xl text-balance sm:text-4xl">{title}</h2>
         <div className="relative h-[560px] md:h-[480px]">

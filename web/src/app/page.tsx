@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { motion } from "motion/react";
-import { ArrowRight, BookOpenCheck, FileSpreadsheet, Link2, ShieldCheck, type LucideIcon } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
-import { LanguageSwitcher } from "@/components/language-switcher";
-import { Wordmark } from "@/components/shell";
 import { EarthHero } from "@/components/landing/earth-hero";
 import { GreenWash, LeafField } from "@/components/landing/leaves";
 import { StepsFlow } from "@/components/landing/steps-flow";
+import { Features } from "@/components/landing/features";
+import { LandscapeFooter } from "@/components/landing/landscape-footer";
+import { SiteNav } from "@/components/landing/site-nav";
 
 // --ease-out from DESIGN.md; --dur-reveal (600 ms) is permitted only on this page.
 const EASE = [0.23, 1, 0.32, 1] as const;
@@ -29,17 +30,9 @@ function Reveal({ children, delay = 0, className }: { children: React.ReactNode;
   );
 }
 
-const TRUST: { icon: LucideIcon; key: string }[] = [
-  { icon: BookOpenCheck, key: "factors" },
-  { icon: Link2, key: "lineage" },
-  { icon: ShieldCheck, key: "honest" },
-  { icon: FileSpreadsheet, key: "outputs" },
-];
-
 export default function Home() {
   const { user } = useAuth();
   const t = useTranslations("landing");
-  const tc = useTranslations();
   // Signed-in visitors are not redirected: the landing stays readable, and the
   // nav and both calls to action lead to the dashboard instead of sign-in.
   const go = user ? "/home" : "/sign-in";
@@ -51,17 +44,7 @@ export default function Home() {
       {/* Leaves run behind the whole page; main and footer are positioned so they paint above. */}
       <LeafField />
       {/* Floating nav ------------------------------------------------------------ */}
-      <header className="pointer-events-none fixed inset-x-0 top-3 z-header flex justify-center px-3">
-        <nav className="card pointer-events-auto flex w-full max-w-4xl items-center justify-between gap-3 px-3 py-2 shadow-[var(--shadow-raised)] sm:px-4" aria-label={t("navLabel")}>
-          <Link href="/" className="rounded-lg"><Wordmark /></Link>
-          <div className="flex items-center gap-2">
-            <LanguageSwitcher className="hidden sm:inline-flex" />
-            <Link href={user ? "/home" : "/sign-in"} className="btn btn-sm">
-              {user ? t("dashboard") : tc("app.signIn")}<ArrowRight className="size-4" aria-hidden />
-            </Link>
-          </div>
-        </nav>
-      </header>
+      <SiteNav signedIn={!!user} />
 
       <main className="relative">
         <EarthHero go={go} cta={cta} />
@@ -77,26 +60,8 @@ export default function Home() {
           </section>
         </div>
 
-        {/* Trust ------------------------------------------------------------------------- */}
-        <section className="mx-auto max-w-5xl px-4 py-16" aria-labelledby="trust-h">
-          <div className="card grid gap-8 p-6 sm:p-10 lg:grid-cols-[1fr_1.2fr]">
-            <Reveal>
-              <p className="eyebrow">{t("trustEyebrow")}</p>
-              <h2 id="trust-h" className="font-display mt-3 text-3xl leading-tight text-balance sm:text-4xl">{t("trustTitle")}</h2>
-              <p className="mt-4 text-[15px] leading-relaxed text-muted">{t("trustBody")}</p>
-            </Reveal>
-            <ul className="grid gap-4 sm:grid-cols-2">
-              {TRUST.map(({ icon: Icon, key }, i) => (
-                <Reveal key={key} delay={i * 0.06}>
-                  <li className="flex gap-3">
-                    <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-lg bg-sunken text-ink-soft"><Icon className="size-4" aria-hidden /></span>
-                    <div><div className="font-medium">{t(`trust.${key}.title`)}</div><p className="mt-0.5 text-sm text-muted">{t(`trust.${key}.body`)}</p></div>
-                  </li>
-                </Reveal>
-              ))}
-            </ul>
-          </div>
-        </section>
+        {/* Features: a C60 molecule bursts into a running headline, then a carousel. */}
+        <Features />
 
         {/* CTA ---------------------------------------------------------------------------- */}
         <section className="mx-auto max-w-3xl px-4 pb-20 pt-4 text-center">
@@ -108,12 +73,7 @@ export default function Home() {
         </section>
       </main>
 
-      <footer className="relative border-t hairline">
-        <div className="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-8 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
-          <span>{t("footerNote")}</span>
-          <div className="flex items-center gap-3"><span>{t("footerLangs")}</span><LanguageSwitcher /></div>
-        </div>
-      </footer>
+      <LandscapeFooter go={go} cta={cta} />
     </div>
   );
 }

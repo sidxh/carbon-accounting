@@ -359,27 +359,6 @@
         "body": "Tải lên file Excel của khách. Chúng tôi điền những gì kiểm kê trả lời được, đánh dấu phần chỉ bạn biết, và trả lại file."
       }
     },
-    "trustEyebrow": "Bạn có thể kiểm tra gì",
-    "trustTitle": "Không có hộp đen.",
-    "trustBody": "Số liệu carbon sẽ bị kiểm toán. Nên mọi con số ở đây đều mở được, truy ngược về nguồn, và chỗ nào phải giả định thì ghi bằng lời của chính bạn.",
-    "trust": {
-      "factors": {
-        "title": "Hệ số đã công bố, có trích dẫn",
-        "body": "Hệ số lưới quốc gia, giá trị IPCC và DEFRA, kèm nguồn, vintage và liên kết."
-      },
-      "lineage": {
-        "title": "Mọi con số có dấu vết",
-        "body": "Tài liệu → số lượng → hệ số → kết quả. Hiển thị trên màn hình và trong PDF phương pháp."
-      },
-      "honest": {
-        "title": "Thẳng thắn về khoảng trống",
-        "body": "Ô không trả lời được sẽ đánh dấu cho bạn, không đoán. Tháng ước tính được ghi rõ."
-      },
-      "outputs": {
-        "title": "File khách hàng chấp nhận",
-        "body": "Sổ đã điền, tô màu theo nguồn, và bản ghi phương pháp cho kiểm toán."
-      }
-    },
     "finalTitle": "Hóa đơn của bạn đã có câu trả lời.",
     "finalBody": "Đăng nhập bằng điện thoại và tải lên hóa đơn đầu tiên.",
     "footerNote": "Bản demo. Hóa đơn là dữ liệu tổng hợp; hệ số phát thải là thật và có trích dẫn.",
@@ -482,6 +461,68 @@
         "ready": "Sẵn sàng gửi",
         "file": "bang_cau_hoi_da_dien.xlsx"
       }
+    },
+    "features": {
+      "lead": "Chúng tôi là",
+      "roles": [
+        "trưởng nhóm kế toán carbon của bạn.",
+        "chuyên viên phân tích bền vững của bạn.",
+        "chuyên viên báo cáo ESG của bạn.",
+        "chuyên viên kiểm kê KNK của bạn.",
+        "chuyên viên dữ liệu phát thải của bạn.",
+        "cố vấn khử carbon của bạn."
+      ],
+      "items": {
+        "reads": {
+          "title": "Đọc mọi hóa đơn",
+          "body": "Ảnh, PDF hoặc bảng tính, ngôn ngữ nào cũng được."
+        },
+        "checks": {
+          "title": "Kiểm tra từng hóa đơn",
+          "body": "Chỉ số công tơ, khoảng giá và tháng bất thường đều được phát hiện trước khi tính."
+        },
+        "asks": {
+          "title": "Chỉ hỏi phần còn thiếu",
+          "body": "Mỗi lần một câu hỏi, bằng ngôn ngữ của bạn."
+        },
+        "evidence": {
+          "title": "Chỉ cho bạn nguồn số",
+          "body": "Mỗi con số dẫn tới đúng chỗ trên hóa đơn mà nó được đọc."
+        },
+        "outputs": {
+          "title": "Điền Excel của khách hàng",
+          "body": "Trả lời ngay trong bảng của họ, có trích dẫn từng ô."
+        },
+        "advisor": {
+          "title": "Lập kế hoạch giảm phát thải",
+          "body": "Điện mặt trời áp mái theo mức bạn dùng, kèm thời gian hoàn vốn."
+        }
+      }
+    },
+    "trust": {
+      "factors": {
+        "title": "Hệ số đã công bố, có trích dẫn",
+        "body": "Hệ số lưới quốc gia, giá trị IPCC và DEFRA, kèm nguồn, vintage và liên kết."
+      },
+      "lineage": {
+        "title": "Mọi con số có dấu vết",
+        "body": "Tài liệu → số lượng → hệ số → kết quả. Hiển thị trên màn hình và trong PDF phương pháp."
+      },
+      "honest": {
+        "title": "Thẳng thắn về khoảng trống",
+        "body": "Ô không trả lời được sẽ đánh dấu cho bạn, không đoán. Tháng ước tính được ghi rõ."
+      },
+      "outputs": {
+        "title": "File khách hàng chấp nhận",
+        "body": "Sổ đã điền, tô màu theo nguồn, và bản ghi phương pháp cho kiểm toán."
+      }
+    },
+    "footer": {
+      "blurb": "Chụp ảnh hóa đơn. Nhận lại bảng câu hỏi đã điền, mọi con số đều truy được về chứng từ và hệ số đã công bố.",
+      "product": "Sản phẩm",
+      "how": "Cách hoạt động",
+      "features": "Tính năng",
+      "standards": "Chuẩn mực được trích dẫn"
     }
   },
   "stepLock": {

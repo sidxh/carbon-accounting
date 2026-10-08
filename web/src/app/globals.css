@@ -395,6 +395,11 @@ button.pill:active { transform: scale(0.97); }
 .hero-globe[data-paused] * { animation-play-state: paused !important; }
 .hero-globe[data-still] * { animation: none !important; }
 
+/* Landing footer turbines (components/landing/landscape-footer.tsx): blades turn
+   slowly about their hub, set per turbine in user units. */
+@keyframes footer-spin { to { transform: rotate(360deg); } }
+.footer-turbine { transform-box: view-box; animation: footer-spin 9s linear infinite; }
+
 /* Steps carousel (components/landing/steps-carousel.tsx): the open step's bar fills over its hold time. */
 @keyframes steps-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 
