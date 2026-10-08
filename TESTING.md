@@ -521,14 +521,23 @@ flowchart LR
 infra/deploy.sh agent            # Cloud Build, then Cloud Run; prints the agent URL
 ```
 
-Web: create the App Hosting backend once (Firebase console, App Hosting, Get started),
-pointing at the GitHub repo with root directory `web/`, and fill `infra/apphosting.yaml`
-(copy to `web/apphosting.yaml`) with the agent URL and the web app's config. Pushes to
-`main` then roll out automatically. Afterwards allow the new origin on the agent:
+Web: App Hosting deploys straight from local source (no GitHub link needed). The backend
+`supplier-carbon-web` already exists; its settings live in `web/apphosting.yaml` and the Firebase
+web API key is the Secret Manager secret `firebase-web-api-key`.
 
 ```bash
-infra/deploy.sh cors https://YOUR-APP-HOSTING-DOMAIN
+firebase deploy --only apphosting --project fir-testing-f96b1
+infra/deploy.sh cors https://supplier-carbon-web--fir-testing-f96b1.asia-southeast1.hosted.app
 ```
+
+The `cors` step only needs repeating if the web origin changes. `web/pnpm-workspace.yaml` lists the
+dependencies allowed to run install scripts; without it the App Hosting build stops on pnpm's
+"ignored build scripts" error.
+
+### Current deployment
+
+- Agent: https://supplier-carbon-agent-532444884362.asia-southeast1.run.app
+- Web: https://supplier-carbon-web--fir-testing-f96b1.asia-southeast1.hosted.app
 
 ### Checking the deployed stack
 

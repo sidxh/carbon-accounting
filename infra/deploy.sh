@@ -33,8 +33,12 @@ cmd_setup() {
   say "APIs"
   gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com \
     secretmanager.googleapis.com firestore.googleapis.com storage.googleapis.com iamcredentials.googleapis.com \
-    identitytoolkit.googleapis.com firebaserules.googleapis.com firebaseapphosting.googleapis.com \
-    solar.googleapis.com geocoding-backend.googleapis.com
+    identitytoolkit.googleapis.com firebaserules.googleapis.com firebaseapphosting.googleapis.com
+  # The Maps key may live in a different project from the Firebase one. Solar and Geocoding must be
+  # enabled where the key was created; set MAPS_PROJECT to that project id.
+  if [ -n "${MAPS_PROJECT:-}" ]; then
+    gcloud services enable solar.googleapis.com geocoding-backend.googleapis.com --project "$MAPS_PROJECT"
+  fi
   say "Firestore ($REGION)"
   gcloud firestore databases describe --database='(default)' >/dev/null 2>&1 \
     || gcloud firestore databases create --database='(default)' --location="$REGION" --type=firestore-native
