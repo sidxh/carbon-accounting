@@ -73,7 +73,8 @@
     "sitesHint": "Mỗi dòng một nhà xưởng hoặc văn phòng có hóa đơn bạn sẽ tải lên.",
     "removeSite": "Xóa cơ sở {n}",
     "cancel": "Hủy",
-    "startedOver": "Đã xóa toàn bộ hóa đơn, câu trả lời và kết quả."
+    "startedOver": "Đã xóa toàn bộ hóa đơn, câu trả lời và kết quả.",
+    "siteAddress": "Địa chỉ (không bắt buộc, dùng để tra mái nhà)"
   },
   "documents": {
     "title": "Hóa đơn của bạn",
@@ -587,6 +588,70 @@
         "fail": "Bất thường so với các tháng khác",
         "confirmed": "Tháng bất thường, bạn đã xác nhận"
       }
+    }
+  },
+  "reduce": {
+    "title": "Bạn có thể giảm phát thải ở đâu",
+    "lede": "Điện mặt trời áp mái theo đúng mức điện nhà máy dùng, cùng những thay đổi tác động nhiều nhất tới số liệu. Là ước tính, có nguồn.",
+    "sites": "Địa điểm",
+    "needInventory": "Hãy tính bảng kiểm kê trước",
+    "needInventoryBody": "Gợi ý giảm phát thải dựa trên số liệu của chính bạn, nên chỉ xuất hiện sau khi đã tính bảng kiểm kê.",
+    "toInventory": "Quay lại bảng kiểm kê",
+    "locate": {
+      "title": "Địa điểm này ở đâu?",
+      "hint": "Chúng tôi dùng địa chỉ để tra mái nhà và lượng nắng. Chỉ dùng cho việc này.",
+      "address": "Địa chỉ",
+      "placeholder": "Số nhà, đường, quận/huyện, tỉnh/thành",
+      "find": "Tìm trên bản đồ",
+      "again": "Tra cứu lại",
+      "matched": "Khớp với:"
+    },
+    "solar": {
+      "title": "Điện mặt trời áp mái",
+      "error": "Chưa tra được mái nhà: {msg}",
+      "headline": "Điện mặt trời có thể đáp ứng khoảng {pct}% điện bạn dùng và giảm khoảng {t} tCO2e mỗi năm.",
+      "payback": "Thời gian hoàn vốn khoảng {years} năm.",
+      "measured": "Đo từ ảnh mái nhà của Google ({quality}, {year})",
+      "estimated": "Ước tính từ dữ liệu nắng và diện tích mái bạn nhập",
+      "size": "Công suất",
+      "sizeValue": "{kwp} kWp, {kwh} kWh mỗi năm",
+      "panels": "{n} tấm",
+      "cost": "Chi phí lắp đặt",
+      "costValue": "khoảng {amount} {cur}",
+      "saving": "Tiết kiệm mỗi năm",
+      "savingValue": "khoảng {amount} {cur} với giá {price} {cur}/kWh, theo {source}",
+      "market": "Phạm vi 2 (theo thị trường)",
+      "marketValue": "giảm khoảng {t} tCO2e",
+      "roofHint": "Google chưa có ảnh mái nhà ở khu vực này nên chúng tôi dùng dữ liệu nắng. Hãy cho biết diện tích mái có thể dùng để chúng tôi ước tính.",
+      "roofLabel": "Diện tích mái (m2)",
+      "roofSave": "Ước tính",
+      "unavailable": "Chưa có ước tính điện mái nhà cho địa điểm này."
+    },
+    "levers": {
+      "title": "Những cách giảm khác",
+      "range": "khoảng {lo}-{hi} tCO2e mỗi năm",
+      "single": "khoảng {n} tCO2e mỗi năm",
+      "worse": "Sẽ làm tăng khoảng {n} tCO2e mỗi năm với lưới điện của bạn",
+      "marketOnly": "Chỉ theo thị trường",
+      "how": "Cách chúng tôi ước tính",
+      "cost": {
+        "low": "Chi phí thấp",
+        "medium": "Chi phí vừa",
+        "high": "Chi phí cao"
+      }
+    },
+    "scenario": {
+      "title": "Nếu bạn thực hiện",
+      "before": "Hiện tại",
+      "after": "Sau đó",
+      "saves": "Giảm khoảng {t} tCO2e mỗi năm, tương đương {pct}% Phạm vi 1 và 2.",
+      "market": "Chứng chỉ sẽ giảm thêm khoảng {t} tCO2e Phạm vi 2 theo thị trường."
+    },
+    "disclaimer": "Đây là ước tính để hỗ trợ quyết định, không phải cam kết. Hãy xin báo giá trước khi đầu tư.",
+    "card": {
+      "title": "Bạn có thể giảm phát thải ở đâu",
+      "body": "Điện mặt trời áp mái theo mức dùng thực tế, cùng những thay đổi tác động nhiều nhất.",
+      "cta": "Xem gợi ý giảm phát thải"
     }
   }
 }

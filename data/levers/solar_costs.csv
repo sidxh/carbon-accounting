@@ -1,0 +1,4 @@
+country,currency,per_kwp,source_name,source_url,note
+VN,VND,16500000,Analyst estimate (about USD 650 per kWp installed commercial rooftop),,"Commercial rooftop PV installed cost. VERIFY with a local quote"
+JP,JPY,260000,Analyst estimate (industrial rooftop PV installed cost),,"VERIFY with a local quote"
+AU,AUD,1100,Analyst estimate (commercial rooftop PV installed cost),,"Before incentives. VERIFY with a local quote"

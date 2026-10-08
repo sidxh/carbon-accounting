@@ -1,0 +1,20 @@
+{
+  "name": "buildings/ChIJexample",
+  "center": {"latitude": 34.9886, "longitude": 137.0022},
+  "imageryDate": {"year": 2023, "month": 3, "day": 29},
+  "imageryQuality": "HIGH",
+  "solarPotential": {
+    "maxArrayPanelsCount": 68,
+    "maxArrayAreaMeters2": 133.0,
+    "maxSunshineHoursPerYear": 1480.0,
+    "panelCapacityWatts": 400,
+    "panelHeightMeters": 1.879,
+    "panelWidthMeters": 1.045,
+    "wholeRoofStats": {"areaMeters2": 305.0},
+    "solarPanelConfigs": [
+      {"panelsCount": 4, "yearlyEnergyDcKwh": 2190.0},
+      {"panelsCount": 20, "yearlyEnergyDcKwh": 10600.0},
+      {"panelsCount": 68, "yearlyEnergyDcKwh": 35934.9}
+    ]
+  }
+}

@@ -3,17 +3,34 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import time
 import urllib.request
 
-WEB = "http://localhost:3000"
+# Local by default. To drive a deployed stack, set E2E_WEB_URL and E2E_AGENT_URL, plus
+# E2E_OTP (the fixed code of a Firebase "phone number for testing") and E2E_PHONES
+# (a comma-separated list of those test numbers, one per supplier the script creates).
+WEB = os.environ.get("E2E_WEB_URL", "http://localhost:3000").rstrip("/")
+AGENT_URL = os.environ.get("E2E_AGENT_URL", "http://localhost:8000").rstrip("/")
 AUTH_EMU = "http://127.0.0.1:9099"
 PROJECT = "fir-testing-f96b1"
 
 
+def pick_phone(index: int, fresh: str) -> str:
+    """The index-th configured test number when E2E_PHONES is set, else a fresh local one."""
+    pool = [p.strip() for p in os.environ.get("E2E_PHONES", "").split(",") if p.strip()]
+    if not pool:
+        return fresh
+    if index >= len(pool):
+        raise SystemExit(f"E2E_PHONES has {len(pool)} number(s); this script needs at least {index + 1}")
+    return pool[index]
+
+
 def emulator_code(phone: str) -> str:
-    """The Auth emulator exposes generated SMS codes for exactly this purpose."""
+    """The Auth emulator exposes generated SMS codes; a deployed stack uses a fixed test-number code."""
+    if os.environ.get("E2E_OTP"):
+        return os.environ["E2E_OTP"]
     url = f"{AUTH_EMU}/emulator/v1/projects/{PROJECT}/verificationCodes"
     data = json.loads(urllib.request.urlopen(url).read())
     codes = [c for c in data.get("verificationCodes", []) if c.get("phoneNumber") == phone]
@@ -31,6 +48,10 @@ def type_code(page, code: str) -> None:
 
 
 def sign_in(page, phone: str, wrong_first: bool = False) -> None:
+    if os.environ.get("E2E_OTP"):
+        # Deployed Auth shows a reCAPTCHA image challenge to headless browsers. Test numbers
+        # may skip it, via a switch the web app reads from window (see web/src/lib/firebase.ts).
+        page.add_init_script("window.__E2E_NO_RECAPTCHA = true")
     page.goto(f"{WEB}/sign-in")
     page.get_by_label(re.compile("Mobile number|Số điện thoại|携帯電話番号")).fill(phone)
     page.get_by_role("button", name=re.compile("Send code|Gửi mã|コードを送信")).click()
@@ -49,16 +70,18 @@ def sign_in(page, phone: str, wrong_first: bool = False) -> None:
         pass
 
 
-def fill_setup(page, name: str, site: str, language: str = "vi") -> None:
+def fill_setup(page, name: str, site: str, language: str = "vi", country: str = "VN", address: str | None = None) -> None:
     page.wait_for_selector("form.card")
     page.locator("form.card input").first.fill(name)
     selects = page.locator("form.card select")
-    selects.nth(0).select_option("VN")
+    selects.nth(0).select_option(country)
     selects.nth(1).select_option(language)
     dates = page.locator("form.card input[type=date]")
     dates.nth(0).fill("2025-01-01")
     dates.nth(1).fill("2025-12-31")
     page.locator("form.card input[placeholder]").nth(0).fill(site)
+    if address:
+        page.locator("form.card input[placeholder]").nth(2).fill(address)
     page.get_by_role("button", name=re.compile("Save|Lưu|保存")).click()
     page.wait_for_url(re.compile(r"/home"), timeout=20000)
 

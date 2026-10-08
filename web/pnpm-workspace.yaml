@@ -1,0 +1,14 @@
+# pnpm 10 reads onlyBuiltDependencies, pnpm 11 reads allowBuilds. Both list the packages whose
+# install scripts may run; App Hosting's builder fails the install if any are left undecided.
+onlyBuiltDependencies:
+  - "@firebase/util"
+  - "@parcel/watcher"
+  - "@swc/core"
+  - protobufjs
+  - unrs-resolver
+allowBuilds:
+  "@firebase/util": true
+  "@parcel/watcher": true
+  "@swc/core": true
+  protobufjs: true
+  unrs-resolver: true

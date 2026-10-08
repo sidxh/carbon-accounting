@@ -92,7 +92,19 @@ class GcsStorage(Storage):
         return self.bucket.blob(key).exists()
 
     def url(self, key: str) -> str:
-        return self.bucket.blob(key).generate_signed_url(expiration=timedelta(hours=6), version="v4")
+        blob = self.bucket.blob(key)
+        creds = self.client._credentials
+        if hasattr(creds, "signer"):  # a service-account key file
+            return blob.generate_signed_url(expiration=timedelta(hours=6), version="v4")
+        # Cloud Run's metadata credentials hold no private key, so ask the IAM API to sign.
+        # The service account needs roles/iam.serviceAccountTokenCreator on itself.
+        import google.auth.transport.requests
+
+        creds.refresh(google.auth.transport.requests.Request())
+        return blob.generate_signed_url(
+            expiration=timedelta(hours=6), version="v4",
+            service_account_email=creds.service_account_email, access_token=creds.token,
+        )
 
     def delete_prefix(self, prefix: str) -> None:
         for blob in self.client.list_blobs(self.bucket, prefix=prefix):

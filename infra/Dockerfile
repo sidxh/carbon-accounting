@@ -15,7 +15,15 @@ WORKDIR /srv
 COPY agent/pyproject.toml agent/README.md ./
 COPY agent/app ./app
 COPY data/factors ./data/factors
+COPY data/price_bands ./data/price_bands
+COPY data/levers ./data/levers
 RUN uv pip install --system --no-cache ".[pdf]"
 
-ENV PORT=8080 PYTHONUNBUFFERED=1 FACTORS_DIR=/srv/data/factors
+# Data paths are absolute: inside the image the package no longer sits two levels under the
+# repo root, so the defaults in settings.py would point nowhere. Cloud Run's filesystem is
+# read-only apart from /tmp, which is where the two response caches go. Both are best effort.
+ENV PORT=8080 PYTHONUNBUFFERED=1 \
+    FACTORS_DIR=/srv/data/factors PRICE_BANDS_DIR=/srv/data/price_bands LEVERS_DIR=/srv/data/levers \
+    GEMINI_CACHE_DIR=/tmp/gemini SOLAR_CACHE_DIR=/tmp/solar LOCAL_STORAGE_DIR=/tmp/storage \
+    STORAGE_BACKEND=gcs
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]

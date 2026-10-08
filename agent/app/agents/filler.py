@@ -29,6 +29,7 @@ from openpyxl.styles import PatternFill
 from openpyxl.utils import get_column_letter
 from pydantic import BaseModel, Field
 
+from ..advisor import Advice, grid_factor_of, rank_levers
 from ..gemini import get_gemini
 from ..models import Assumption, InventoryLine, SupplierProfile
 from ..repo import InventorySnapshot
@@ -186,6 +187,26 @@ def _methodology(profile: SupplierProfile, snap: InventorySnapshot, lines: list[
     return text
 
 
+def _draft_reductions(advice: Advice | None, lines: list[InventoryLine]) -> str | None:
+    """A starting point for "what are you doing to cut emissions", from the advisor's ranked levers.
+
+    Phrased as options under consideration, never as things done: the supplier
+    decides what is true and edits or deletes it.
+    """
+    levers = advice.levers if advice else rank_levers(lines=lines, grid_factor=grid_factor_of(lines))
+    items: list[str] = []
+    s = advice.solar if advice else None
+    if s and s.available and s.annual_kwh > 0:
+        items.append(f"rooftop solar of about {s.kwp:,.0f} kWp, covering about {s.share_of_electricity:.0%} of electricity "
+                     f"and avoiding about {s.avoided_location_kg / 1000:,.0f} tCO2e a year")
+    for lv in [l for l in levers if l.beneficial][:3]:
+        lo, hi = lv.saved_min_kg / 1000, lv.saved_max_kg / 1000
+        items.append(f"{lv.name.lower()} (about {lo:,.1f}-{hi:,.1f} tCO2e a year)" if hi - lo > 0.05 else f"{lv.name.lower()} (about {hi:,.1f} tCO2e a year)")
+    if not items:
+        return None
+    return "DRAFT, please confirm. Options we are considering: " + "; ".join(items) + ". Figures are estimates from our reduction advisor, not commitments."
+
+
 def answer_all(
     cells: list[QuestionCell],
     mapping: MappingResult,
@@ -195,6 +216,7 @@ def answer_all(
     lines: list[InventoryLine],
     assumptions: list[Assumption],
     customer_share: float | None = None,
+    advice: Advice | None = None,
 ) -> list[Answer]:
     t = snap.totals
     by_id = {c.id: c for c in cells}
@@ -256,8 +278,14 @@ def answer_all(
                     src = "calculator × customer share"
                 else:
                     val, flagged, reason, src = None, True, "customer's share of purchases not provided", "-"
-            case "reduction_target" | "reduction_activities":
-                val, flagged, reason, src = None, True, "to be stated by the supplier — not derivable from bills", "-"
+            case "reduction_target":
+                val, flagged, reason, src = None, True, "a target is a commitment: to be stated by the supplier", "-"
+            case "reduction_activities":
+                val = _draft_reductions(advice, lines)
+                if val:
+                    flagged, reason, src = True, "drafted from the reduction advisor; confirm before sending", "reduction advisor (draft)"
+                else:
+                    val, flagged, reason, src = None, True, "to be stated by the supplier — not derivable from bills", "-"
             case _:
                 val, flagged, reason = None, True, f"unmapped field {m.field}"
 
@@ -308,6 +336,7 @@ def fill_workbook(
     lines: list[InventoryLine],
     assumptions: list[Assumption],
     customer_share: float | None = None,
+    advice: Advice | None = None,
 ) -> tuple[bytes, list[Answer], int]:
     """Returns the filled workbook, the answers, and the answer-column offset
     (kept on the record so the workbook can be rewritten after an edit)."""
@@ -317,6 +346,6 @@ def fill_workbook(
         raise ValueError("no questions found in the workbook")
     mapping = _map_questions(cells)
     answers = answer_all(cells, mapping, profile=profile, snap=snap, lines=lines, assumptions=assumptions,
-                         customer_share=customer_share)
+                         customer_share=customer_share, advice=advice)
     offset = max(1, mapping.answer_column_offset)
     return write_answers(template, answers, offset), answers, offset

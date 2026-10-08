@@ -10,6 +10,8 @@ from __future__ import annotations
 import uuid
 from datetime import date
 
+from . import solar
+from .advisor import Advice, advise
 from .agents.extractor import ExtractedDocument, extract, to_activity_lines
 from .calculator import compute
 from .factor_library import get_library
@@ -262,3 +264,41 @@ def build_evidence(repo: Repo, uid: str, pid: str, lines: list[InventoryLine], *
         if len(out) >= limit:
             break
     return out
+
+
+# --- reduction advisor -----------------------------------------------------------------
+
+def default_site_id(profile: SupplierProfile) -> str | None:
+    """The site the advisor looks at when none is named: the first one that has been located."""
+    located = [s for s in profile.sites if s.lat is not None]
+    return (located or profile.sites or [None])[0].id if (located or profile.sites) else None
+
+
+def build_advice(repo: Repo, profile: SupplierProfile, pid: str, site_id: str | None) -> dict:
+    """The advisor's answer for one site, with the Solar API / PVGIS lookups it needs.
+
+    Never raises on a lookup failure: the supplier still gets the levers, plus a
+    message saying why the solar part is missing. Lookups are cached on disk.
+    """
+    lines, snap = repo.list_inventory(profile.id, pid)
+    if snap is None:
+        raise LookupError("inventory not computed")
+    site = next((s for s in profile.sites if s.id == site_id), None)
+    building = pvgis = None
+    coverage, error = "none", None
+    if site is not None and site.lat is not None and site.lng is not None:
+        try:
+            building = solar.building_insights(site.lat, site.lng)
+            if building is not None:
+                coverage = "solar_api"
+            else:
+                pvgis = solar.pvgis_yield(site.lat, site.lng)
+                coverage = "pvgis"
+        except solar.SolarError as e:
+            error = str(e)
+    advice = advise(
+        inventory=lines, activity=repo.list_activity_lines(profile.id, pid), country=profile.country, site_id=site_id,
+        single_site=len(profile.sites) <= 1, building=building, pvgis_kwh_per_kwp=pvgis,
+        roof_area_m2=site.roof_area_m2 if site else None,
+    )
+    return {"site": site, "located": bool(site and site.lat is not None), "coverage": coverage, "error": error, "advice": advice}

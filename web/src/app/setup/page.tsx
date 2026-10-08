@@ -27,7 +27,7 @@ function Form({ profile, uid }: { profile: SupplierProfile | null; uid: string }
     language: profile?.language ?? locale,
     fiscal_year_start: profile?.fiscal_year_start ?? "2025-01-01",
     fiscal_year_end: profile?.fiscal_year_end ?? "2025-12-31",
-    sites: profile?.sites.map((s) => ({ name: s.name, country: s.country, region: s.region ?? "" })) ?? [{ name: "", country: profile?.country ?? "VN", region: "" }],
+    sites: profile?.sites.map((s) => ({ name: s.name, country: s.country, region: s.region ?? "", address: s.address ?? "" })) ?? [{ name: "", country: profile?.country ?? "VN", region: "", address: "" }],
     sector: profile?.sector ?? "",
     revenue: profile?.revenue?.toString() ?? "",
     revenue_currency: profile?.revenue_currency ?? "",
@@ -46,7 +46,7 @@ function Form({ profile, uid }: { profile: SupplierProfile | null; uid: string }
         sector: f.sector,
         revenue: f.revenue ? Number(f.revenue) : null,
         revenue_currency: f.revenue_currency || null,
-        sites: f.sites.filter((s) => s.name.trim()).map((s) => ({ name: s.name, country: s.country || f.country, region: s.region || null })),
+        sites: f.sites.filter((s) => s.name.trim()).map((s) => ({ name: s.name, country: s.country || f.country, region: s.region || null, address: s.address.trim() || null })),
       });
       toast(t("saved"));
       router.push("/home");
@@ -113,13 +113,14 @@ function Form({ profile, uid }: { profile: SupplierProfile | null; uid: string }
               <div key={i} className="grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
                 <input className="input" aria-label={`${t("siteName")} ${i + 1}`} placeholder={t("siteName")} value={s.name} onChange={(e) => { const sites = [...f.sites]; sites[i] = { ...s, name: e.target.value }; setF({ ...f, sites }); }} />
                 <input className="input" aria-label={`${t("siteRegion")} ${i + 1}`} placeholder={t("siteRegion")} value={s.region} onChange={(e) => { const sites = [...f.sites]; sites[i] = { ...s, region: e.target.value }; setF({ ...f, sites }); }} />
-                <button type="button" className="btn btn-ghost btn-icon" aria-label={t("removeSite", { n: i + 1 })} disabled={f.sites.length === 1} onClick={() => setF({ ...f, sites: f.sites.filter((_, j) => j !== i) })}>
+                <input className="input sm:col-span-2" aria-label={`${t("siteAddress")} ${i + 1}`} placeholder={t("siteAddress")} value={s.address} onChange={(e) => { const sites = [...f.sites]; sites[i] = { ...s, address: e.target.value }; setF({ ...f, sites }); }} />
+                <button type="button" className="btn btn-ghost btn-icon sm:col-start-3 sm:row-start-1" aria-label={t("removeSite", { n: i + 1 })} disabled={f.sites.length === 1} onClick={() => setF({ ...f, sites: f.sites.filter((_, j) => j !== i) })}>
                   <Trash2 className="size-4" aria-hidden />
                 </button>
               </div>
             ))}
           </div>
-          <button type="button" className="btn btn-ghost btn-sm mt-2 gap-1.5" onClick={() => setF({ ...f, sites: [...f.sites, { name: "", country: f.country, region: "" }] })}>
+          <button type="button" className="btn btn-ghost btn-sm mt-2 gap-1.5" onClick={() => setF({ ...f, sites: [...f.sites, { name: "", country: f.country, region: "", address: "" }] })}>
             <Plus className="size-4" aria-hidden /> {t("addSite")}
           </button>
         </fieldset>

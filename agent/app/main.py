@@ -22,6 +22,7 @@ from pydantic import BaseModel, Field
 
 from .agents import reconciler
 from .agents.filler import LOCKED_FIELDS, Answer, fill_workbook, write_answers
+from . import solar
 from .auth import Caller, current_caller, require_supplier
 from .checks import confirm_failed_checks
 from .exporters.methodology import build_pdf
@@ -29,9 +30,11 @@ from .models import ReportingPeriod, Request, Site, SupplierProfile
 from .reconcile_tools import summarise
 from .repo import QuestionnaireRecord, ReconcileState, get_repo
 from .services import (
+    build_advice,
     build_evidence,
     compute_inventory,
     default_period,
+    default_site_id,
     make_period,
     period_prefix,
     period_progress,
@@ -79,6 +82,13 @@ class SupplierIn(BaseModel):
     sector: str = ""
     revenue: float | None = None
     revenue_currency: str | None = None
+
+
+class LocateIn(BaseModel):
+    address: str | None = None
+    lat: float | None = Field(default=None, ge=-90, le=90)
+    lng: float | None = Field(default=None, ge=-180, le=180)
+    roof_area_m2: float | None = Field(default=None, gt=0, le=1_000_000)
 
 
 class PeriodIn(BaseModel):
@@ -185,7 +195,12 @@ def upsert_supplier(body: SupplierIn, caller: Caller = Depends(current_caller)):
     sites = []
     for s in body.sites:
         prev = old_by_id.get(s.id or "") or old_by_name.get(s.name.strip().lower())
-        sites.append(Site(id=prev.id if prev else f"site_{uuid.uuid4().hex[:6]}", name=s.name, country=s.country, region=s.region, address=s.address))
+        keep = {}
+        if prev and (prev.address or "") == (s.address or ""):      # same address: the lookup still stands
+            keep = {"lat": prev.lat, "lng": prev.lng, "formatted_address": prev.formatted_address}
+        if prev:
+            keep["roof_area_m2"] = prev.roof_area_m2
+        sites.append(Site(id=prev.id if prev else f"site_{uuid.uuid4().hex[:6]}", name=s.name, country=s.country, region=s.region, address=s.address, **keep))
     sites = sites or [Site(id="main", name="Main site", country=body.country)]
     profile = SupplierProfile(
         id=caller.uid, name=body.name, country=body.country.upper(), language=body.language,
@@ -497,6 +512,48 @@ def inventory(supplier_id: str, pid: str, caller: Caller = Depends(require_suppl
     }
 
 
+@app.post("/suppliers/{supplier_id}/sites/{site_id}/locate", response_model=SupplierProfile)
+def locate_site(supplier_id: str, site_id: str, body: LocateIn, caller: Caller = Depends(require_supplier)):
+    """Pin a site on the map for the reduction advisor: from its address (geocoded), from coordinates,
+    or just set the supplier's own roof area."""
+    profile = _profile_or_404(supplier_id)
+    site = next((s for s in profile.sites if s.id == site_id), None)
+    if site is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Site not found.")
+    upd: dict = {}
+    if body.address and body.address.strip():
+        try:
+            place = solar.geocode(body.address, site.country or profile.country)
+        except solar.SolarError as e:
+            raise HTTPException(status.HTTP_502_BAD_GATEWAY, str(e))
+        if place is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "We could not find that address. Try adding the district and city.")
+        upd.update(address=body.address.strip(), lat=place.lat, lng=place.lng, formatted_address=place.formatted_address)
+    elif body.lat is not None and body.lng is not None:
+        upd.update(lat=body.lat, lng=body.lng, formatted_address=f"{body.lat:.5f}, {body.lng:.5f}")
+    if body.roof_area_m2 is not None:
+        upd["roof_area_m2"] = body.roof_area_m2
+    if not upd:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Give an address, coordinates or a roof area.")
+    sites = [s.model_copy(update=upd) if s.id == site_id else s for s in profile.sites]
+    profile = profile.model_copy(update={"sites": sites})
+    get_repo().put_supplier(profile)
+    return profile
+
+
+@app.get("/suppliers/{supplier_id}/periods/{pid}/advisor")
+def advisor(supplier_id: str, pid: str, site_id: str | None = None, caller: Caller = Depends(require_supplier)):
+    """Where this site could cut emissions: rooftop solar sized to its own use, plus ranked levers."""
+    profile = _profile_or_404(supplier_id)
+    _period_or_404(supplier_id, pid)
+    if site_id is not None and not any(s.id == site_id for s in profile.sites):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Site not found.")
+    try:
+        return build_advice(get_repo(), profile, pid, site_id or default_site_id(profile))
+    except LookupError:
+        raise HTTPException(status.HTTP_409_CONFLICT, "Compute the inventory before looking at reductions.")
+
+
 @app.patch("/suppliers/{supplier_id}/periods/{pid}/activity-lines/{line_id}")
 def patch_line(supplier_id: str, pid: str, line_id: str, body: LinePatch, caller: Caller = Depends(require_supplier)):
     """Inline correction from the inventory view. Recomputes so the numbers never drift from the lines."""
@@ -586,9 +643,13 @@ def fill_request_questionnaire(
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Upload the customer's questionnaire first.")
     share = customer_share if customer_share is not None else req.customer_share
     try:
+        advice = build_advice(repo, profile, period.id, default_site_id(profile))["advice"]
+    except Exception:       # the draft reduction answer is a nicety; never block the questionnaire on it
+        advice = None
+    try:
         filled, answers, offset = fill_workbook(
             template, profile=profile.for_period(period), snap=snap, lines=lines,
-            assumptions=repo.list_assumptions(supplier_id, period.id), customer_share=share,
+            assumptions=repo.list_assumptions(supplier_id, period.id), customer_share=share, advice=advice,
         )
     except ValueError as e:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, str(e))

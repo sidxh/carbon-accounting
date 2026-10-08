@@ -1,0 +1,6 @@
+# Builds the agent image from the repo root (the Dockerfile copies agent/ and data/).
+#   gcloud builds submit --config infra/cloudbuild.yaml --substitutions _IMAGE=... .
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args: ["build", "-f", "infra/Dockerfile", "-t", "${_IMAGE}", "."]
+images: ["${_IMAGE}"]

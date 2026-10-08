@@ -23,7 +23,7 @@ import sys
 import time
 from pathlib import Path
 
-from .e2e_common import WEB, chat_bubbles, fill_setup, locked_steps, new_request, sign_in, upload
+from .e2e_common import WEB, pick_phone, chat_bubbles, fill_setup, locked_steps, new_request, sign_in, upload
 
 ROOT = Path(__file__).resolve().parents[2]
 AGENT = ROOT / "agent"
@@ -43,7 +43,7 @@ def step(name: str, page, ok: bool = True) -> None:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--headed", action="store_true")
-    ap.add_argument("--phone", default="+8493" + str(int(time.time()))[-7:], help="default: a fresh supplier")
+    ap.add_argument("--phone", default=pick_phone(0, "+8493" + str(int(time.time()))[-7:]), help="default: a fresh supplier")
     ap.add_argument("--answer", default="Có, lò vẫn chạy bình thường như các tháng khác.")
     ap.add_argument("--resume", action="store_true", help="sign in to an existing supplier with a computed inventory and run from the inventory step")
     args = ap.parse_args()

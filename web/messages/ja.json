@@ -73,7 +73,8 @@
     "sitesHint": "請求書をアップロードする工場や事業所ごとに1行。",
     "removeSite": "拠点{n}を削除",
     "cancel": "キャンセル",
-    "startedOver": "請求書、回答、結果をすべて削除しました。"
+    "startedOver": "請求書、回答、結果をすべて削除しました。",
+    "siteAddress": "住所（任意。屋根の照会に使います）"
   },
   "documents": {
     "title": "請求書",
@@ -587,6 +588,70 @@
         "fail": "他の月と比べて異常",
         "confirmed": "異常な月を確認済み"
       }
+    }
+  },
+  "reduce": {
+    "title": "排出量を減らせる場所",
+    "lede": "拠点の使用量に合わせた屋根置き太陽光と、数値への影響が大きい対策です。根拠付きの試算です。",
+    "sites": "拠点",
+    "needInventory": "先にインベントリを計算してください",
+    "needInventoryBody": "削減のヒントはご自身の数値に基づくため、インベントリの計算後に表示されます。",
+    "toInventory": "インベントリに戻る",
+    "locate": {
+      "title": "この拠点はどこですか",
+      "hint": "住所から屋根と日照を調べます。この目的以外には使いません。",
+      "address": "住所",
+      "placeholder": "番地、区、市",
+      "find": "地図で探す",
+      "again": "もう一度調べる",
+      "matched": "一致:"
+    },
+    "solar": {
+      "title": "屋根置き太陽光",
+      "error": "屋根の照会がうまくいきませんでした: {msg}",
+      "headline": "太陽光で電力の約{pct}%をまかない、年間約{t} tCO2eを削減できる可能性があります。",
+      "payback": "投資回収は約{years}年です。",
+      "measured": "Googleの屋根画像から算出（{quality}、{year}年）",
+      "estimated": "日照データと入力いただいた屋根面積からの推定",
+      "size": "規模",
+      "sizeValue": "{kwp} kWp、年間{kwh} kWh",
+      "panels": "{n}枚",
+      "cost": "設置費用",
+      "costValue": "約{amount} {cur}",
+      "saving": "年間の節約額",
+      "savingValue": "約{amount} {cur}（{price} {cur}/kWh、{source}）",
+      "market": "スコープ2（マーケット基準）",
+      "marketValue": "約{t} tCO2e削減",
+      "roofHint": "この場所はGoogleの屋根画像がないため、日照データを使います。使える屋根面積を教えてください。",
+      "roofLabel": "屋根面積（m2）",
+      "roofSave": "推定する",
+      "unavailable": "この拠点の屋根置き太陽光の推定はまだありません。"
+    },
+    "levers": {
+      "title": "ほかの削減策",
+      "range": "年間約{lo}〜{hi} tCO2e",
+      "single": "年間約{n} tCO2e",
+      "worse": "お客様の電力網では年間約{n} tCO2e増えます",
+      "marketOnly": "マーケット基準のみ",
+      "how": "推定の根拠",
+      "cost": {
+        "low": "低コスト",
+        "medium": "中コスト",
+        "high": "高コスト"
+      }
+    },
+    "scenario": {
+      "title": "実施した場合",
+      "before": "現在",
+      "after": "実施後",
+      "saves": "年間約{t} tCO2e削減。スコープ1・2の{pct}%に相当します。",
+      "market": "証書でマーケット基準のスコープ2がさらに約{t} tCO2e減ります。"
+    },
+    "disclaimer": "判断の参考となる試算であり、約束ではありません。投資の前に見積もりを取ってください。",
+    "card": {
+      "title": "排出量を減らせる場所",
+      "body": "使用量に合わせた屋根置き太陽光と、数値への影響が大きい対策。",
+      "cta": "削減のヒントを見る"
     }
   }
 }
