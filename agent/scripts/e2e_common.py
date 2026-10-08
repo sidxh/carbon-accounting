@@ -48,6 +48,10 @@ def type_code(page, code: str) -> None:
 
 
 def sign_in(page, phone: str, wrong_first: bool = False) -> None:
+    if os.environ.get("E2E_OTP"):
+        # Deployed Auth shows a reCAPTCHA image challenge to headless browsers. Test numbers
+        # may skip it, via a switch the web app reads from window (see web/src/lib/firebase.ts).
+        page.add_init_script("window.__E2E_NO_RECAPTCHA = true")
     page.goto(f"{WEB}/sign-in")
     page.get_by_label(re.compile("Mobile number|Số điện thoại|携帯電話番号")).fill(phone)
     page.get_by_role("button", name=re.compile("Send code|Gửi mã|コードを送信")).click()
