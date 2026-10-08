@@ -9,9 +9,11 @@ import { cn } from "@/lib/cn";
 import { usePageVisible } from "./hero-demo";
 
 // A real, lit 3D earth (three.js): a pale marble ocean, leafy green continents
-// traced from Natural Earth, slowly turning. A factory in South America turns
-// with it and smokes; one truck drives over it from the far side to the near
-// side, one plane circles higher up, and both leave puffs behind. Three gas tags float beside it and tick their numbers.
+// traced from Natural Earth, slowly turning. A factory in South America, and an
+// offshore rig and two container ships across the Pacific, turn with it and
+// smoke; one truck drives over it from the far side to the near side, one plane
+// circles higher up, and both leave puffs behind. Gas tags float beside it and
+// tick their numbers.
 //
 // three.js and the map are loaded on demand so they never weigh on other pages.
 
@@ -217,6 +219,7 @@ async function buildStage(host: HTMLDivElement): Promise<Stage> {
   scene.add(planeOrbit);
 
   // A factory stands on the land and turns with the earth; each chimney smokes.
+  // (Ships and the rig below join `chimneyTops`, so they smoke too.)
   // Placed by latitude and longitude, matching how the equirectangular map wraps the sphere.
   const onSurface = (lat: number, lon: number, r: number) => {
     const phi = ((lon + 180) * Math.PI) / 180, theta = ((90 - lat) * Math.PI) / 180;
@@ -250,11 +253,78 @@ async function buildStage(host: HTMLDivElement): Promise<Stage> {
   };
   factory(-22, -47); // São Paulo
 
+  // The Pacific is a long stretch of open ocean as the earth turns, so it gets the
+  // industry that lives at sea: an offshore rig with a flare, and container ships.
+  const place = (g: THREE.Group, lat: number, lon: number, r: number, heading = 0) => {
+    const n = onSurface(lat, lon, r);
+    g.position.copy(n);
+    g.quaternion.setFromUnitVectors(up, n.clone().normalize());
+    g.rotateY(heading);
+    g.scale.setScalar(1.6);
+    earth.add(g);
+  };
+
+  const rig = (lat: number, lon: number) => {
+    const g = new THREE.Group();
+    const steel = mat(0x6f6e69, 0.5), white = mat(0xe9e7e2, 0.6), red = mat(0xb3452f, 0.55);
+    for (const [x, z] of [[-0.026, -0.02], [0.026, -0.02], [-0.026, 0.02], [0.026, 0.02]]) {
+      const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.005, 0.006, 0.055, 10), steel);
+      leg.position.set(x, 0.0175, z); g.add(leg);
+    }
+    const deck = box(0.078, 0.009, 0.062, steel); deck.position.y = 0.045; g.add(deck);
+    const quarters = box(0.032, 0.022, 0.026, white); quarters.position.set(0.016, 0.06, 0.012); g.add(quarters);
+    const pad = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 0.003, 18), mat(0x0e7c72, 0.5)); pad.position.set(0.016, 0.073, 0.012); g.add(pad);
+    const derrick = new THREE.Mesh(new THREE.CylinderGeometry(0.002, 0.012, 0.07, 4), red); derrick.position.set(-0.018, 0.084, -0.012); g.add(derrick);
+    // Flare boom leaning out over the water, a small flame and smoke at its tip.
+    const boom = box(0.05, 0.004, 0.004, steel); boom.position.set(0.055, 0.058, -0.015); boom.rotation.z = 0.55; g.add(boom);
+    const flame = new THREE.Mesh(
+      new THREE.ConeGeometry(0.006, 0.016, 10),
+      new THREE.MeshStandardMaterial({ color: 0xf2b705, emissive: 0xf2b705, emissiveIntensity: 0.7, roughness: 0.4 }),
+    );
+    flame.position.set(0.077, 0.079, -0.015); g.add(flame);
+    const tip = new THREE.Object3D(); tip.position.set(0.077, 0.09, -0.015); g.add(tip);
+    chimneyTops.push(tip);
+    place(g, lat, lon, 1.0);
+  };
+
+  const ship = (lat: number, lon: number, heading: number) => {
+    const g = new THREE.Group();
+    const hull = box(0.17, 0.022, 0.042, mat(0x2b2b29, 0.5)); hull.position.y = 0.007; g.add(hull);
+    const stripe = box(0.172, 0.006, 0.044, mat(0xb3452f, 0.6)); stripe.position.y = -0.002; g.add(stripe);
+    // Containers in the site's colours, some stacked two high.
+    const colours = [0x0e7c72, 0xf2b705, 0xb3452f, 0x4b5f8a, 0xe9e7e2, 0x0a5d55];
+    for (let k = 0; k < 4; k++) {
+      const x = -0.058 + k * 0.03;
+      for (const [z, lvl] of [[-0.01, 0], [0.01, 0], [0, 1]] as const) {
+        if (lvl === 1 && k % 2) continue;
+        const c = box(0.026, 0.015, 0.018, mat(colours[(k * 3 + lvl + (z > 0 ? 1 : 0)) % colours.length], 0.6));
+        c.position.set(x, 0.026 + lvl * 0.016, lvl ? 0 : z); g.add(c);
+      }
+    }
+    const bridge = box(0.022, 0.032, 0.036, mat(0xfffefc, 0.5)); bridge.position.set(0.064, 0.034, 0); g.add(bridge);
+    const funnel = new THREE.Mesh(new THREE.CylinderGeometry(0.005, 0.006, 0.02, 12), mat(0xb3452f, 0.5)); funnel.position.set(0.064, 0.06, 0); g.add(funnel);
+    const top = new THREE.Object3D(); top.position.set(0.064, 0.072, 0); g.add(top);
+    chimneyTops.push(top);
+    place(g, lat, lon, 1.0, heading);
+  };
+
+  rig(19, -152); // off Hawaii
+  ship(4, -172, 0.4); // mid-Pacific
+  ship(-14, -128, -0.3); // eastern Pacific
+
+  // A marker in the middle of the Pacific: while it faces the camera the earth
+  // spins faster, so the long stretch of open ocean goes by quickly.
+  const pacific = new THREE.Object3D();
+  pacific.position.copy(onSurface(0, -165, 1));
+  earth.add(pacific);
+  const pacificAt = new THREE.Vector3();
+  let spin = 1; // current speed multiplier, eased toward its target
+
   // Puffs: a small pool of spheres that drift away from the earth, grow and fade.
   const puffGeo = new THREE.SphereGeometry(1, 12, 8);
   type Puff = { mesh: THREE.Mesh; mat: THREE.MeshStandardMaterial; age: number; life: number; vel: THREE.Vector3; size: number; alpha: number };
   const puffs: Puff[] = [];
-  for (let i = 0; i < 60; i++) {
+  for (let i = 0; i < 120; i++) {
     const pm = new THREE.MeshStandardMaterial({ color: 0xb9bdbb, roughness: 1, transparent: true, opacity: 0, depthWrite: false });
     const mesh = new THREE.Mesh(puffGeo, pm); mesh.visible = false; scene.add(mesh);
     puffs.push({ mesh, mat: pm, age: 1, life: 1, vel: new THREE.Vector3(), size: 0.01, alpha: 0.85 });
@@ -276,7 +346,11 @@ async function buildStage(host: HTMLDivElement): Promise<Stage> {
 
   const frame = (dt: number, boost = 0) => {
     // `boost` (0–3) comes from scroll speed: the earth spins up while the page moves.
-    earth.rotation.y += dt * (0.12 + boost * 0.9);
+    // Facing: 0 when the Pacific is round the side or behind, 1 when it faces us.
+    pacific.getWorldPosition(pacificAt);
+    const facing = Math.min(1, Math.max(0, (pacificAt.z - 0.15) / 0.6));
+    spin += ((1 + 3.5 * facing) - spin) * Math.min(1, dt * 3);
+    earth.rotation.y += dt * (0.12 * spin + boost * 0.9);
     tTruck += dt / 11;
     tPlane += dt / 7;
     truckSpin.rotation.x = tTruck * Math.PI * 2;
