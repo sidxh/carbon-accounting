@@ -13,7 +13,7 @@ import re
 import sys
 from pathlib import Path
 
-from .e2e_common import WEB, sign_in
+from .e2e_common import WEB, pick_phone, sign_in
 
 AGENT = Path(__file__).resolve().parents[1]
 SHOTS = AGENT / ".local_storage" / "e2e"
@@ -22,7 +22,7 @@ os.environ.setdefault("PLAYWRIGHT_BROWSERS_PATH", str(AGENT / ".playwright"))
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--phone", default="+84901112233")
+    ap.add_argument("--phone", default=pick_phone(0, "+84901112233"))
     ap.add_argument("--headed", action="store_true")
     args = ap.parse_args()
     from playwright.sync_api import sync_playwright

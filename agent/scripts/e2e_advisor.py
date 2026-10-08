@@ -24,13 +24,12 @@ import time
 import urllib.request
 from pathlib import Path
 
-from .e2e_common import WEB, fill_setup, new_request, sign_in, upload
+from .e2e_common import AGENT_URL, WEB, fill_setup, new_request, pick_phone, sign_in, upload
 
 ROOT = Path(__file__).resolve().parents[2]
 AGENT = ROOT / "agent"
 GOLDEN = ROOT / "data" / "golden"
 SHOTS = AGENT / ".local_storage" / "e2e"
-AGENT_URL = os.environ.get("AGENT_URL", "http://localhost:8000")
 os.environ.setdefault("PLAYWRIGHT_BROWSERS_PATH", str(AGENT / ".playwright"))
 COMPUTE = re.compile("Calculate|Compute|Tính|計算")
 FIND = re.compile("Find on map|Look up again|Tìm trên bản đồ|Tra cứu lại|地図で探す|もう一度調べる")
@@ -99,7 +98,7 @@ def main() -> int:
 
     with sync_playwright() as p:
         # --- JP: the Solar API path ------------------------------------------------------
-        browser, page, rid, _ = run_supplier(p, label="JP", phone=f"+8190{suffix}01", country="JP", language="ja", site="刈谷工場",
+        browser, page, rid, _ = run_supplier(p, label="JP", phone=pick_phone(0, f"+8190{suffix}01"), country="JP", language="ja", site="刈谷工場",
                                               address="Kariya, Aichi, Japan", coords=(34.9886, 137.0022), files=jp)
         page.get_by_text(re.compile("Solar could cover about")).wait_for(timeout=30000)
         measured = page.get_by_text(re.compile("Measured from Google roof imagery")).count() > 0
@@ -115,7 +114,7 @@ def main() -> int:
         browser.close()
 
         # --- VN: irradiance fallback + drafted answer ------------------------------------------
-        browser, page, rid, _ = run_supplier(p, label="VN", phone=f"+8493{suffix}02", country="VN", language="vi", site="Xưởng Nhơn Trạch",
+        browser, page, rid, _ = run_supplier(p, label="VN", phone=pick_phone(1, f"+8493{suffix}02"), country="VN", language="vi", site="Xưởng Nhơn Trạch",
                                               address="Khu công nghiệp Nhơn Trạch, Đồng Nai", coords=(10.7388, 106.9009), files=vn)
         page.get_by_text(re.compile("Google has no roof imagery")).wait_for(timeout=30000)
         print("[VN] asks for a roof area (no Google roof data here)")

@@ -17,7 +17,7 @@ import sys
 import time
 from pathlib import Path
 
-from .e2e_common import WEB, chat_bubbles, fill_setup, locked_steps, new_request, sign_in, upload
+from .e2e_common import AGENT_URL, WEB, pick_phone, chat_bubbles, fill_setup, locked_steps, new_request, sign_in, upload
 
 ROOT = Path(__file__).resolve().parents[2]
 AGENT = ROOT / "agent"
@@ -25,7 +25,7 @@ GOLDEN = ROOT / "data" / "golden"
 SHOTS = AGENT / ".local_storage" / "e2e"
 os.environ.setdefault("PLAYWRIGHT_BROWSERS_PATH", str(AGENT / ".playwright"))
 # A fresh supplier every run, so the suite is repeatable against a live emulator.
-PHONE2 = "+8498" + str(int(time.time()))[-7:]
+PHONE2 = pick_phone(0, "+8498" + str(int(time.time()))[-7:])
 
 
 def ok(name, cond, page=None):
@@ -162,11 +162,11 @@ def main() -> int:
         ok("data-persists-across-sign-out", page.locator("tbody tr:has(button[aria-expanded])").count() >= 12, page)
 
         # 6. Agent unreachable -> error card with retry, not an endless spinner --------------
-        page.route(re.compile(r"http://localhost:8000/.*"), lambda route: route.abort())
+        page.route(re.compile(re.escape(AGENT_URL) + r"/.*"), lambda route: route.abort())
         page.goto(f"{WEB}/home")
         page.get_by_role("button", name=re.compile("Try again")).wait_for(timeout=20000)
         ok("agent-down-shows-error-card", True, page)
-        page.unroute(re.compile(r"http://localhost:8000/.*"))
+        page.unroute(re.compile(re.escape(AGENT_URL) + r"/.*"))
         page.get_by_role("button", name=re.compile("Try again")).click()
         page.get_by_text("Toyota Boshoku").first.wait_for(timeout=20000)
         ok("retry-recovers", True)

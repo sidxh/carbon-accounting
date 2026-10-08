@@ -3,17 +3,34 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import time
 import urllib.request
 
-WEB = "http://localhost:3000"
+# Local by default. To drive a deployed stack, set E2E_WEB_URL and E2E_AGENT_URL, plus
+# E2E_OTP (the fixed code of a Firebase "phone number for testing") and E2E_PHONES
+# (a comma-separated list of those test numbers, one per supplier the script creates).
+WEB = os.environ.get("E2E_WEB_URL", "http://localhost:3000").rstrip("/")
+AGENT_URL = os.environ.get("E2E_AGENT_URL", "http://localhost:8000").rstrip("/")
 AUTH_EMU = "http://127.0.0.1:9099"
 PROJECT = "fir-testing-f96b1"
 
 
+def pick_phone(index: int, fresh: str) -> str:
+    """The index-th configured test number when E2E_PHONES is set, else a fresh local one."""
+    pool = [p.strip() for p in os.environ.get("E2E_PHONES", "").split(",") if p.strip()]
+    if not pool:
+        return fresh
+    if index >= len(pool):
+        raise SystemExit(f"E2E_PHONES has {len(pool)} number(s); this script needs at least {index + 1}")
+    return pool[index]
+
+
 def emulator_code(phone: str) -> str:
-    """The Auth emulator exposes generated SMS codes for exactly this purpose."""
+    """The Auth emulator exposes generated SMS codes; a deployed stack uses a fixed test-number code."""
+    if os.environ.get("E2E_OTP"):
+        return os.environ["E2E_OTP"]
     url = f"{AUTH_EMU}/emulator/v1/projects/{PROJECT}/verificationCodes"
     data = json.loads(urllib.request.urlopen(url).read())
     codes = [c for c in data.get("verificationCodes", []) if c.get("phoneNumber") == phone]

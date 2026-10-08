@@ -17,7 +17,7 @@ import sys
 import time
 from pathlib import Path
 
-from .e2e_common import WEB, chat_bubbles, fill_setup, new_request, sign_in, upload
+from .e2e_common import WEB, pick_phone, chat_bubbles, fill_setup, new_request, sign_in, upload
 
 ROOT = Path(__file__).resolve().parents[2]
 AGENT = ROOT / "agent"
@@ -39,7 +39,7 @@ def main() -> int:
         browser = p.chromium.launch(headless=True)
         ctx = browser.new_context(viewport={"width": 430, "height": 900}, device_scale_factor=2, locale="en-US")
         page = ctx.new_page()
-        sign_in(page, "+8493" + str(int(time.time()))[-7:])
+        sign_in(page, pick_phone(0, "+8493" + str(int(time.time()))[-7:]))
         if "/setup" not in page.url:
             page.goto(f"{WEB}/setup")
         fill_setup(page, "Công ty TNHH Cơ khí Minh Phát", "Xưởng Nhơn Trạch")

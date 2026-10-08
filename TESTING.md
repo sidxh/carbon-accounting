@@ -478,3 +478,76 @@ gated behind Blaze. That is the deploy-time move.
 
 Keep the three-terminal habit, watch the Emulator UI at :4000 while testing,
 and always stop the emulators with Ctrl-C so the export runs.
+
+## 4. Deploying to Google Cloud, and checking it
+
+Target: the existing Firebase project `fir-testing-f96b1`. The agent runs on Cloud
+Run, the web app on Firebase App Hosting, with Firestore, a Cloud Storage bucket,
+Secret Manager and Phone Auth around them. Region `asia-southeast1`.
+
+```mermaid
+flowchart LR
+    Browser["Browser"] --> Web["App Hosting: Next.js"]
+    Browser -->|"phone OTP"| Auth["Firebase Auth"]
+    Browser -->|"Bearer ID token"| Agent["Cloud Run: agent"]
+    Agent --> Fs["Firestore"]
+    Agent --> Gcs["Cloud Storage bucket"]
+    Agent -->|"secrets"| Sm["Secret Manager"]
+    Agent --> Gem["Gemini API"]
+    Agent --> Solar["Solar and Geocoding APIs"]
+```
+
+### One-time setup
+
+1. `gcloud auth login` and `firebase login` with the account that owns the trial.
+2. Link the trial billing account to the project (needed for Cloud Run, Cloud Build
+   and Phone Auth): `gcloud billing accounts list`, then
+   `gcloud billing projects link fir-testing-f96b1 --billing-account=ACCOUNT_ID`.
+3. `infra/deploy.sh setup` enables the APIs (including Solar and Geocoding), creates
+   Firestore, the bucket, the Artifact Registry repository and the agent's service
+   account, and deploys the Firestore rules.
+4. `infra/deploy.sh secrets` copies `GOOGLE_API_KEY` and `GOOGLE_MAPS_API_KEY` from
+   your `.env` into Secret Manager. Nothing is printed. In the Cloud console,
+   restrict the Maps key to the Solar API and Geocoding API.
+5. Firebase console, Authentication: turn on the Phone provider and add up to ten
+   "Phone numbers for testing", each with a fixed six-digit code. These skip real SMS
+   and cost nothing. Add your App Hosting domain under Settings, Authorized domains.
+6. Set a budget alert (Billing, Budgets and alerts), for example 2,000 INR, so the
+   trial credit cannot be spent unnoticed.
+
+### Each deploy
+
+```bash
+infra/deploy.sh agent            # Cloud Build, then Cloud Run; prints the agent URL
+```
+
+Web: create the App Hosting backend once (Firebase console, App Hosting, Get started),
+pointing at the GitHub repo with root directory `web/`, and fill `infra/apphosting.yaml`
+(copy to `web/apphosting.yaml`) with the agent URL and the web app's config. Pushes to
+`main` then roll out automatically. Afterwards allow the new origin on the agent:
+
+```bash
+infra/deploy.sh cors https://YOUR-APP-HOSTING-DOMAIN
+```
+
+### Checking the deployed stack
+
+The browser scripts run unchanged against the deployed URLs. Phone numbers must be the
+test numbers from step 5; each script run creates new suppliers, so give it numbers you
+have not used (delete old users in the Auth console to reuse them).
+
+```bash
+export E2E_WEB_URL=https://YOUR-APP-HOSTING-DOMAIN
+export E2E_AGENT_URL=https://YOUR-CLOUD-RUN-URL
+export E2E_OTP=123456                      # the fixed code of the test numbers
+export E2E_PHONES=+84901000001,+84901000002
+cd agent
+.venv/bin/python -m scripts.e2e_local      # uploads, inventory, questionnaire
+.venv/bin/python -m scripts.e2e_provenance
+.venv/bin/python -m scripts.e2e_checks
+E2E_PHONES=+84901000003,+84901000004 .venv/bin/python -m scripts.e2e_advisor
+```
+
+Differences from local to expect: real Gemini calls (the response cache is empty on a
+fresh instance, so the first run spends free-tier quota and is paced at 15 requests a
+minute), and signed download URLs for bill images and exports.
