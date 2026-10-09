@@ -97,8 +97,21 @@ jobs:
         run: |
           IMAGE="$REGION-docker.pkg.dev/$PROJECT_ID/supplier-carbon/agent:${GITHUB_SHA::10}"
           echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
-          # The deployer is not a project viewer, so it cannot stream build logs; it still waits for the result.
-          gcloud builds submit --project "$PROJECT_ID" --config infra/cloudbuild.yaml --substitutions "_IMAGE=$IMAGE" --suppress-logs .
+          # The deployer is not a project viewer, so gcloud cannot stream build logs and exits non-zero
+          # even when the build works. Start it asynchronously and poll the status instead.
+          BUILD_ID="$(gcloud builds submit --project "$PROJECT_ID" --config infra/cloudbuild.yaml \
+            --substitutions "_IMAGE=$IMAGE" --async --format='value(id)' .)"
+          echo "Cloud Build: https://console.cloud.google.com/cloud-build/builds/$BUILD_ID?project=$PROJECT_ID"
+          for i in $(seq 1 60); do
+            STATUS="$(gcloud builds describe "$BUILD_ID" --project "$PROJECT_ID" --format='value(status)')"
+            echo "build $STATUS"
+            case "$STATUS" in
+              SUCCESS) exit 0 ;;
+              FAILURE|CANCELLED|TIMEOUT|INTERNAL_ERROR|EXPIRED) exit 1 ;;
+            esac
+            sleep 10
+          done
+          exit 1
       - name: Deploy to Cloud Run
         run: |
           # Only the image changes: env vars, secrets and scaling stay as configured on the service.
