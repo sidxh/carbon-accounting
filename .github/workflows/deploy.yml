@@ -97,7 +97,8 @@ jobs:
         run: |
           IMAGE="$REGION-docker.pkg.dev/$PROJECT_ID/supplier-carbon/agent:${GITHUB_SHA::10}"
           echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
-          gcloud builds submit --project "$PROJECT_ID" --config infra/cloudbuild.yaml --substitutions "_IMAGE=$IMAGE" .
+          # The deployer is not a project viewer, so it cannot stream build logs; it still waits for the result.
+          gcloud builds submit --project "$PROJECT_ID" --config infra/cloudbuild.yaml --substitutions "_IMAGE=$IMAGE" --suppress-logs .
       - name: Deploy to Cloud Run
         run: |
           # Only the image changes: env vars, secrets and scaling stay as configured on the service.
