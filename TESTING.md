@@ -515,6 +515,15 @@ flowchart LR
 6. Set a budget alert (Billing, Budgets and alerts), for example 2,000 INR, so the
    trial credit cannot be spent unnoticed.
 
+### Automatic deploys
+
+A push to `main` runs `.github/workflows/deploy.yml`: tests first, then Cloud Run if `agent/`, `data/`
+or the Dockerfile changed, and App Hosting if `web/` changed. Pull requests run the tests only.
+GitHub authenticates to Google with Workload Identity Federation (pool `github`, service account
+`github-deployer`, trusted only for this repo's `main`), so there are no key files. The two repository
+variables `GCP_WIF_PROVIDER` and `GCP_DEPLOYER_SA` hold the identifiers. Watch runs with `gh run list`.
+The manual commands below still work for a deploy from your laptop.
+
 ### Each deploy
 
 ```bash

@@ -1,0 +1,125 @@
+# Test on every pull request; on a push to main, deploy whichever half changed.
+#   agent/, data/, infra/Dockerfile, infra/cloudbuild.yaml  -> Cloud Run
+#   web/, firebase.json                                      -> Firebase App Hosting
+# Google credentials come from Workload Identity Federation (no key files); the provider
+# only trusts this repository's main branch. The two values below are repository variables.
+name: ci-deploy
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  PROJECT_ID: fir-testing-f96b1
+  REGION: asia-southeast1
+  SERVICE: supplier-carbon-agent
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      agent: ${{ steps.f.outputs.agent }}
+      web: ${{ steps.f.outputs.web }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: f
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            agent:
+              - 'agent/**'
+              - 'data/factors/**'
+              - 'data/price_bands/**'
+              - 'data/levers/**'
+              - 'infra/Dockerfile'
+              - 'infra/cloudbuild.yaml'
+              - '.github/workflows/deploy.yml'
+            web:
+              - 'web/**'
+              - 'firebase.json'
+              - '.github/workflows/deploy.yml'
+
+  test-agent:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: agent
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v5
+      - run: uv pip install --system ".[dev]"
+      - run: python -m pytest -q
+
+  test-web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: web/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: npx tsc --noEmit
+      - run: pnpm lint
+
+  deploy-agent:
+    if: github.event_name != 'pull_request' && needs.changes.outputs.agent == 'true'
+    needs: [changes, test-agent]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOYER_SA }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - name: Build image
+        run: |
+          IMAGE="$REGION-docker.pkg.dev/$PROJECT_ID/supplier-carbon/agent:${GITHUB_SHA::10}"
+          echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
+          gcloud builds submit --project "$PROJECT_ID" --config infra/cloudbuild.yaml --substitutions "_IMAGE=$IMAGE" .
+      - name: Deploy to Cloud Run
+        run: |
+          # Only the image changes: env vars, secrets and scaling stay as configured on the service.
+          gcloud run deploy "$SERVICE" --project "$PROJECT_ID" --region "$REGION" --image "$IMAGE"
+      - name: Health check
+        run: |
+          URL="$(gcloud run services describe "$SERVICE" --project "$PROJECT_ID" --region "$REGION" --format='value(status.url)')"
+          for i in 1 2 3 4 5; do curl -fsS "$URL/health" && exit 0; sleep 5; done
+          exit 1
+
+  deploy-web:
+    if: github.event_name != 'pull_request' && needs.changes.outputs.web == 'true'
+    needs: [changes, test-web]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOYER_SA }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Deploy to App Hosting
+        run: npx -y firebase-tools@15 deploy --only apphosting --project "$PROJECT_ID" --non-interactive
