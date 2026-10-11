@@ -550,22 +550,87 @@ dependencies allowed to run install scripts; without it the App Hosting build st
 
 ### Checking the deployed stack
 
-The browser scripts run unchanged against the deployed URLs. Phone numbers must be the
-test numbers from step 5; each script run creates new suppliers, so give it numbers you
-have not used (delete old users in the Auth console to reuse them).
+The browser scripts cannot sign in to the deployed stack unattended. Firebase shows a reCAPTCHA
+image challenge to headless browsers, and it rejects the bypass that works for test numbers against the
+emulator. So production is verified by hand, then confirmed from the logs:
+
+1. Sign in on the deployed site with your own number (or a fixed-code test number from the Firebase
+   console) and walk the whole flow: setup, upload bills, reconcile, inventory, questionnaire, reduce.
+2. Open a bill from the inventory ("show me where") and download the filled workbook. These go through
+   signed Cloud Storage links, the part most likely to differ from local.
+3. Read the agent's request log. Every call should be 2xx apart from the 404 a brand-new user gets on
+   `GET /suppliers/{uid}` before setup:
 
 ```bash
-export E2E_WEB_URL=https://YOUR-APP-HOSTING-DOMAIN
-export E2E_AGENT_URL=https://YOUR-CLOUD-RUN-URL
-export E2E_OTP=123456                      # the fixed code of the test numbers
-export E2E_PHONES=+84901000001,+84901000002
-cd agent
-.venv/bin/python -m scripts.e2e_local      # uploads, inventory, questionnaire
-.venv/bin/python -m scripts.e2e_provenance
-.venv/bin/python -m scripts.e2e_checks
-E2E_PHONES=+84901000003,+84901000004 .venv/bin/python -m scripts.e2e_advisor
+gcloud logging read 'resource.type="cloud_run_revision" AND resource.labels.service_name="supplier-carbon-agent" AND (severity>=WARNING OR httpRequest.status>=400)' \
+  --project fir-testing-f96b1 --freshness 1d --limit 20 \
+  --format='value(timestamp,severity,httpRequest.status,httpRequest.requestUrl,textPayload)'
 ```
 
-Differences from local to expect: real Gemini calls (the response cache is empty on a
-fresh instance, so the first run spends free-tier quota and is paced at 15 requests a
-minute), and signed download URLs for bill images and exports.
+The scripts still accept `E2E_WEB_URL` and `E2E_AGENT_URL` (and `E2E_OTP` / `E2E_PHONES` for fixed-code
+test numbers) for a headed, human-assisted run. Differences from local to expect: real Gemini calls (the
+response cache is empty on a fresh instance, so the first run spends free-tier quota and is paced at 15
+requests a minute), and signed download URLs for bill images and exports.
+
+Run history:
+- 2026-10-11, manual run with a real number: upload, reconcile, compute, questionnaire, advisor and
+  locate all returned 200. Bill images and downloads returned 500 (`ACCESS_TOKEN_SCOPE_INSUFFICIENT`
+  while signing); fixed by signing with the `cloud-platform` scope.
+
+
+## 5. Where your data lives, and how to look at it
+
+Everything a supplier owns is keyed by their Firebase user id (uid). **There is no phone number in the
+Storage path, and the Firestore document id is the uid, not the number.** The phone number sits in
+Authentication, and since 2026-10 it is also copied onto the supplier document as `phone` (filled the next
+time that user opens the app).
+
+```mermaid
+flowchart LR
+    Auth["Authentication > Users: phone number + User UID"] -->|"same uid"| Fs["Firestore: suppliers/uid"]
+    Auth -->|"same uid"| Gcs["Bucket: suppliers/uid/..."]
+    Fs -->|"documents point at"| Gcs
+```
+
+| Question | Where to look |
+|---|---|
+| Which numbers have signed in? | Firebase console > Authentication > Users (https://console.firebase.google.com/project/fir-testing-f96b1/authentication/users). "Identifier" is the number, "User UID" the key, plus created and last sign-in. |
+| Whose data is this Firestore row? | The document id under `suppliers` is the uid. Paste it into the Users search box. The `phone` field on the document shows the number directly. |
+| Whose files are these? | The first folder under `suppliers/` in the bucket is the same uid. |
+| What data does a number have? | Copy its User UID, then open `suppliers/<uid>` in Firestore and `suppliers/<uid>/` in the bucket. |
+
+**Firestore** (https://console.firebase.google.com/project/fir-testing-f96b1/firestore/databases/-default-/data):
+`suppliers/{uid}` holds the profile (`country`, `language`, `sites`, `phone`). Underneath: `requests`,
+`questionnaires`, and `periods/{pid}` with `documents`, `activityLines`, `assumptions`, `reconcile/state`,
+`inventoryLines` and `inventory/snapshot`. Treat it as read-only; edits bypass the calculator.
+
+**Cloud Storage** (https://console.cloud.google.com/storage/browser/fir-testing-f96b1-bills?project=fir-testing-f96b1,
+a plain bucket, not the empty default one on the Firebase Storage tab):
+- `suppliers/{uid}/periods/{pid}/uploads/{docId}/<file>`: the bills as uploaded
+- `suppliers/{uid}/periods/{pid}/outputs/methodology-note.pdf`
+- `suppliers/{uid}/requests/{rid}/template.xlsx` and `.../outputs/{qid}/<name>-filled.xlsx`
+
+From a terminal: `gcloud storage ls -r gs://fir-testing-f96b1-bills/suppliers/`
+
+Also useful:
+- Agent logs: https://console.cloud.google.com/run/detail/asia-southeast1/supplier-carbon-agent/logs?project=fir-testing-f96b1
+- Web rollouts: https://console.firebase.google.com/project/fir-testing-f96b1/apphosting
+- Deploy runs: the repository's Actions tab, or `gh run list`
+- Secrets: https://console.cloud.google.com/security/secret-manager?project=fir-testing-f96b1
+- Spend: https://console.cloud.google.com/billing
+
+A user who opens the app but never saves Setup has an Authentication entry and no Firestore document
+(the agent answers 404 on `GET /suppliers/{uid}` until the first save).
+
+## 6. Custom domain: carbon.siddhantxh.com
+
+The site is reachable at `https://carbon.siddhantxh.com` as well as the App Hosting address.
+
+- **App Hosting** > `supplier-carbon-web` > Settings > Domains holds the domain. DNS is managed in
+  Cloudflare for siddhantxh.com: the records Firebase shows (an `A` record for `carbon` and a `fah-claim`
+  TXT record) must stay **DNS only** (grey cloud), or certificate issuance and renewal fail.
+- **Authentication > Settings > Authorized domains** must list `carbon.siddhantxh.com`.
+- **The agent must allow the origin.** CORS is a list, set in one call (it replaces the previous list):
+  `infra/deploy.sh cors https://supplier-carbon-web--fir-testing-f96b1.asia-southeast1.hosted.app https://carbon.siddhantxh.com`
+- **SMS wording** is fixed by Firebase ("<code> is your verification code for <domain>."). Only the domain
+  can change, and it follows the address the user signed in from.

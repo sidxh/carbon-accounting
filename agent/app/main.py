@@ -207,6 +207,7 @@ def upsert_supplier(body: SupplierIn, caller: Caller = Depends(current_caller)):
         fiscal_year_start=body.fiscal_year_start, fiscal_year_end=body.fiscal_year_end, sites=sites,
         sector=body.sector, revenue=body.revenue, revenue_currency=body.revenue_currency,
         created_at=existing.created_at if existing else datetime.now(timezone.utc),
+        phone=caller.phone or (existing.phone if existing else None),
     )
     repo.put_supplier(profile)
     # A first-run supplier gets a period for the FY they just typed, so the
@@ -218,7 +219,11 @@ def upsert_supplier(body: SupplierIn, caller: Caller = Depends(current_caller)):
 
 @app.get("/suppliers/{supplier_id}", response_model=SupplierProfile)
 def get_supplier(supplier_id: str, caller: Caller = Depends(require_supplier)):
-    return _profile_or_404(supplier_id)
+    profile = _profile_or_404(supplier_id)
+    if caller.phone and profile.phone != caller.phone:  # backfill suppliers created before the field existed
+        profile = profile.model_copy(update={"phone": caller.phone})
+        get_repo().put_supplier(profile)
+    return profile
 
 
 @app.delete("/suppliers/{supplier_id}/data")

@@ -48,7 +48,13 @@
     "noCode": "Chưa nhận được mã?",
     "resend": "Gửi lại",
     "resendIn": "Gửi lại sau {s}s",
-    "otherWays": "Cách đăng nhập khác"
+    "otherWays": "Cách đăng nhập khác",
+    "notSupported": "Hiện chưa gửi được SMS tới số của quốc gia này. Hỗ trợ: {countries}.",
+    "invalidPhone": "Số này có vẻ chưa đúng. Kiểm tra mã quốc gia và các chữ số.",
+    "tooMany": "Quá nhiều lần thử. Vui lòng đợi vài phút rồi thử lại.",
+    "captcha": "Chưa hoàn tất xác minh. Tải lại trang và thử lại.",
+    "network": "Không có kết nối. Kiểm tra mạng và thử lại.",
+    "codeExpired": "Mã đã hết hạn. Hãy yêu cầu mã mới."
   },
   "setup": {
     "title": "Về công ty của bạn",

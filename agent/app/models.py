@@ -110,6 +110,9 @@ class SupplierProfile(BaseModel):
     revenue: float | None = None
     revenue_currency: str | None = None
     created_at: datetime | None = None
+    # From the verified sign-in token, so a supplier document can be matched to a person in the
+    # Firestore console without opening Authentication. The uid (the document id) stays the key.
+    phone: str | None = None
 
     def for_period(self, period: "ReportingPeriod") -> "SupplierProfile":
         """The profile with this period's dates in the FY slots, so code that

@@ -4,7 +4,7 @@
 #   infra/deploy.sh setup     # billing check, APIs, Firestore, bucket, service account, rules
 #   infra/deploy.sh secrets   # copy GOOGLE_API_KEY / GOOGLE_MAPS_API_KEY from .env into Secret Manager (run it yourself)
 #   infra/deploy.sh agent     # build with Cloud Build and deploy to Cloud Run; prints the URL
-#   infra/deploy.sh cors URL  # allow the web origin on the agent (after App Hosting gives you the URL)
+#   infra/deploy.sh cors URL...  # allow these web origins on the agent (all of them, in one call)
 #
 # Needs: gcloud (gcloud auth login) and firebase (firebase login).
 set -euo pipefail
@@ -88,7 +88,10 @@ cmd_agent() {
 
 cmd_cors() {
   gcloud config set project "$PROJECT" >/dev/null
-  origins="http://localhost:3000,${1:?usage: deploy.sh cors https://your-web-origin}"
+  [ "$#" -ge 1 ] || { echo "usage: deploy.sh cors https://origin [https://origin ...]" >&2; exit 1; }
+  # Every web origin that may call the agent, plus localhost. List all of them: this replaces the setting.
+  origins="http://localhost:3000"
+  for o in "$@"; do origins="$origins,${o%/}"; done
   gcloud run services update "$SERVICE" --region "$REGION" --update-env-vars "^@^CORS_ORIGINS=$origins"
 }
 

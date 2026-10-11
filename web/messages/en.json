@@ -48,7 +48,13 @@
     "noCode": "No code yet?",
     "resend": "Send again",
     "resendIn": "Send again in {s}s",
-    "otherWays": "Other ways to sign in"
+    "otherWays": "Other ways to sign in",
+    "notSupported": "We can't text numbers from this country yet. Supported: {countries}.",
+    "invalidPhone": "That number doesn't look right. Check the country code and the digits.",
+    "tooMany": "Too many attempts. Wait a few minutes and try again.",
+    "captcha": "Verification didn't complete. Reload the page and try again.",
+    "network": "No connection. Check your network and try again.",
+    "codeExpired": "That code has expired. Request a new one."
   },
   "setup": {
     "title": "About your company",

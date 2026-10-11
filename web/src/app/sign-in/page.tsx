@@ -11,7 +11,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { motion } from "motion/react";
 import { OTPInput, REGEXP_ONLY_DIGITS } from "input-otp";
 import { ArrowLeft, ChevronDown, Smartphone } from "lucide-react";
@@ -20,9 +20,9 @@ import { useAuth } from "@/components/auth-provider";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { Wordmark } from "@/components/shell";
 import { firebaseAuth } from "@/lib/firebase";
+import { SUPPORTED_COUNTRIES, isSupportedNumber, signInErrorKey, supportedCountriesText } from "@/lib/phone-countries";
 
 const EMULATOR = process.env.NEXT_PUBLIC_USE_EMULATORS === "true";
-const CODES = [["+84", "VN"], ["+81", "JP"], ["+91", "IN"], ["+65", "SG"], ["+61", "AU"], ["+66", "TH"], ["+62", "ID"]] as const;
 
 /**
  * Six-digit code on input-otp: one real input (autofill, paste, caret,
@@ -63,6 +63,7 @@ function OtpInput({ value, onChange, onComplete, disabled }: { value: string; on
 
 export default function SignInPage() {
   const t = useTranslations("signIn");
+  const locale = useLocale();
   const router = useRouter();
   const { user, loading } = useAuth();
 
@@ -104,10 +105,20 @@ export default function SignInPage() {
     }
   }, [router, t]);
 
+  const showError = (code: string | undefined, step: "phone" | "code") => {
+    const key = signInErrorKey(code, step);
+    setError(key === "notSupported" ? t("notSupported", { countries: supportedCountriesText(locale) }) : t(key));
+  };
+
   async function sendCode(e?: React.FormEvent) {
     e?.preventDefault();
-    setBusy(true);
     setError("");
+    // A pasted international number from a country we cannot text: say so without a round trip.
+    if (!isSupportedNumber(phone)) {
+      setError(t("notSupported", { countries: supportedCountriesText(locale) }));
+      return;
+    }
+    setBusy(true);
     try {
       const auth = firebaseAuth();
       if (!recaptcha.current) {
@@ -117,8 +128,8 @@ export default function SignInPage() {
       setConfirmation(result);
       setCode("");
       setResendIn(30);
-    } catch {
-      setError(t("error"));
+    } catch (err) {
+      showError((err as { code?: string }).code, "phone");
       recaptcha.current?.clear();
       recaptcha.current = null;
     } finally {
@@ -133,8 +144,8 @@ export default function SignInPage() {
     try {
       await confirmation.confirm(value.trim());
       router.replace("/home");
-    } catch {
-      setError(t("wrongCode"));
+    } catch (err) {
+      showError((err as { code?: string }).code, "code");
       setCode("");
       setBusy(false);
     }
@@ -179,7 +190,7 @@ export default function SignInPage() {
               <div className="flex gap-2">
                 <label className="sr-only" htmlFor="cc">{t("countryCode")}</label>
                 <select id="cc" className="input w-[104px] shrink-0 font-mono" value={cc} onChange={(e) => setCc(e.target.value)}>
-                  {CODES.map(([c, n]) => <option key={c} value={c}>{c} {n}</option>)}
+                  {SUPPORTED_COUNTRIES.map((c) => <option key={c.dial} value={c.dial}>{c.dial} {c.iso}</option>)}
                 </select>
                 <label className="sr-only" htmlFor="phone">{t("phoneLabel")}</label>
                 <input id="phone" className="input font-mono" inputMode="tel" autoComplete="tel-national" placeholder={t("phonePlaceholder")} value={local} onChange={(e) => setLocal(e.target.value)} autoFocus />

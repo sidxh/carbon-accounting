@@ -24,12 +24,6 @@ export function firebaseAuth(): Auth {
     // need no reCAPTCHA. Keeps the OTP flow free of SMS in development.
     auth.settings.appVerificationDisabledForTesting = true;
   }
-  // Set only by the browser test harness, before the page loads. With it, Firebase skips
-  // reCAPTCHA for the console's fictional "phone numbers for testing"; real numbers still
-  // need the challenge, so this gives nobody a way past it.
-  if ((window as unknown as { __E2E_NO_RECAPTCHA?: boolean }).__E2E_NO_RECAPTCHA) {
-    auth.settings.appVerificationDisabledForTesting = true;
-  }
   authInstance = auth;
   return auth;
 }

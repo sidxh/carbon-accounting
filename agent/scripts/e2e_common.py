@@ -8,9 +8,10 @@ import re
 import time
 import urllib.request
 
-# Local by default. To drive a deployed stack, set E2E_WEB_URL and E2E_AGENT_URL, plus
-# E2E_OTP (the fixed code of a Firebase "phone number for testing") and E2E_PHONES
-# (a comma-separated list of those test numbers, one per supplier the script creates).
+# Local by default. E2E_WEB_URL / E2E_AGENT_URL point the scripts at another stack. Signing in to the
+# deployed Firebase Auth cannot be automated: reCAPTCHA shows image challenges to headless browsers and
+# rejects the test-only bypass, so the deployed stack is checked by a manual run plus the Cloud Run logs
+# (see TESTING.md). E2E_OTP / E2E_PHONES (fixed-code test numbers) only help for a headed, human-assisted run.
 WEB = os.environ.get("E2E_WEB_URL", "http://localhost:3000").rstrip("/")
 AGENT_URL = os.environ.get("E2E_AGENT_URL", "http://localhost:8000").rstrip("/")
 AUTH_EMU = "http://127.0.0.1:9099"
@@ -48,10 +49,6 @@ def type_code(page, code: str) -> None:
 
 
 def sign_in(page, phone: str, wrong_first: bool = False) -> None:
-    if os.environ.get("E2E_OTP"):
-        # Deployed Auth shows a reCAPTCHA image challenge to headless browsers. Test numbers
-        # may skip it, via a switch the web app reads from window (see web/src/lib/firebase.ts).
-        page.add_init_script("window.__E2E_NO_RECAPTCHA = true")
     page.goto(f"{WEB}/sign-in")
     page.get_by_label(re.compile("Mobile number|Số điện thoại|携帯電話番号")).fill(phone)
     page.get_by_role("button", name=re.compile("Send code|Gửi mã|コードを送信")).click()

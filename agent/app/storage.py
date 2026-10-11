@@ -91,16 +91,30 @@ class GcsStorage(Storage):
     def exists(self, key: str) -> bool:
         return self.bucket.blob(key).exists()
 
+    def _signing_credentials(self):
+        """Credentials that may call the IAM signBlob API.
+
+        The Storage client's own credential is scoped to Cloud Storage only, so signing with it
+        fails with ACCESS_TOKEN_SCOPE_INSUFFICIENT. Ask for cloud-platform instead.
+        """
+        import google.auth
+        import google.auth.transport.requests
+
+        creds = getattr(self, "_sign_creds", None)
+        if creds is None:
+            creds, _ = google.auth.default(scopes=["https://www.googleapis.com/auth/cloud-platform"])
+            self._sign_creds = creds
+        if not creds.valid:
+            creds.refresh(google.auth.transport.requests.Request())
+        return creds
+
     def url(self, key: str) -> str:
         blob = self.bucket.blob(key)
-        creds = self.client._credentials
-        if hasattr(creds, "signer"):  # a service-account key file
+        if hasattr(self.client._credentials, "signer"):  # a service-account key file
             return blob.generate_signed_url(expiration=timedelta(hours=6), version="v4")
         # Cloud Run's metadata credentials hold no private key, so ask the IAM API to sign.
         # The service account needs roles/iam.serviceAccountTokenCreator on itself.
-        import google.auth.transport.requests
-
-        creds.refresh(google.auth.transport.requests.Request())
+        creds = self._signing_credentials()
         return blob.generate_signed_url(
             expiration=timedelta(hours=6), version="v4",
             service_account_email=creds.service_account_email, access_token=creds.token,
