@@ -34,11 +34,11 @@ cmd_setup() {
   gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com \
     secretmanager.googleapis.com firestore.googleapis.com storage.googleapis.com iamcredentials.googleapis.com \
     identitytoolkit.googleapis.com firebaserules.googleapis.com firebaseapphosting.googleapis.com
-  # The Maps key may live in a different project from the Firebase one. Solar and Geocoding must be
-  # enabled where the key was created; set MAPS_PROJECT to that project id.
-  if [ -n "${MAPS_PROJECT:-}" ]; then
-    gcloud services enable solar.googleapis.com geocoding-backend.googleapis.com --project "$MAPS_PROJECT"
-  fi
+  # The server Maps key ("Carbon Count API") lives in this project, restricted to exactly these three APIs:
+  # Geocoding and Solar (roof lookup) and Places API (New) (address suggestions). They must be enabled where
+  # the key was created; set MAPS_PROJECT if it ever moves to another project.
+  gcloud services enable solar.googleapis.com geocoding-backend.googleapis.com places.googleapis.com \
+    --project "${MAPS_PROJECT:-$PROJECT}"
   say "Firestore ($REGION)"
   gcloud firestore databases describe --database='(default)' >/dev/null 2>&1 \
     || gcloud firestore databases create --database='(default)' --location="$REGION" --type=firestore-native

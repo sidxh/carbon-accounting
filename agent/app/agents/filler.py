@@ -271,7 +271,7 @@ def answer_all(
                     per_million = (total_kg / 1000.0) / (profile.revenue / 1_000_000.0)
                     val, src = round(per_million, 3), f"Scope 1+2 ÷ revenue ({profile.revenue:,.0f} {profile.revenue_currency or ''})"
                 else:
-                    val, flagged, reason, src = None, True, "revenue not provided in supplier profile", "-"
+                    val, flagged, reason, src = None, True, "needs your answer", "-"
             case "allocation_to_customer":
                 if customer_share is not None:
                     val = f"{_t(total_kg * customer_share)} tCO2e — {customer_share:.1%} of Scope 1+2, allocated by share of revenue/output purchased"

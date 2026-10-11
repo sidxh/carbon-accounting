@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { motion, useReducedMotion } from "motion/react";
 import { ArrowRight, Calculator, CircleAlert, ExternalLink, MapPin, Sun } from "lucide-react";
 import { cn as clsx } from "@/lib/cn";
+import { AddressSearch } from "@/components/address-search";
 import { useRequest } from "@/components/request-context";
 import { EmptyState, PageTitle, SkeletonList } from "@/components/ui/bits";
 import { useToast } from "@/components/ui/toast";
@@ -164,7 +165,7 @@ export default function ReducePage() {
 
   const activeSite = view?.site ?? null;
 
-  async function locate(body: { address?: string; roof_area_m2?: number }) {
+  async function locate(body: { address?: string; roof_area_m2?: number; place_id?: string; session?: string }) {
     if (!activeSite) return;
     setBusy(true);
     try {
@@ -223,10 +224,15 @@ export default function ReducePage() {
         <h2 id="loc-h" className="flex items-center gap-2 font-display text-xl"><MapPin className="size-5 text-muted" aria-hidden />{t("locate.title")}</h2>
         <p className="mt-1 text-sm text-pretty text-muted">{t("locate.hint")}</p>
         <form className="mt-3 flex flex-wrap items-end gap-2" onSubmit={(e) => { e.preventDefault(); if (address.trim()) locate({ address }); }}>
-          <label className="min-w-0 grow">
-            <span className="label">{t("locate.address")}</span>
-            <input className="input" value={address} onChange={(e) => setAddress(e.target.value)} placeholder={t("locate.placeholder")} />
-          </label>
+          <AddressSearch
+            label={t("locate.address")}
+            value={address}
+            onChange={setAddress}
+            onPick={(p) => locate({ address: p.text, place_id: p.place_id, session: p.session })}
+            country={activeSite?.country || profile.country}
+            placeholder={t("locate.placeholder")}
+            disabled={busy}
+          />
           <button className="btn" disabled={busy || !address.trim()}>{view.located ? t("locate.again") : t("locate.find")}</button>
         </form>
         {view.located && activeSite?.formatted_address && (

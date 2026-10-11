@@ -36,6 +36,8 @@ class Settings(BaseSettings):
     # Google Maps Platform (Geocoding + Solar API). Server-side only; never sent to the browser.
     google_maps_api_key: str = ""
     solar_cache_dir: Path = Path(".cache/solar")
+    # Address suggestions (Places API) one signed-in user may request per hour, per agent instance.
+    places_hourly_limit: int = 150
 
     # Firebase
     firebase_project_id: str = "fir-testing-f96b1"

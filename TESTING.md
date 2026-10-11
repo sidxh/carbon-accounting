@@ -136,10 +136,13 @@ questionnaire is the request's own.
   Reporting years strip shows FY2025 with "0 bills".
 - **New request**: name `Aiko Corp`, year FY2025 (preselected; "New year…"
   opens start/end fields), due date `2026-01-31`, share `20`, optional
-  `.xlsx`. Create: you land on `/r/{rid}/documents` with the header
-  "← Home / Aiko Corp · FY2025" and a four-step stepper where Questions,
-  Inventory and Questionnaire show a lock. Locked steps are not links
-  (hover shows what unlocks them); going back is always free.
+  `.xlsx`. Create: the dialog closes, you **stay on Home**, a "created"
+  toast appears, and the new card is scrolled into view with a green ring
+  for about four seconds. Press **Start** on it: you land on
+  `/r/{rid}/documents` with the header "← Home / Aiko Corp · FY2025" and a
+  four-step stepper where Questions, Inventory and Questionnaire show a
+  lock. Locked steps are not links (hover shows what unlocks them); going
+  back is always free.
 - Add a second request `Toyota Boshoku` on the same year. Both cards show
   "shares the year with 1"; the Bills/Questions/Inventory pages show a
   shared-year notice naming the other customer, and the Remove-bill and
@@ -319,8 +322,8 @@ share).
 - Download and open the xlsx: green cells hold answers, yellow cells read
 "NOT PROVIDED — reason", every written cell has a comment "Source: …".
 - Go back to Setup, add revenue `50000000000` VND, return and fill again:
-  intensity is now answered. (The flagged 20.12a row also carries an inline
-  "Add revenue in Setup" link.)
+  intensity is now answered. (Until then that row only offers **Edit**; it
+  does not point back to Setup.)
 - **What "For you to complete" means**: the filler writes a cell only from a
   fact it has (calculator snapshot, profile, or a templated statement) and
   never guesses. A target, a reduction plan or Scope 3 are not in any bill,
@@ -493,7 +496,7 @@ flowchart LR
     Agent --> Gcs["Cloud Storage bucket"]
     Agent -->|"secrets"| Sm["Secret Manager"]
     Agent --> Gem["Gemini API"]
-    Agent --> Solar["Solar and Geocoding APIs"]
+    Agent --> Solar["Solar, Geocoding and Places APIs"]
 ```
 
 ### One-time setup
@@ -502,12 +505,15 @@ flowchart LR
 2. Link the trial billing account to the project (needed for Cloud Run, Cloud Build
    and App Hosting): `gcloud billing accounts list`, then
    `gcloud billing projects link fir-testing-f96b1 --billing-account=ACCOUNT_ID`.
-3. `infra/deploy.sh setup` enables the APIs (including Solar and Geocoding), creates
+3. `infra/deploy.sh setup` enables the APIs (including Solar, Geocoding and Places API (New)), creates
    Firestore, the bucket, the Artifact Registry repository and the agent's service
    account, and deploys the Firestore rules.
 4. `infra/deploy.sh secrets` copies `GOOGLE_API_KEY` and `GOOGLE_MAPS_API_KEY` from
    your `.env` into Secret Manager. Nothing is printed. In the Cloud console,
-   restrict the Maps key to the Solar API and Geocoding API.
+   restrict the Maps key ("Carbon Count API", created in this same project) to exactly Geocoding API,
+   Solar API and Places API (New), with no application restriction (the agent runs on Cloud Run with no
+   fixed address and the key never reaches a browser). In APIs & Services > Places API (New) > Quotas,
+   set a daily cap on Autocomplete requests (about 500) so a bug cannot spend more than the free tier.
 5. Firebase console, Authentication > Sign-in method: enable Email/Password and tick "Email
    link (passwordless sign-in)". Under Settings > Authorized domains add your App Hosting
    and custom domains. Under Project settings, set the public-facing name to "Supplier
@@ -653,7 +659,17 @@ The site is reachable at `https://carbon.siddhantxh.com` as well as the App Host
 - **Site address** is not asked in Setup. It is entered on the Reduce page, where it is used to find the
   roof for solar. A full address (number, street, district, city, or the lot in an industrial park) or
   coordinates pasted from Google Maps both work. A street-level match is flagged, with a Google Maps
-  link to check it.
+  link to check it. A whole country or province ("Vietnam", "Long An") is refused as too broad, because
+  the Solar API only finds buildings near a point.
+- **Address suggestions.** From three typed characters, and after a 300 ms pause, the box lists up to five
+  addresses inside the company's country (Google Places Autocomplete, called by the agent so the key stays
+  on the server). Pick one and the site is located at once. Check: type `Lot B2 Long Hau` and wait for the
+  list; arrow keys and Enter choose; Escape closes; pasting `10.7290, 106.7190` makes no search. If the
+  Places API is off or the quota is used up the list simply does not appear and typing the address and
+  pressing Find on map still works. Cost: one search session is the typing plus the pick (only the first
+  12 suggestion requests of a session are billable, then one Place Details Essentials call), about 4 US
+  cents worst case, with 10,000 of each free every month. Each user is limited to 150 suggestion requests
+  an hour (`PLACES_HOURLY_LIMIT`).
 - **Solar sources.** With Solar API coverage, yearly energy comes from Google's roof model (aerial or
   satellite imagery). Google publishes coverage as a map, not a country list, and it is per building: where
   it has none the API answers 404 and the app uses PVGIS (EU JRC, ERA5 irradiance, global) with the roof

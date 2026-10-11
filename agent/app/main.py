@@ -12,12 +12,14 @@ them in a worker thread — the reconciler drives an ADK runner with
 from __future__ import annotations
 
 import mimetypes
+import time
 import uuid
+from collections import defaultdict, deque
 from datetime import date, datetime, timezone
 
-from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, UploadFile, status
+from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Query, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse, Response
+from fastapi.responses import Response
 from pydantic import BaseModel, Field
 
 from .agents import reconciler
@@ -48,7 +50,7 @@ from .services import (
     retry_extraction,
 )
 from .settings import get_settings
-from .storage import LocalStorage, get_storage
+from .storage import get_storage
 
 settings = get_settings()
 app = FastAPI(title="Supplier carbon reporting agent", version="0.2.0")
@@ -87,6 +89,9 @@ class SupplierIn(BaseModel):
 
 class LocateIn(BaseModel):
     address: str | None = None
+    # A suggestion the supplier picked (from /places/suggest). The address text is then only a label.
+    place_id: str | None = Field(default=None, max_length=300)
+    session: str | None = Field(default=None, max_length=64)
     lat: float | None = Field(default=None, ge=-90, le=90)
     lng: float | None = Field(default=None, ge=-180, le=180)
     roof_area_m2: float | None = Field(default=None, gt=0, le=1_000_000)
@@ -155,12 +160,12 @@ def _file_response(key: str, download_name: str | None = None) -> Response:
     storage = get_storage()
     if not storage.exists(key):
         raise HTTPException(status.HTTP_404_NOT_FOUND, "File not found.")
-    if isinstance(storage, LocalStorage):
-        data = storage.get(key)
-        media = mimetypes.guess_type(key)[0] or "application/octet-stream"
-        headers = {"Content-Disposition": f'inline; filename="{download_name or key.rsplit("/", 1)[-1]}"'}
-        return Response(content=data, media_type=media, headers=headers)
-    return RedirectResponse(storage.url(key))
+    # Always stream the bytes through the agent. A redirect to a signed storage link breaks the web app,
+    # which fetches with an Authorization header and then reads the blob: storage sends no CORS headers.
+    data = storage.get(key)
+    media = mimetypes.guess_type(key)[0] or "application/octet-stream"
+    headers = {"Content-Disposition": f'inline; filename="{download_name or key.rsplit("/", 1)[-1]}"'}
+    return Response(content=data, media_type=media, headers=headers)
 
 
 def _request_view(uid: str, req: Request) -> dict:
@@ -535,6 +540,39 @@ def inventory(supplier_id: str, pid: str, caller: Caller = Depends(require_suppl
     }
 
 
+_suggest_log: dict[str, deque] = defaultdict(deque)     # uid -> times of recent suggestion requests (per instance)
+
+
+def _suggest_budget(uid: str) -> None:
+    """Each user gets a bounded number of Places requests per hour, so a script or a stuck client cannot run up the bill."""
+    now = time.monotonic()
+    q = _suggest_log[uid]
+    while q and now - q[0] > 3600:
+        q.popleft()
+    if len(q) >= settings.places_hourly_limit:
+        raise HTTPException(status.HTTP_429_TOO_MANY_REQUESTS, "Too many address searches this hour. Type the full address and press Find on map.")
+    q.append(now)
+
+
+@app.get("/places/suggest")
+def places_suggest(q: str = Query(default="", max_length=200), session: str = Query(default="", max_length=64),
+                   country: str | None = Query(default=None, pattern="^[A-Za-z]{2}$"),
+                   caller: Caller = Depends(current_caller), x_locale: str | None = Header(default=None)):
+    """Address suggestions while the supplier types, inside their country. Needs 3+ characters and a session token."""
+    if len(q.strip()) < 3:
+        return {"suggestions": []}
+    if not solar.valid_session(session):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Missing search session.")
+    profile = get_repo().get_supplier(caller.uid)
+    cc = country or (profile.country if profile else None)
+    _suggest_budget(caller.uid)
+    try:
+        found = solar.suggest(q, cc, session, x_locale if x_locale in ("en", "vi", "ja") else None)
+    except solar.SolarError as e:
+        raise HTTPException(status.HTTP_502_BAD_GATEWAY, str(e))
+    return {"suggestions": [{"place_id": s.place_id, "text": s.text, "main": s.main, "secondary": s.secondary} for s in found]}
+
+
 @app.post("/suppliers/{supplier_id}/sites/{site_id}/locate", response_model=SupplierProfile)
 def locate_site(supplier_id: str, site_id: str, body: LocateIn, caller: Caller = Depends(require_supplier)):
     """Pin a site on the map for the reduction advisor: from its address (geocoded), from coordinates,
@@ -546,7 +584,20 @@ def locate_site(supplier_id: str, site_id: str, body: LocateIn, caller: Caller =
     upd: dict = {}
     typed = (body.address or "").strip()
     pasted = solar.parse_coordinates(typed) if typed else None     # "10.7290, 106.7190" copied from Google Maps
-    if pasted is not None:
+    if body.place_id:
+        if not solar.valid_place_id(body.place_id):
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "That suggestion is not valid. Pick one again.")
+        try:
+            place = solar.place_details(body.place_id, body.session if solar.valid_session(body.session) else None)
+        except solar.SolarError as e:
+            raise HTTPException(status.HTTP_502_BAD_GATEWAY, str(e))
+        if place is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "We could not open that suggestion. Search again or paste the roof's coordinates.")
+        if place.too_broad:
+            raise HTTPException(422, f"That is too broad ({place.formatted_address}). Add a street, building number and city, or choose a suggestion.")
+        upd.update(address=place.formatted_address or typed, lat=place.lat, lng=place.lng, formatted_address=place.formatted_address,
+                   location_precision="exact" if place.precise else "approximate")
+    elif pasted is not None:
         upd.update(address=typed, lat=pasted[0], lng=pasted[1], formatted_address=f"{pasted[0]:.5f}, {pasted[1]:.5f}", location_precision="exact")
     elif typed:
         try:
@@ -555,6 +606,8 @@ def locate_site(supplier_id: str, site_id: str, body: LocateIn, caller: Caller =
             raise HTTPException(status.HTTP_502_BAD_GATEWAY, str(e))
         if place is None:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "We could not find that address. Add the building number, district and city, or paste the roof's coordinates from Google Maps.")
+        if place.too_broad:
+            raise HTTPException(422, f"That is too broad ({place.formatted_address}). Add a street, building number and city, or choose a suggestion.")
         upd.update(address=typed, lat=place.lat, lng=place.lng, formatted_address=place.formatted_address,
                    location_precision="exact" if place.precise else "approximate")
     elif body.lat is not None and body.lng is not None:

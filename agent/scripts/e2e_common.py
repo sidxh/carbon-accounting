@@ -77,8 +77,14 @@ def new_request(page, customer: str, *, due: str | None = None, share: str | Non
     if share:
         page.locator("#nr-share").fill(share)
     page.get_by_role("dialog").get_by_role("button", name=re.compile("Create request|Tạo yêu cầu|依頼を作成")).click()
-    page.wait_for_url(re.compile(r"/r/(req_[a-f0-9]+)/documents"), timeout=20000)
-    return re.search(r"/r/(req_[a-f0-9]+)/", page.url).group(1)
+    # Creating a request keeps you on Home with the new card ringed. Read its id from the card, then open it.
+    card = page.locator("[data-request-id][data-highlighted=true]")
+    card.wait_for(timeout=20000)
+    assert "/home" in page.url, f"expected to stay on Home, got {page.url}"
+    rid = card.get_attribute("data-request-id")
+    card.get_by_role("link", name=re.compile("Start|Continue|Bắt đầu|Tiếp tục|開始|続ける")).click()
+    page.wait_for_url(re.compile(rf"/r/{rid}/documents"), timeout=20000)
+    return rid
 
 
 def locked_steps(page) -> list[str]:

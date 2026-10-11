@@ -62,6 +62,8 @@ export interface Site {
   roof_area_m2?: number | null;
 }
 
+export interface PlaceSuggestion { place_id: string; text: string; main: string; secondary: string }
+
 export interface SupplierProfile {
   id: string;
   name: string;
@@ -440,8 +442,10 @@ export const api = {
     json<{ snapshot: Snapshot }>(`${P(uid, pid)}/activity-lines/${lineId}`, "PATCH", patch),
   advisor: (uid: string, pid: string, siteId?: string) =>
     request<AdvisorView>(`${P(uid, pid)}/advisor${siteId ? `?site_id=${encodeURIComponent(siteId)}` : ""}`),
-  locateSite: (uid: string, siteId: string, body: { address?: string; roof_area_m2?: number }) =>
+  locateSite: (uid: string, siteId: string, body: { address?: string; roof_area_m2?: number; place_id?: string; session?: string }) =>
     json<SupplierProfile>(`/suppliers/${uid}/sites/${siteId}/locate`, "POST", body),
+  suggestPlaces: (q: string, session: string, country?: string, signal?: AbortSignal) =>
+    request<{ suggestions: PlaceSuggestion[] }>(`/places/suggest?${new URLSearchParams({ q, session, ...(country ? { country } : {}) })}`, { signal }),
   methodology: (uid: string, pid: string) => request<{ download: string; bytes: number }>(`${P(uid, pid)}/methodology`),
 
   // questionnaire (request)

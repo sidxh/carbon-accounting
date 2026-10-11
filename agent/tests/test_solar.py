@@ -144,6 +144,27 @@ def test_geocode_reports_whether_it_found_a_building():
     assert solar.geocode("case 5", "VN", client=result("ROOFTOP", partial_match=True)).precise is False
 
 
+def test_geocode_flags_country_and_province_matches_as_too_broad(caplog):
+    def result(types, location_type="APPROXIMATE", address="Vietnam"):
+        r = {"formatted_address": address, "types": types, "geometry": {"location": {"lat": 14.06, "lng": 108.28}, "location_type": location_type}}
+        return client(lambda req: httpx.Response(200, json={"status": "OK", "results": [r]}))
+
+    with caplog.at_level("INFO", logger="app.solar"):
+        country = solar.geocode("rr westbrook", "VN", client=result(["country", "political"]))
+    assert country.too_broad is True and country.precise is False
+    assert "types=country,political" in caplog.text and "location_type=APPROXIMATE" in caplog.text
+    assert SECRET not in caplog.text
+
+    assert solar.geocode("rr westbrook 2", "VN", client=result(["administrative_area_level_1", "political"], address="Long An")).too_broad is True
+    # A district or a road is approximate but usable (the page warns); a building is exact.
+    district = solar.geocode("long hau", "VN", client=result(["administrative_area_level_2", "political"], address="Cần Giuộc, Long An"))
+    assert district.too_broad is False and district.precise is False
+    road = solar.geocode("road", "VN", client=result(["route"], "GEOMETRIC_CENTER", "QL50, Long An"))
+    assert road.too_broad is False and road.precise is False
+    building = solar.geocode("lot b2", "VN", client=result(["street_address"], "ROOFTOP", "Lot B2, Long Hau IP"))
+    assert building.too_broad is False and building.precise is True and building.types == ("street_address",)
+
+
 def test_parse_coordinates_accepts_what_google_maps_copies_and_nothing_else():
     assert solar.parse_coordinates("10.7290, 106.7190") == (10.729, 106.719)
     assert solar.parse_coordinates(" -33.8688,151.2093 ") == (-33.8688, 151.2093)

@@ -304,7 +304,6 @@
     "editPlaceholder": "Nhập câu trả lời của bạn",
     "answeredByYou": "Bạn đã trả lời",
     "lockedHint": "Từ hóa đơn của bạn — sửa số lượng trong bảng kiểm kê",
-    "addRevenue": "Thêm doanh thu ở phần Thiết lập để tính mục này",
     "dropTitle": "File Excel của khách hàng",
     "dropBody": "Kéo file .xlsx vào đây hoặc chọn. Giữ nguyên bố cục, điền vào cột trả lời.",
     "xlsxOnly": "Chỉ điền được sổ .xlsx.",
@@ -646,14 +645,15 @@
     "toInventory": "Quay lại bảng kiểm kê",
     "locate": {
       "title": "Địa điểm này ở đâu?",
-      "hint": "Nhập địa chỉ đầy đủ của tòa nhà: số nhà, đường, quận/huyện và tỉnh/thành. Trong khu công nghiệp, hãy ghi cả số lô. Hoặc dán tọa độ mái nhà từ Google Maps (nhấp chuột phải vào mái nhà, rồi nhấp vào dãy số). Chúng tôi chỉ dùng thông tin này để đo mái nhà cho điện mặt trời.",
+      "hint": "Bắt đầu gõ địa chỉ tòa nhà rồi chọn trong danh sách. Trong khu công nghiệp, hãy ghi cả số lô. Hoặc dán tọa độ mái nhà từ Google Maps (nhấp chuột phải vào mái nhà, rồi nhấp vào dãy số). Chúng tôi chỉ dùng thông tin này để đo mái nhà cho điện mặt trời.",
       "address": "Địa chỉ",
-      "placeholder": "Lô B2, KCN Long Hậu, Cần Giuộc, Long An, hoặc 10.7290, 106.7190",
+      "placeholder": "Bắt đầu gõ: Lô B2, KCN Long Hậu, hoặc dán 10.7290, 106.7190",
       "find": "Tìm trên bản đồ",
       "again": "Tra cứu lại",
       "matched": "Khớp với:",
       "approximate": "Chúng tôi chỉ khớp được đến con đường hoặc khu vực, nên mái nhà tìm thấy có thể không phải của bạn. Hãy thêm số nhà hoặc dán tọa độ mái nhà.",
-      "check": "Kiểm tra trên Google Maps"
+      "check": "Kiểm tra trên Google Maps",
+      "suggestionCount": "Có {n} gợi ý. Dùng phím mũi tên và Enter để chọn."
     },
     "solar": {
       "title": "Điện mặt trời áp mái",

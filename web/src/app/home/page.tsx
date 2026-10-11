@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { motion } from "motion/react";
@@ -41,7 +40,7 @@ function ProgressBar({ view }: { view: RequestView }) {
   );
 }
 
-function RequestCard({ view, onDelete }: { view: RequestView; onDelete?: () => void }) {
+function RequestCard({ view, onDelete, highlight }: { view: RequestView; onDelete?: () => void; highlight?: boolean }) {
   const t = useTranslations("home");
   const locale = useLocale();
   const r = view.request;
@@ -49,10 +48,12 @@ function RequestCard({ view, onDelete }: { view: RequestView; onDelete?: () => v
   const step = nextStep(view.progress, view.status === "filled");
   return (
     <motion.li
+      data-request-id={r.id}
+      data-highlighted={highlight ? "true" : undefined}
       initial={{ opacity: 0, transform: "translateY(6px)" }}
       animate={{ opacity: 1, transform: "translateY(0px)" }}
       transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-      className="card flex flex-col gap-3 p-4 sm:p-5"
+      className={cn("card flex scroll-mt-24 flex-col gap-3 p-4 transition-shadow duration-500 sm:p-5", highlight && "ring-2 ring-signal ring-offset-2 ring-offset-paper")}
     >
       <div className="flex items-start gap-3">
         <span className="grid size-10 shrink-0 place-items-center rounded-[10px] bg-sunken font-display text-base text-ink-soft" aria-hidden>{initials(r.customer_name)}</span>
@@ -220,16 +221,26 @@ function Home({ profile, uid }: { profile: SupplierProfile | null; uid: string }
   const t = useTranslations("home");
   const tl = useTranslations("landing.trust");
   const toast = useToast();
-  const router = useRouter();
   const [data, setData] = useState<HomeView | null>(null);
   const [error, setError] = useState("");
   const [creating, setCreating] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<RequestView | null>(null);
   const [confirmYear, setConfirmYear] = useState<PeriodView | null>(null);
   const [busy, setBusy] = useState(false);
+  const [highlightId, setHighlightId] = useState<string | null>(null);
 
   const load = useCallback(() => api.home(uid).then(setData).catch((e) => setError((e as Error).message)), [uid]);
   useEffect(() => { load(); }, [load]);
+
+  // A request you just created stays on this page: bring its card into view and ring it for a few seconds.
+  const shown = data?.requests.some((v) => v.request.id === highlightId) ?? false;
+  useEffect(() => {
+    if (!highlightId || !shown) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    document.querySelector(`[data-request-id="${highlightId}"]`)?.scrollIntoView({ block: "center", behavior: reduce ? "auto" : "smooth" });
+    const timer = window.setTimeout(() => setHighlightId(null), 4000);
+    return () => window.clearTimeout(timer);
+  }, [highlightId, shown]);
 
 
   async function remove(v: RequestView) {
@@ -291,7 +302,7 @@ function Home({ profile, uid }: { profile: SupplierProfile | null; uid: string }
           </>
         ) : (
           <ul className="grid gap-3 sm:grid-cols-2">
-            {data.requests.map((v) => <RequestCard key={v.request.id} view={v} onDelete={() => setConfirmDelete(v)} />)}
+            {data.requests.map((v) => <RequestCard key={v.request.id} view={v} highlight={v.request.id === highlightId} onDelete={() => setConfirmDelete(v)} />)}
           </ul>
         )}
       </section>
@@ -311,7 +322,7 @@ function Home({ profile, uid }: { profile: SupplierProfile | null; uid: string }
         )}
       </section>
 
-      <NewRequestDialog open={creating} onClose={() => setCreating(false)} uid={uid} periods={periods} profile={profile} onCreated={(v) => { load(); router.push(`/r/${v.request.id}/documents`); }} />
+      <NewRequestDialog open={creating} onClose={() => setCreating(false)} uid={uid} periods={periods} profile={profile} onCreated={(v) => { setHighlightId(v.request.id); load(); }} />
 
       <Dialog
         open={confirmDelete !== null}

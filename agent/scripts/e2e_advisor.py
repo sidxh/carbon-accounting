@@ -112,6 +112,20 @@ def main() -> int:
         print(f"[JP] scenario: '{before}' -> '{after}'")
         ok &= measured and before != after
         page.screenshot(path=str(SHOTS / "a2-jp-scenario.png"), full_page=True)
+
+        # Address suggestions (Places API): type, wait for the list, choose with the keyboard.
+        box = page.get_by_role("combobox")
+        box.fill("Kariya City Hall")
+        page.get_by_role("option").first.wait_for(timeout=15000)
+        n = page.get_by_role("option").count()
+        page.screenshot(path=str(SHOTS / "a2b-jp-suggestions.png"), full_page=True)
+        box.press("ArrowDown")
+        box.press("Enter")
+        page.get_by_role("listbox").wait_for(state="hidden")
+        page.wait_for_function("document.body.innerText.includes('Matched:')", timeout=30000)
+        picked = box.input_value()
+        print(f"[JP] suggestions shown: {n}; picked: {picked!r}")
+        ok &= 1 <= n <= 5 and "Kariya" in picked
         browser.close()
 
         # --- VN: irradiance fallback + drafted answer ------------------------------------------

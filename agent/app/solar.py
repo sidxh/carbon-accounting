@@ -19,6 +19,7 @@ from __future__ import annotations
 import contextlib
 import hashlib
 import json
+import logging
 import re
 from dataclasses import dataclass, field
 from datetime import date
@@ -32,6 +33,10 @@ GEOCODE_URL = "https://maps.googleapis.com/maps/api/geocode/json"
 SOLAR_URL = "https://solar.googleapis.com/v1/buildingInsights:findClosest"
 PVGIS_URL = "https://re.jrc.ec.europa.eu/api/v5_3/PVcalc"
 TIMEOUT = 20.0
+# Geocoding "types" that mean a whole country or first-level province was matched, not a place.
+BROAD_TYPES = frozenset({"country", "administrative_area_level_1"})
+
+log = logging.getLogger(__name__)
 
 
 class SolarError(RuntimeError):
@@ -46,6 +51,13 @@ class Place:
     # False when Google only matched a street, district or city (not a building or an interpolated number),
     # in which case "the building nearest this point" may be the wrong roof.
     precise: bool = True
+    # What Google says it matched ("street_address", "route", "locality", "country", ...). Empty when not given.
+    types: tuple[str, ...] = ()
+
+    @property
+    def too_broad(self) -> bool:
+        """A whole country or province: the point is the middle of nowhere in particular, so no roof is near it."""
+        return bool(set(self.types) & BROAD_TYPES)
 
 
 @dataclass(frozen=True)
@@ -146,8 +158,104 @@ def geocode(address: str, country: str | None = None, *, client: httpx.Client | 
         raise _api_error(403 if st == "REQUEST_DENIED" else 500, body, "geocoding")
     top = body["results"][0]
     loc = top["geometry"]["location"]
-    precise = top.get("geometry", {}).get("location_type") in ("ROOFTOP", "RANGE_INTERPOLATED") and not top.get("partial_match")
-    return Place(float(loc["lat"]), float(loc["lng"]), top.get("formatted_address", address), precise)
+    location_type = top.get("geometry", {}).get("location_type")
+    partial = bool(top.get("partial_match"))
+    types = tuple(str(t) for t in top.get("types", []))
+    precise = location_type in ("ROOFTOP", "RANGE_INTERPOLATED") and not partial
+    # Not secret, and the only way to explain a surprising match after the fact.
+    log.info("geocode match: types=%s location_type=%s partial_match=%s results=%d", ",".join(types) or "-", location_type, partial, len(body["results"]))
+    return Place(float(loc["lat"]), float(loc["lng"]), top.get("formatted_address", address), precise, types)
+
+
+# --- Places API (New): address suggestions as you type ------------------------------------------
+#
+# Billing is per search session: every suggest call and the one details call that ends it carry the same
+# `session` token. Details asks for Essentials fields only (id, address, location, types); a name, rating or
+# phone number would switch to a dearer SKU. Nothing here is cached: a suggestion list is only useful live,
+# and the key travels in a header, so it is in no URL, cache key or log line.
+
+PLACES_AUTOCOMPLETE_URL = "https://places.googleapis.com/v1/places:autocomplete"
+PLACES_DETAILS_URL = "https://places.googleapis.com/v1/places/"
+PLACES_FIELDS = "id,formattedAddress,location,types"
+_PLACE_ID = re.compile(r"^[A-Za-z0-9_-]{10,300}$")
+_SESSION = re.compile(r"^[A-Za-z0-9_-]{8,64}$")
+# A match on one of these is a building or a named place; anything else is a road, district or city.
+PRECISE_TYPES = frozenset({"street_address", "premise", "subpremise", "establishment", "point_of_interest", "street_number"})
+
+
+@dataclass(frozen=True)
+class Suggestion:
+    place_id: str
+    text: str
+    main: str
+    secondary: str
+
+
+def valid_place_id(place_id: str) -> bool:
+    return bool(_PLACE_ID.match(place_id or ""))
+
+
+def valid_session(session: str | None) -> bool:
+    return bool(session) and bool(_SESSION.match(session or ""))
+
+
+def _places_call(method: str, url: str, *, headers: dict, params: dict | None = None, json_body: dict | None = None,
+                 client: httpx.Client | None = None) -> tuple[int, dict]:
+    key = get_settings().google_maps_api_key
+    if not key:
+        raise SolarError("GOOGLE_MAPS_API_KEY is not configured")
+    with _http(client) as c:
+        try:
+            r = c.request(method, url, params=params, json=json_body, headers={**headers, "X-Goog-Api-Key": key}, timeout=TIMEOUT)
+        except httpx.HTTPError as e:
+            raise SolarError(f"could not reach {httpx.URL(url).host}: {type(e).__name__}") from None
+    try:
+        body = r.json()
+    except ValueError:
+        body = {}
+    return r.status_code, body if isinstance(body, dict) else {}
+
+
+def suggest(query: str, country: str | None, session: str, language: str | None = None, *, client: httpx.Client | None = None) -> list[Suggestion]:
+    """Up to five address suggestions for what has been typed so far, inside the supplier's country."""
+    q = query.strip()
+    if len(q) < 3:
+        return []
+    body: dict = {"input": q, "sessionToken": session}
+    if country and len(country) == 2:
+        body["includedRegionCodes"] = [country.lower()]
+    if language:
+        body["languageCode"] = language
+    status, data = _places_call("POST", PLACES_AUTOCOMPLETE_URL, headers={}, json_body=body, client=client)
+    if status != 200:
+        raise _api_error(status, data, "address search")
+    out: list[Suggestion] = []
+    for s in data.get("suggestions", []):
+        p = s.get("placePrediction")
+        if not p or not p.get("placeId"):
+            continue
+        fmt = p.get("structuredFormat") or {}
+        text = (p.get("text") or {}).get("text", "")
+        main = (fmt.get("mainText") or {}).get("text", text)
+        out.append(Suggestion(p["placeId"], text or main, main, (fmt.get("secondaryText") or {}).get("text", "")))
+    return out[:5]
+
+
+def place_details(place_id: str, session: str | None = None, language: str | None = None, *, client: httpx.Client | None = None) -> Place | None:
+    """The chosen suggestion as a point. This call closes the billing session. None when Google no longer knows the id."""
+    params = {k: v for k, v in (("sessionToken", session), ("languageCode", language)) if v}
+    status, data = _places_call("GET", PLACES_DETAILS_URL + place_id, headers={"X-Goog-FieldMask": PLACES_FIELDS}, params=params, client=client)
+    if status == 404:
+        return None
+    if status != 200:
+        raise _api_error(status, data, "address search")
+    loc = data.get("location") or {}
+    if "latitude" not in loc or "longitude" not in loc:
+        return None
+    types = tuple(str(t) for t in data.get("types", []))
+    precise = bool(set(types) & PRECISE_TYPES)
+    log.info("place details: types=%s precise=%s", ",".join(types) or "-", precise)
+    return Place(float(loc["latitude"]), float(loc["longitude"]), data.get("formattedAddress", ""), precise, types)
 
 
 def building_insights(lat: float, lng: float, *, client: httpx.Client | None = None) -> Building | None:

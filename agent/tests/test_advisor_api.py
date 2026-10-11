@@ -145,3 +145,15 @@ def test_locate_marks_street_level_matches_and_takes_pasted_coordinates(client, 
     s = client.post(f"{URL}/sites/main/locate", json={"address": "10.7290, 106.7190"}, headers=_auth()).json()["sites"][0]
     assert (s["lat"], s["lng"], s["location_precision"]) == (10.729, 106.719, "exact")
     assert s["formatted_address"] == "10.72900, 106.71900" and s["address"] == "10.7290, 106.7190"
+
+
+def test_locate_refuses_a_country_level_match_and_keeps_the_old_pin(client, computed, monkeypatch):
+    client.post(f"{URL}/sites/main/locate", json={"lat": 10.73, "lng": 106.89}, headers=_auth())
+    monkeypatch.setattr(solar, "geocode", lambda a, c=None, **k: Place(14.06, 108.28, "Vietnam", False, ("country", "political")))
+    r = client.post(f"{URL}/sites/main/locate", json={"address": "RR Westbrook"}, headers=_auth())
+    assert r.status_code == 422 and "too broad" in r.json()["detail"] and "Vietnam" in r.json()["detail"]
+    site = client.get(URL, headers=_auth()).json()["sites"][0]
+    assert (site["lat"], site["lng"]) == (10.73, 106.89)
+
+    monkeypatch.setattr(solar, "geocode", lambda a, c=None, **k: Place(10.6, 106.6, "Long An, Vietnam", False, ("administrative_area_level_1",)))
+    assert client.post(f"{URL}/sites/main/locate", json={"address": "Long An"}, headers=_auth()).status_code == 422

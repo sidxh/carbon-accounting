@@ -304,7 +304,6 @@
     "editPlaceholder": "Type your answer",
     "answeredByYou": "Answered by you",
     "lockedHint": "From your bills — correct the quantity in the inventory",
-    "addRevenue": "Add revenue in Setup to calculate this",
     "dropTitle": "Your customer's Excel",
     "dropBody": "Drop the .xlsx here or choose it. We keep the layout and write into the answer column.",
     "xlsxOnly": "Only .xlsx workbooks can be filled.",
@@ -646,14 +645,15 @@
     "toInventory": "Back to your inventory",
     "locate": {
       "title": "Where is this site?",
-      "hint": "Type the building's full address: number, street, district and city. In an industrial park, include the lot number. Or paste the coordinates of your roof from Google Maps (right-click the roof, then click the numbers). We use this only to measure your roof for solar.",
+      "hint": "Start typing the building's address and pick it from the list. Include the lot number in an industrial park. Or paste the coordinates of your roof from Google Maps (right-click the roof, then click the numbers). We use this only to measure your roof for solar.",
       "address": "Site address",
-      "placeholder": "Lot B2, Long Hau Industrial Park, Can Giuoc, Long An, or 10.7290, 106.7190",
+      "placeholder": "Start typing: Lot B2, Long Hau Industrial Park, or paste 10.7290, 106.7190",
       "find": "Find on map",
       "again": "Look up again",
       "matched": "Matched:",
       "approximate": "We only matched the street or area, so the roof found may not be yours. Add the building number, or paste the coordinates of your roof.",
-      "check": "Check on Google Maps"
+      "check": "Check on Google Maps",
+      "suggestionCount": "{n, plural, one {# suggestion} other {# suggestions}} available. Use the arrow keys and Enter to choose."
     },
     "solar": {
       "title": "Rooftop solar",

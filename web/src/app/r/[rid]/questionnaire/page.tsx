@@ -51,7 +51,6 @@ function AnswerRow({ uid, rid, qid, a, onSaved, onShowBills }: { uid: string; ri
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(typeof a.value === "string" ? a.value : a.value === null ? "" : String(a.value));
   const [busy, setBusy] = useState(false);
-  const missingRevenue = a.flagged && a.field === "intensity_per_revenue";
   const id = `ans-${a.question_id}`;
 
   async function save() {
@@ -100,7 +99,6 @@ function AnswerRow({ uid, rid, qid, a, onSaved, onShowBills }: { uid: string; ri
             {!a.flagged && a.value !== null && hasBillsBehind(a.field) && (
               <button className="inline-flex min-h-8 items-center gap-1 text-signal-ink underline-offset-4 hover:underline" onClick={() => onShowBills(a)}><ScanSearch className="size-3" aria-hidden />{t("showBills")}</button>
             )}
-            {missingRevenue && <Link href="/setup" className="inline-flex min-h-8 items-center text-signal-ink underline-offset-4 hover:underline">{t("addRevenue")}</Link>}
           </div>
         </>
       )}
