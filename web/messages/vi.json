@@ -33,7 +33,7 @@
     "sending": "Đang gửi…",
     "checkTitle": "Kiểm tra hộp thư",
     "linkSentTo": "Đã gửi liên kết đăng nhập tới {email}. Hãy mở trên thiết bị này.",
-    "linkNote": "Liên kết chỉ dùng một lần và hết hạn sau một giờ. Nếu chưa thấy, hãy xem thư rác.",
+    "linkNote": "Liên kết chỉ dùng một lần và hết hạn sau một giờ.",
     "changeEmail": "Dùng email khác",
     "noLink": "Chưa nhận được email?",
     "resend": "Gửi lại",
@@ -48,7 +48,9 @@
     "tooMany": "Quá nhiều lần thử. Vui lòng đợi vài phút rồi thử lại.",
     "network": "Không có kết nối. Kiểm tra mạng và thử lại.",
     "devHint": "Môi trường thử nghiệm: email nào cũng được, liên kết hiển thị trong log của emulator.",
-    "unavailable": "Chưa thể đăng nhập từ địa chỉ này. Hãy dùng địa chỉ chính của trang, hoặc thử lại sau."
+    "unavailable": "Chưa thể đăng nhập từ địa chỉ này. Hãy dùng địa chỉ chính của trang, hoặc thử lại sau.",
+    "spamTitle": "Hãy xem cả thư rác (spam)",
+    "spamHint": "Email có thể đến chậm một phút. Thư được gửi từ {sender}. Nếu nằm trong thư rác, hãy đánh dấu “không phải thư rác” để các liên kết sau vào thẳng hộp thư đến."
   },
   "setup": {
     "title": "Về công ty của bạn",

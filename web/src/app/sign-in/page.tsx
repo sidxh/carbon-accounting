@@ -6,11 +6,11 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { motion } from "motion/react";
-import { ArrowLeft, Mail } from "lucide-react";
+import { ArrowLeft, Mail, MailQuestion } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { Wordmark } from "@/components/shell";
-import { firebaseAuth } from "@/lib/firebase";
+import { AUTH_EMAIL_SENDER, firebaseAuth } from "@/lib/firebase";
 
 const EMULATOR = process.env.NEXT_PUBLIC_USE_EMULATORS === "true";
 const EMAIL_KEY = "signInEmail";
@@ -153,8 +153,15 @@ export default function SignInPage() {
               <div>
                 <div className="font-display text-2xl">{t("checkTitle")}</div>
                 <p className="mt-2 text-sm text-pretty text-ink-soft">{t("linkSentTo", { email: email.trim() })}</p>
-                <p className="mt-2 text-xs text-muted">{t("linkNote")}</p>
               </div>
+              <div role="note" className="flex gap-2.5 rounded-lg bg-attention-bg px-3 py-2.5 text-sm text-ink-soft">
+                <MailQuestion className="mt-0.5 size-4 shrink-0 text-attention" aria-hidden />
+                <div>
+                  <p className="font-medium text-ink">{t("spamTitle")}</p>
+                  <p className="mt-0.5 text-pretty">{t("spamHint", { sender: AUTH_EMAIL_SENDER })}</p>
+                </div>
+              </div>
+              <p className="text-xs text-muted">{t("linkNote")}</p>
               {errorBox}
               <div className="flex items-center justify-between text-xs text-muted">
                 <span>{t("noLink")}</span>

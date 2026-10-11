@@ -55,12 +55,13 @@ export function AccountMenu() {
   const locale = useLocale();
   const { user, signOut } = useAuth();
   const who = user?.email ?? "";
+  const short = who.split("@")[0];   // the full address is in the menu; the button only needs to say who
 
   return (
     <Menu.Root>
       <Menu.Trigger className="btn btn-secondary btn-sm gap-1.5 pl-2.5">
-        <span className="grid size-6 place-items-center rounded-full bg-sunken text-[11px] font-semibold text-ink-soft" aria-hidden>{who.slice(-2) || "•"}</span>
-        <span className="hidden max-w-[140px] truncate font-mono text-xs sm:inline">{who}</span>
+        <span className="grid size-6 place-items-center rounded-full bg-sunken text-[11px] font-semibold text-ink-soft" aria-hidden>{who.charAt(0).toUpperCase() || "•"}</span>
+        <span className="hidden max-w-[110px] truncate text-xs font-medium sm:inline" title={who}>{short}</span>
         <ChevronDown className="size-3.5 text-muted" aria-hidden />
       </Menu.Trigger>
       <Menu.Portal>

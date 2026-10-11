@@ -33,7 +33,7 @@
     "sending": "Sending…",
     "checkTitle": "Check your inbox",
     "linkSentTo": "We sent a sign-in link to {email}. Open it on this device.",
-    "linkNote": "The link works once and expires after an hour. If it does not arrive, look in spam.",
+    "linkNote": "The link works once and expires after an hour.",
     "changeEmail": "Use a different email",
     "noLink": "No email yet?",
     "resend": "Send again",
@@ -48,7 +48,9 @@
     "tooMany": "Too many attempts. Wait a few minutes and try again.",
     "network": "No connection. Check your network and try again.",
     "devHint": "Local emulator: any email works and the link is printed in the emulator log.",
-    "unavailable": "Sign-in isn't available on this address yet. Use the main address of the site, or try again later."
+    "unavailable": "Sign-in isn't available on this address yet. Use the main address of the site, or try again later.",
+    "spamTitle": "Check your spam or junk folder",
+    "spamHint": "It can take a minute. The email comes from {sender}. If it is in spam, mark it “not spam” so the next link arrives in your inbox."
   },
   "setup": {
     "title": "About your company",
