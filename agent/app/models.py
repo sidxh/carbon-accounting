@@ -94,6 +94,8 @@ class Site(BaseModel):
     lat: float | None = None
     lng: float | None = None
     formatted_address: str | None = None
+    # "approximate" when the address only matched a street or area, so the roof may be the wrong one.
+    location_precision: Literal["exact", "approximate"] | None = None
     roof_area_m2: float | None = None
 
 
@@ -112,7 +114,7 @@ class SupplierProfile(BaseModel):
     created_at: datetime | None = None
     # From the verified sign-in token, so a supplier document can be matched to a person in the
     # Firestore console without opening Authentication. The uid (the document id) stays the key.
-    phone: str | None = None
+    email: str | None = None
 
     def for_period(self, period: "ReportingPeriod") -> "SupplierProfile":
         """The profile with this period's dates in the FY slots, so code that

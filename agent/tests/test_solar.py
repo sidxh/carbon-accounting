@@ -129,3 +129,25 @@ def test_pvgis_returns_kwh_per_kwp_or_a_clear_error():
     assert solar.pvgis_yield(10.73, 106.89, client=client(lambda r: httpx.Response(200, json=ok))) == 1452.89
     with pytest.raises(solar.SolarError, match="pvgis"):
         solar.pvgis_yield(0, 0, client=client(lambda r: httpx.Response(400, json={"message": "Location over the sea"})))
+
+
+def test_geocode_reports_whether_it_found_a_building():
+    def result(location_type, **extra):
+        r = {"formatted_address": "Long Hau IP, Long An, Vietnam", "geometry": {"location": {"lat": 10.6, "lng": 106.6}, "location_type": location_type}, **extra}
+        return client(lambda req: httpx.Response(200, json={"status": "OK", "results": [r]}))
+
+    # The on-disk cache is keyed by the query, so each case asks a different one.
+    assert solar.geocode("case 1", "VN", client=result("ROOFTOP")).precise is True
+    assert solar.geocode("case 2", "VN", client=result("RANGE_INTERPOLATED")).precise is True
+    assert solar.geocode("case 3", "VN", client=result("APPROXIMATE")).precise is False
+    assert solar.geocode("case 4", "VN", client=result("GEOMETRIC_CENTER")).precise is False
+    assert solar.geocode("case 5", "VN", client=result("ROOFTOP", partial_match=True)).precise is False
+
+
+def test_parse_coordinates_accepts_what_google_maps_copies_and_nothing_else():
+    assert solar.parse_coordinates("10.7290, 106.7190") == (10.729, 106.719)
+    assert solar.parse_coordinates(" -33.8688,151.2093 ") == (-33.8688, 151.2093)
+    assert solar.parse_coordinates("34.9886 137.0022") == (34.9886, 137.0022)
+    assert solar.parse_coordinates("35.68° 139.69°") == (35.68, 139.69)
+    for text in ("12 34 Main Street", "Lot B2, Long Hau", "10, 106", "95.0, 10.0", "10.0, 190.0", "", "10.5"):
+        assert solar.parse_coordinates(text) is None, text

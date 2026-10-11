@@ -19,6 +19,7 @@ from __future__ import annotations
 import contextlib
 import hashlib
 import json
+import re
 from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
@@ -42,6 +43,9 @@ class Place:
     lat: float
     lng: float
     formatted_address: str
+    # False when Google only matched a street, district or city (not a building or an interpolated number),
+    # in which case "the building nearest this point" may be the wrong roof.
+    precise: bool = True
 
 
 @dataclass(frozen=True)
@@ -110,6 +114,19 @@ def _api_error(status: int, body: dict, what: str) -> SolarError:
     return SolarError(f"{what}: unexpected response ({status})")
 
 
+# Two decimal numbers, as Google Maps copies them. Both need a decimal point so "12 34 Main St" stays an address.
+_COORDS = re.compile(r"^\s*(-?\d{1,3}\.\d+)\s*°?\s*[,;\s]\s*(-?\d{1,3}\.\d+)\s*°?\s*$")
+
+
+def parse_coordinates(text: str) -> tuple[float, float] | None:
+    """"10.7290, 106.7190" (as copied from Google Maps) to (lat, lng); None for anything that is an address."""
+    m = _COORDS.match(text or "")
+    if not m:
+        return None
+    lat, lng = float(m.group(1)), float(m.group(2))
+    return (lat, lng) if abs(lat) <= 90 and abs(lng) <= 180 else None
+
+
 def geocode(address: str, country: str | None = None, *, client: httpx.Client | None = None) -> Place | None:
     """Address -> coordinates, biased to the supplier's country. None when nothing matches."""
     key = get_settings().google_maps_api_key
@@ -129,7 +146,8 @@ def geocode(address: str, country: str | None = None, *, client: httpx.Client | 
         raise _api_error(403 if st == "REQUEST_DENIED" else 500, body, "geocoding")
     top = body["results"][0]
     loc = top["geometry"]["location"]
-    return Place(float(loc["lat"]), float(loc["lng"]), top.get("formatted_address", address))
+    precise = top.get("geometry", {}).get("location_type") in ("ROOFTOP", "RANGE_INTERPOLATED") and not top.get("partial_match")
+    return Place(float(loc["lat"]), float(loc["lng"]), top.get("formatted_address", address), precise)
 
 
 def building_insights(lat: float, lng: float, *, client: httpx.Client | None = None) -> Building | None:

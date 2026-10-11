@@ -230,7 +230,17 @@ export default function ReducePage() {
           <button className="btn" disabled={busy || !address.trim()}>{view.located ? t("locate.again") : t("locate.find")}</button>
         </form>
         {view.located && activeSite?.formatted_address && (
-          <p className="mt-3 text-sm"><span className="text-muted">{t("locate.matched")}</span> {activeSite.formatted_address}</p>
+          <div className="mt-3 space-y-2 text-sm">
+            <p>
+              <span className="text-muted">{t("locate.matched")}</span> {activeSite.formatted_address}
+              {activeSite.lat != null && activeSite.lng != null && (
+                <> · <a className="font-medium text-signal-ink underline-offset-4 hover:underline" href={`https://www.google.com/maps?q=${activeSite.lat},${activeSite.lng}`} target="_blank" rel="noreferrer">{t("locate.check")}<ExternalLink className="ml-1 inline size-3" aria-hidden /></a></>
+              )}
+            </p>
+            {activeSite.location_precision === "approximate" && (
+              <p role="status" className="rounded-lg bg-attention-bg px-3 py-2 text-attention">{t("locate.approximate")}</p>
+            )}
+          </div>
         )}
       </section>
 

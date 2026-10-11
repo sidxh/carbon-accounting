@@ -20,7 +20,6 @@ from .settings import get_settings
 class Caller:
     uid: str
     email: str | None = None
-    phone: str | None = None
 
 
 def _bearer(authorization: str | None) -> str | None:
@@ -52,7 +51,6 @@ async def current_caller(authorization: str | None = Header(default=None)) -> Ca
     return Caller(
         uid=decoded["uid"],
         email=decoded.get("email"),
-        phone=decoded.get("phone_number"),
     )
 
 

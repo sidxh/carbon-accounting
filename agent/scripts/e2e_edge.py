@@ -2,7 +2,7 @@
 
     .venv/bin/python -m scripts.e2e_edge
 
-Covers: wrong OTP; a non-bill image and a PDF upload; an ambiguous answer to
+Covers: email-link sign-in; a non-bill image and a PDF upload; an ambiguous answer to
 the reconciler (must ask again, not record); re-running the check after
 everything is resolved; persistence across sign-out; and the error card when
 the agent is down (simulated by pointing at a dead port via route interception).
@@ -17,7 +17,7 @@ import sys
 import time
 from pathlib import Path
 
-from .e2e_common import AGENT_URL, WEB, pick_phone, chat_bubbles, fill_setup, locked_steps, new_request, sign_in, upload
+from .e2e_common import AGENT_URL, WEB, fresh_email, chat_bubbles, fill_setup, locked_steps, new_request, sign_in, upload
 
 ROOT = Path(__file__).resolve().parents[2]
 AGENT = ROOT / "agent"
@@ -25,7 +25,7 @@ GOLDEN = ROOT / "data" / "golden"
 SHOTS = AGENT / ".local_storage" / "e2e"
 os.environ.setdefault("PLAYWRIGHT_BROWSERS_PATH", str(AGENT / ".playwright"))
 # A fresh supplier every run, so the suite is repeatable against a live emulator.
-PHONE2 = pick_phone(0, "+8498" + str(int(time.time()))[-7:])
+EMAIL2 = fresh_email()
 
 
 def ok(name, cond, page=None):
@@ -58,9 +58,9 @@ def main() -> int:
         ctx = b.new_context(viewport={"width": 430, "height": 900})
         page = ctx.new_page()
 
-        # 1. Wrong OTP shows an error and stays on the code step -----------------
-        sign_in(page, PHONE2, wrong_first=True)
-        ok("wrong-otp-then-correct", "/setup" in page.url, page)
+        # 1. Email link signs a fresh supplier in and lands on setup -----------------
+        sign_in(page, EMAIL2)
+        ok("email-link-sign-in", "/setup" in page.url, page)
 
         # 2. Second supplier, LPG Jan–Jun only -> gap Jul–Dec -----------------------
         fill_setup(page, "Xí nghiệp Gas Thử Nghiệm", "Xưởng 2")
@@ -154,7 +154,7 @@ def main() -> int:
         page.get_by_role("menuitem", name=re.compile("Sign out")).click()
         page.wait_for_timeout(300)
         page.wait_for_url(f"{WEB}/")
-        sign_in(page, PHONE2)
+        sign_in(page, EMAIL2)
         page.goto(f"{WEB}/home")
         page.get_by_text("Toyota Boshoku").first.wait_for(timeout=20000)
         page.goto(f"{WEB}/r/{rid2}/inventory")

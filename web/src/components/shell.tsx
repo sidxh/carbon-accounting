@@ -54,7 +54,7 @@ export function AccountMenu() {
   const router = useRouter();
   const locale = useLocale();
   const { user, signOut } = useAuth();
-  const who = user?.phoneNumber ?? user?.email ?? "";
+  const who = user?.email ?? "";
 
   return (
     <Menu.Root>

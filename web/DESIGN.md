@@ -178,7 +178,7 @@ Buttons are at least 44px tall, press to `scale(0.97)` over `press` with `ease-o
 
 Dialogs, menus and any surface with keyboard or focus behaviour come from `@base-ui/react`. Destructive or irreversible actions (remove a bill, start over, reset questions) use `AlertDialog`; reversible edits use `Dialog`. Menus scale in from their trigger over `fast`; dialogs stay centred. Toasts are Sonner, styled with these tokens, announced politely, and never the only place an error appears: the error also renders next to the action that caused it.
 
-One-time codes use `input-otp`. Numbers that change while the user watches (headline statistics after a recompute or correction) use NumberFlow; static numbers do not animate.
+Numbers that change while the user watches (headline statistics after a recompute or correction) use NumberFlow; static numbers do not animate.
 
 Coverage strips are twelve cells per fiscal year: `signal` for months read from a bill, `tier2` for corrected months, amber hatching for estimated months, a dashed `line-strong` outline for missing months, and each cell carries a `title` naming the month and its state.
 

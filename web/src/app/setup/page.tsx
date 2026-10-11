@@ -12,22 +12,23 @@ import { useToast } from "@/components/ui/toast";
 import { api, type SupplierProfile } from "@/lib/api";
 
 const COUNTRIES = ["VN", "JP", "SG", "AU", "TH", "ID", "IN"];
-const LANGS = [["vi", "Tiếng Việt"], ["ja", "日本語"], ["en", "English"]] as const;
+/** Australia is the only country with state-level grid factors; a state outside the six falls back to the national figure. */
+const AU_STATES: [string, string][] = [["AU-NSW", "New South Wales"], ["AU-VIC", "Victoria"], ["AU-QLD", "Queensland"], ["AU-SA", "South Australia"], ["AU-WA", "Western Australia"], ["AU-TAS", "Tasmania"]];
 
 function Form({ profile, uid }: { profile: SupplierProfile | null; uid: string }) {
   const t = useTranslations("setup");
   const locale = useLocale();
   const router = useRouter();
   const toast = useToast();
+  const countryName = new Intl.DisplayNames([locale], { type: "region" });
   const [busy, setBusy] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
   const [f, setF] = useState({
     name: profile?.name ?? "",
     country: profile?.country ?? "VN",
-    language: profile?.language ?? locale,
     fiscal_year_start: profile?.fiscal_year_start ?? "2025-01-01",
     fiscal_year_end: profile?.fiscal_year_end ?? "2025-12-31",
-    sites: profile?.sites.map((s) => ({ name: s.name, country: s.country, region: s.region ?? "", address: s.address ?? "" })) ?? [{ name: "", country: profile?.country ?? "VN", region: "", address: "" }],
+    sites: profile?.sites.map((s) => ({ name: s.name, region: s.region ?? "" })) ?? [{ name: "", region: "" }],
     sector: profile?.sector ?? "",
     revenue: profile?.revenue?.toString() ?? "",
     revenue_currency: profile?.revenue_currency ?? "",
@@ -40,13 +41,14 @@ function Form({ profile, uid }: { profile: SupplierProfile | null; uid: string }
       await api.upsertSupplier({
         name: f.name,
         country: f.country,
-        language: f.language,
+        language: locale,   // the questions on the next steps follow the language the app is shown in
         fiscal_year_start: f.fiscal_year_start,
         fiscal_year_end: f.fiscal_year_end,
         sector: f.sector,
         revenue: f.revenue ? Number(f.revenue) : null,
         revenue_currency: f.revenue_currency || null,
-        sites: f.sites.filter((s) => s.name.trim()).map((s) => ({ name: s.name, country: s.country || f.country, region: s.region || null, address: s.address.trim() || null })),
+        // No address here: it is entered on the Reduce page, where it is used. Leaving it out keeps any stored one.
+        sites: f.sites.filter((s) => s.name.trim()).map((s) => ({ name: s.name, country: f.country, region: f.country === "AU" ? s.region || null : null })),
       });
       toast(t("saved"));
       router.push("/home");
@@ -81,20 +83,15 @@ function Form({ profile, uid }: { profile: SupplierProfile | null; uid: string }
           <input id="name" className="input" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} required autoComplete="organization" />
         </div>
 
+        <div>
+          <label className="label" htmlFor="country">{t("country")}</label>
+          <select id="country" className="input" aria-describedby="country-hint" value={f.country} onChange={(e) => setF({ ...f, country: e.target.value })}>
+            {COUNTRIES.map((c) => <option key={c} value={c}>{countryName.of(c) ?? c}</option>)}
+          </select>
+          <p id="country-hint" className="mt-1 text-xs text-muted">{t("countryHint")}</p>
+        </div>
+
         <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <label className="label" htmlFor="country">{t("country")}</label>
-            <select id="country" className="input" value={f.country} onChange={(e) => setF({ ...f, country: e.target.value })}>
-              {COUNTRIES.map((c) => <option key={c}>{c}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="label" htmlFor="language">{t("language")}</label>
-            <select id="language" className="input" aria-describedby="language-hint" value={f.language} onChange={(e) => setF({ ...f, language: e.target.value })}>
-              {LANGS.map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-            </select>
-            <p id="language-hint" className="mt-1 text-xs text-muted">{t("languageHint")}</p>
-          </div>
           <div>
             <label className="label" htmlFor="fyStart">{t("fyStart")}</label>
             <input id="fyStart" className="input" type="date" value={f.fiscal_year_start} onChange={(e) => setF({ ...f, fiscal_year_start: e.target.value })} required />
@@ -110,17 +107,21 @@ function Form({ profile, uid }: { profile: SupplierProfile | null; uid: string }
           <p className="mb-2 text-xs text-muted">{t("sitesHint")}</p>
           <div className="space-y-2">
             {f.sites.map((s, i) => (
-              <div key={i} className="grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
+              <div key={i} className={f.country === "AU" ? "grid gap-2 sm:grid-cols-[1fr_1fr_auto]" : "grid gap-2 sm:grid-cols-[1fr_auto]"}>
                 <input className="input" aria-label={`${t("siteName")} ${i + 1}`} placeholder={t("siteName")} value={s.name} onChange={(e) => { const sites = [...f.sites]; sites[i] = { ...s, name: e.target.value }; setF({ ...f, sites }); }} />
-                <input className="input" aria-label={`${t("siteRegion")} ${i + 1}`} placeholder={t("siteRegion")} value={s.region} onChange={(e) => { const sites = [...f.sites]; sites[i] = { ...s, region: e.target.value }; setF({ ...f, sites }); }} />
-                <input className="input sm:col-span-2" aria-label={`${t("siteAddress")} ${i + 1}`} placeholder={t("siteAddress")} value={s.address} onChange={(e) => { const sites = [...f.sites]; sites[i] = { ...s, address: e.target.value }; setF({ ...f, sites }); }} />
-                <button type="button" className="btn btn-ghost btn-icon sm:col-start-3 sm:row-start-1" aria-label={t("removeSite", { n: i + 1 })} disabled={f.sites.length === 1} onClick={() => setF({ ...f, sites: f.sites.filter((_, j) => j !== i) })}>
+                {f.country === "AU" && (
+                  <select className="input" aria-label={`${t("siteState")} ${i + 1}`} value={s.region} onChange={(e) => { const sites = [...f.sites]; sites[i] = { ...s, region: e.target.value }; setF({ ...f, sites }); }}>
+                    <option value="">{t("siteStateOther")}</option>
+                    {AU_STATES.map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                  </select>
+                )}
+                <button type="button" className="btn btn-ghost btn-icon" aria-label={t("removeSite", { n: i + 1 })} disabled={f.sites.length === 1} onClick={() => setF({ ...f, sites: f.sites.filter((_, j) => j !== i) })}>
                   <Trash2 className="size-4" aria-hidden />
                 </button>
               </div>
             ))}
           </div>
-          <button type="button" className="btn btn-ghost btn-sm mt-2 gap-1.5" onClick={() => setF({ ...f, sites: [...f.sites, { name: "", country: f.country, region: "", address: "" }] })}>
+          <button type="button" className="btn btn-ghost btn-sm mt-2 gap-1.5" onClick={() => setF({ ...f, sites: [...f.sites, { name: "", region: "" }] })}>
             <Plus className="size-4" aria-hidden /> {t("addSite")}
           </button>
         </fieldset>

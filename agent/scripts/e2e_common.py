@@ -8,57 +8,39 @@ import re
 import time
 import urllib.request
 
-# Local by default. E2E_WEB_URL / E2E_AGENT_URL point the scripts at another stack. Signing in to the
-# deployed Firebase Auth cannot be automated: reCAPTCHA shows image challenges to headless browsers and
-# rejects the test-only bypass, so the deployed stack is checked by a manual run plus the Cloud Run logs
-# (see TESTING.md). E2E_OTP / E2E_PHONES (fixed-code test numbers) only help for a headed, human-assisted run.
+# Local by default. E2E_WEB_URL / E2E_AGENT_URL point the scripts at another stack. The sign-in link
+# is read from the Auth emulator, so a deployed stack (real email) cannot be signed in unattended: it is
+# checked by a manual run plus the Cloud Run logs (see TESTING.md).
 WEB = os.environ.get("E2E_WEB_URL", "http://localhost:3000").rstrip("/")
 AGENT_URL = os.environ.get("E2E_AGENT_URL", "http://localhost:8000").rstrip("/")
 AUTH_EMU = "http://127.0.0.1:9099"
 PROJECT = "fir-testing-f96b1"
 
 
-def pick_phone(index: int, fresh: str) -> str:
-    """The index-th configured test number when E2E_PHONES is set, else a fresh local one."""
-    pool = [p.strip() for p in os.environ.get("E2E_PHONES", "").split(",") if p.strip()]
-    if not pool:
-        return fresh
-    if index >= len(pool):
-        raise SystemExit(f"E2E_PHONES has {len(pool)} number(s); this script needs at least {index + 1}")
-    return pool[index]
+def fresh_email() -> str:
+    """A new local supplier: the emulator accepts any address."""
+    return f"e2e{int(time.time())}@example.com"
 
 
-def emulator_code(phone: str) -> str:
-    """The Auth emulator exposes generated SMS codes; a deployed stack uses a fixed test-number code."""
-    if os.environ.get("E2E_OTP"):
-        return os.environ["E2E_OTP"]
-    url = f"{AUTH_EMU}/emulator/v1/projects/{PROJECT}/verificationCodes"
-    data = json.loads(urllib.request.urlopen(url).read())
-    codes = [c for c in data.get("verificationCodes", []) if c.get("phoneNumber") == phone]
-    if not codes:
-        raise RuntimeError(f"no verification code for {phone}: {data}")
-    return codes[-1]["code"]
+def emulator_link(email: str) -> str:
+    """The newest sign-in link the Auth emulator generated for this address."""
+    url = f"{AUTH_EMU}/emulator/v1/projects/{PROJECT}/oobCodes"
+    for _ in range(20):
+        data = json.loads(urllib.request.urlopen(url).read())
+        links = [c["oobLink"] for c in data.get("oobCodes", []) if c.get("email") == email and c.get("requestType") == "EMAIL_SIGNIN"]
+        if links:
+            return links[-1]
+        time.sleep(0.5)
+    raise RuntimeError(f"no sign-in link for {email}")
 
 
-def type_code(page, code: str) -> None:
-    """Six single-digit boxes: focus the first and type; the last digit submits."""
-    box = page.locator("input[autocomplete=one-time-code]")
-    box.wait_for(timeout=15000)
-    box.click()
-    page.keyboard.type(code, delay=30)
-
-
-def sign_in(page, phone: str, wrong_first: bool = False) -> None:
+def sign_in(page, email: str) -> None:
     page.goto(f"{WEB}/sign-in")
-    page.get_by_label(re.compile("Mobile number|Số điện thoại|携帯電話番号")).fill(phone)
-    page.get_by_role("button", name=re.compile("Send code|Gửi mã|コードを送信")).click()
-    # The code exists only once the emulator has accepted the request; the OTP boxes
-    # appear at the same moment, so wait for them before asking for it.
-    page.locator("input[autocomplete=one-time-code]").wait_for(timeout=15000)
-    if wrong_first:
-        type_code(page, "000000")
-        page.locator("p[role=alert]").wait_for(timeout=15000)
-    type_code(page, emulator_code(phone))
+    page.get_by_label(re.compile("Work email|Email công việc|仕事用メールアドレス")).fill(email)
+    page.get_by_role("button", name=re.compile("Email me a link|Gửi liên kết cho tôi|リンクをメールで送る")).click()
+    # The link exists once the emulator has accepted the request, which is when the inbox step shows.
+    page.get_by_text(re.compile("Check your inbox|Kiểm tra hộp thư|受信トレイを確認")).wait_for(timeout=15000)
+    page.goto(emulator_link(email))   # same browser: the page finds the saved address and signs in
     page.wait_for_url(re.compile(r"/(setup|home)"), timeout=30000)
     # A fresh user is bounced from /home to /setup once the profile 404s.
     try:
@@ -67,18 +49,15 @@ def sign_in(page, phone: str, wrong_first: bool = False) -> None:
         pass
 
 
-def fill_setup(page, name: str, site: str, language: str = "vi", country: str = "VN", address: str | None = None) -> None:
+def fill_setup(page, name: str, site: str, country: str = "VN") -> None:
     page.wait_for_selector("form.card")
     page.locator("form.card input").first.fill(name)
     selects = page.locator("form.card select")
     selects.nth(0).select_option(country)
-    selects.nth(1).select_option(language)
     dates = page.locator("form.card input[type=date]")
     dates.nth(0).fill("2025-01-01")
     dates.nth(1).fill("2025-12-31")
     page.locator("form.card input[placeholder]").nth(0).fill(site)
-    if address:
-        page.locator("form.card input[placeholder]").nth(2).fill(address)
     page.get_by_role("button", name=re.compile("Save|Lưu|保存")).click()
     page.wait_for_url(re.compile(r"/home"), timeout=20000)
 

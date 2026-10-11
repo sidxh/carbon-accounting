@@ -15,7 +15,7 @@ import mimetypes
 import uuid
 from datetime import date, datetime, timezone
 
-from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile, status
+from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse, Response
 from pydantic import BaseModel, Field
@@ -35,6 +35,7 @@ from .services import (
     compute_inventory,
     default_period,
     default_site_id,
+    delete_period,
     make_period,
     period_prefix,
     period_progress,
@@ -196,18 +197,21 @@ def upsert_supplier(body: SupplierIn, caller: Caller = Depends(current_caller)):
     for s in body.sites:
         prev = old_by_id.get(s.id or "") or old_by_name.get(s.name.strip().lower())
         keep = {}
-        if prev and (prev.address or "") == (s.address or ""):      # same address: the lookup still stands
+        # Setup no longer asks for an address (it is entered where it is used, on the reduction page), so a
+        # save that leaves it out keeps the stored address and its lookup; a changed address drops the lookup.
+        address = s.address if s.address is not None else (prev.address if prev else None)
+        if prev and (prev.address or "") == (address or ""):
             keep = {"lat": prev.lat, "lng": prev.lng, "formatted_address": prev.formatted_address}
         if prev:
             keep["roof_area_m2"] = prev.roof_area_m2
-        sites.append(Site(id=prev.id if prev else f"site_{uuid.uuid4().hex[:6]}", name=s.name, country=s.country, region=s.region, address=s.address, **keep))
+        sites.append(Site(id=prev.id if prev else f"site_{uuid.uuid4().hex[:6]}", name=s.name, country=s.country, region=s.region, address=address, **keep))
     sites = sites or [Site(id="main", name="Main site", country=body.country)]
     profile = SupplierProfile(
         id=caller.uid, name=body.name, country=body.country.upper(), language=body.language,
         fiscal_year_start=body.fiscal_year_start, fiscal_year_end=body.fiscal_year_end, sites=sites,
         sector=body.sector, revenue=body.revenue, revenue_currency=body.revenue_currency,
         created_at=existing.created_at if existing else datetime.now(timezone.utc),
-        phone=caller.phone or (existing.phone if existing else None),
+        email=caller.email or (existing.email if existing else None),
     )
     repo.put_supplier(profile)
     # A first-run supplier gets a period for the FY they just typed, so the
@@ -220,8 +224,8 @@ def upsert_supplier(body: SupplierIn, caller: Caller = Depends(current_caller)):
 @app.get("/suppliers/{supplier_id}", response_model=SupplierProfile)
 def get_supplier(supplier_id: str, caller: Caller = Depends(require_supplier)):
     profile = _profile_or_404(supplier_id)
-    if caller.phone and profile.phone != caller.phone:  # backfill suppliers created before the field existed
-        profile = profile.model_copy(update={"phone": caller.phone})
+    if caller.email and profile.email != caller.email:  # backfill suppliers created before the field existed
+        profile = profile.model_copy(update={"email": caller.email})
         get_repo().put_supplier(profile)
     return profile
 
@@ -288,6 +292,13 @@ def create_period(supplier_id: str, body: PeriodIn, caller: Caller = Depends(req
 @app.get("/suppliers/{supplier_id}/periods/{pid}")
 def get_period(supplier_id: str, pid: str, caller: Caller = Depends(require_supplier)):
     return {"period": _period_or_404(supplier_id, pid), "progress": period_progress(get_repo(), supplier_id, pid)}
+
+
+@app.delete("/suppliers/{supplier_id}/periods/{pid}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_period_route(supplier_id: str, pid: str, caller: Caller = Depends(require_supplier)):
+    """Delete the reporting year with its bills, inventory, files and the requests made for it."""
+    delete_period(get_repo(), _profile_or_404(supplier_id), _period_or_404(supplier_id, pid))
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @app.delete("/suppliers/{supplier_id}/periods/{pid}/data")
@@ -472,16 +483,23 @@ def _reconcile_view(profile: SupplierProfile, period: ReportingPeriod, state: Re
     return state.model_dump(mode="json") | {"summary": summary}
 
 
+def _in_app_language(profile: SupplierProfile, x_locale: str | None) -> SupplierProfile:
+    """The questions are asked in the language the app is showing, which the browser sends as X-Locale."""
+    if x_locale in reconciler.LANG_NAMES:
+        return profile.model_copy(update={"language": x_locale})
+    return profile
+
+
 @app.post("/suppliers/{supplier_id}/periods/{pid}/reconcile/start")
-def reconcile_start(supplier_id: str, pid: str, caller: Caller = Depends(require_supplier)):
-    profile = _profile_or_404(supplier_id)
+def reconcile_start(supplier_id: str, pid: str, caller: Caller = Depends(require_supplier), x_locale: str | None = Header(default=None)):
+    profile = _in_app_language(_profile_or_404(supplier_id), x_locale)
     period = _period_or_404(supplier_id, pid)
     return _reconcile_view(profile, period, reconciler.start(get_repo(), profile, period))
 
 
 @app.post("/suppliers/{supplier_id}/periods/{pid}/reconcile")
-def reconcile_reply(supplier_id: str, pid: str, body: ReplyIn, caller: Caller = Depends(require_supplier)):
-    profile = _profile_or_404(supplier_id)
+def reconcile_reply(supplier_id: str, pid: str, body: ReplyIn, caller: Caller = Depends(require_supplier), x_locale: str | None = Header(default=None)):
+    profile = _in_app_language(_profile_or_404(supplier_id), x_locale)
     period = _period_or_404(supplier_id, pid)
     if not body.message.strip():
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Say something first.")
@@ -526,16 +544,21 @@ def locate_site(supplier_id: str, site_id: str, body: LocateIn, caller: Caller =
     if site is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Site not found.")
     upd: dict = {}
-    if body.address and body.address.strip():
+    typed = (body.address or "").strip()
+    pasted = solar.parse_coordinates(typed) if typed else None     # "10.7290, 106.7190" copied from Google Maps
+    if pasted is not None:
+        upd.update(address=typed, lat=pasted[0], lng=pasted[1], formatted_address=f"{pasted[0]:.5f}, {pasted[1]:.5f}", location_precision="exact")
+    elif typed:
         try:
-            place = solar.geocode(body.address, site.country or profile.country)
+            place = solar.geocode(typed, site.country or profile.country)
         except solar.SolarError as e:
             raise HTTPException(status.HTTP_502_BAD_GATEWAY, str(e))
         if place is None:
-            raise HTTPException(status.HTTP_404_NOT_FOUND, "We could not find that address. Try adding the district and city.")
-        upd.update(address=body.address.strip(), lat=place.lat, lng=place.lng, formatted_address=place.formatted_address)
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "We could not find that address. Add the building number, district and city, or paste the roof's coordinates from Google Maps.")
+        upd.update(address=typed, lat=place.lat, lng=place.lng, formatted_address=place.formatted_address,
+                   location_precision="exact" if place.precise else "approximate")
     elif body.lat is not None and body.lng is not None:
-        upd.update(lat=body.lat, lng=body.lng, formatted_address=f"{body.lat:.5f}, {body.lng:.5f}")
+        upd.update(lat=body.lat, lng=body.lng, formatted_address=f"{body.lat:.5f}, {body.lng:.5f}", location_precision="exact")
     if body.roof_area_m2 is not None:
         upd["roof_area_m2"] = body.roof_area_m2
     if not upd:

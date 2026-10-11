@@ -2,7 +2,7 @@
 
 Run scripts.e2e_local first (it leaves a supplier with a computed inventory), then:
 
-    .venv/bin/python -m scripts.e2e_provenance --phone +84901112233
+    .venv/bin/python -m scripts.e2e_provenance --email you@example.com
 """
 
 from __future__ import annotations
@@ -13,7 +13,7 @@ import re
 import sys
 from pathlib import Path
 
-from .e2e_common import WEB, pick_phone, sign_in
+from .e2e_common import WEB, fresh_email, sign_in
 
 AGENT = Path(__file__).resolve().parents[1]
 SHOTS = AGENT / ".local_storage" / "e2e"
@@ -22,7 +22,7 @@ os.environ.setdefault("PLAYWRIGHT_BROWSERS_PATH", str(AGENT / ".playwright"))
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--phone", default=pick_phone(0, "+84901112233"))
+    ap.add_argument("--email", default=fresh_email())
     ap.add_argument("--headed", action="store_true")
     args = ap.parse_args()
     from playwright.sync_api import sync_playwright
@@ -34,7 +34,7 @@ def main() -> int:
         page = ctx.new_page()
         errors: list[str] = []
         page.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)
-        sign_in(page, args.phone)
+        sign_in(page, args.email)
         page.goto(f"{WEB}/home")
         page.get_by_role("link", name=re.compile("Continue|Tiếp tục|続ける")).first.click()
         page.wait_for_url(re.compile(r"/r/(req_[a-f0-9]+)/"), timeout=20000)

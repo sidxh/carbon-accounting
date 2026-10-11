@@ -4,9 +4,9 @@ Prereqs (three terminals): scripts/dev.sh emulators, scripts/dev.sh agent, scrip
 
     .venv/bin/python -m scripts.e2e_local
     .venv/bin/python -m scripts.e2e_local --headed      # watch it
-    .venv/bin/python -m scripts.e2e_local --phone +84901234567
+    .venv/bin/python -m scripts.e2e_local --email you@example.com
 
-Signs in with a phone number through the Auth emulator, sets up the Minh Phát
+Signs in with an email link through the Auth emulator, sets up the Minh Phát
 profile, stages the golden Vietnamese bills (removing one before upload),
 uploads them, deletes one and re-uploads it, answers the reconciler, checks the
 inventory and lineage, corrects one quantity, fills the CDP template and
@@ -23,7 +23,7 @@ import sys
 import time
 from pathlib import Path
 
-from .e2e_common import WEB, pick_phone, chat_bubbles, fill_setup, locked_steps, new_request, sign_in, upload
+from .e2e_common import WEB, fresh_email, chat_bubbles, fill_setup, locked_steps, new_request, sign_in, upload
 
 ROOT = Path(__file__).resolve().parents[2]
 AGENT = ROOT / "agent"
@@ -43,7 +43,7 @@ def step(name: str, page, ok: bool = True) -> None:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--headed", action="store_true")
-    ap.add_argument("--phone", default=pick_phone(0, "+8493" + str(int(time.time()))[-7:]), help="default: a fresh supplier")
+    ap.add_argument("--email", default=fresh_email(), help="default: a fresh supplier")
     ap.add_argument("--answer", default="Có, lò vẫn chạy bình thường như các tháng khác.")
     ap.add_argument("--resume", action="store_true", help="sign in to an existing supplier with a computed inventory and run from the inventory step")
     args = ap.parse_args()
@@ -61,7 +61,7 @@ def main() -> int:
         page.on("console", lambda m: console_errors.append(m.text) if m.type == "error" else None)
 
         # 1. Sign in --------------------------------------------------------------
-        sign_in(page, args.phone)
+        sign_in(page, args.email)
         step("01-signed-in", page)
 
         if args.resume:
@@ -230,7 +230,7 @@ def _from_inventory(page, step, SHOTS, console_errors, browser, args, rid) -> in
         for e in real_errors[:8]:
             print("   ", e[:160])
         browser.close()
-    print(f"\nscreenshots in {SHOTS.relative_to(ROOT)} · supplier {args.phone}")
+    print(f"\nscreenshots in {SHOTS.relative_to(ROOT)} · supplier {args.email}")
     return 0
 
 

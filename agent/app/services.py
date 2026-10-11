@@ -210,6 +210,25 @@ def reset_period(repo: Repo, profile: SupplierProfile, period: ReportingPeriod) 
             repo.put_request(profile.id, req.model_copy(update={"questionnaire_id": None}))
 
 
+def delete_period(repo: Repo, profile: SupplierProfile, period: ReportingPeriod) -> list[str]:
+    """Remove a reporting year: its bills, answers and inventory, the stored files, and every request
+    that was made for it (with its questionnaire and files). Returns the customers whose requests went."""
+    removed: list[str] = []
+    storage = get_storage()
+    for req in repo.list_requests(profile.id):
+        if req.period_id != period.id:
+            continue
+        if req.questionnaire_id:
+            repo.delete_questionnaire(profile.id, req.questionnaire_id)
+        storage.delete_prefix(f"suppliers/{profile.id}/requests/{req.id}/")
+        repo.delete_request(profile.id, req.id)
+        removed.append(req.customer_name)
+    repo.clear_period_data(profile.id, period.id)
+    storage.delete_prefix(period_prefix(profile.id, period.id))
+    repo.delete_period(profile.id, period.id)
+    return removed
+
+
 def reset_all(repo: Repo, profile: SupplierProfile) -> None:
     """Remove every period, request, questionnaire and file. The profile stays."""
     repo.clear_supplier_data(profile.id)

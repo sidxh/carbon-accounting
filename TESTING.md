@@ -8,7 +8,7 @@ agent on your laptop, Gemini through an AI Studio key.
 ```mermaid
 flowchart LR
     Browser["Browser :3000 Next.js"] -->|"Bearer ID token on every call"| Agent["FastAPI agent :8000"]
-    Browser -->|"phone OTP"| AuthEmu["Auth emulator :9099"]
+    Browser -->|"email link"| AuthEmu["Auth emulator :9099"]
     Agent -->|"verify token"| AuthEmu
     Agent -->|"Admin SDK, anonymous creds"| FsEmu["Firestore emulator :8080"]
     Agent -->|"files"| Disk["agent/.local_storage/"]
@@ -40,9 +40,10 @@ prompt, file bytes and schema. Uploading the same golden PNG a second time
 is instant and costs zero quota. To see real model latency and the 15 RPM
 pacing, upload a file the cache has never seen (re-save a PNG with a
 one-pixel change, or photograph your screen with a phone).
-- The agent's chat language comes from the profile `language` you pick at
-Setup, not from the UI language switcher. The switcher only changes the app
-strings.
+- There is one language setting: the app language (nav, sign-in page or account
+menu). It changes the app strings and the language the agent asks its follow-up
+questions in (the browser sends it as `X-Locale`). Setup has no language field.
+Bills and questionnaires can be in any language, and language never changes a number.
 
 ## 2. Scenarios
 
@@ -51,8 +52,8 @@ is in `data/golden/labels.json`.
 
 ### Repeating a scenario
 
-Your phone number is your supplier: the Firebase uid is the Firestore
-document id, so signing in with the same number always opens the same data,
+Your email address is your supplier: the Firebase uid is the Firestore
+document id, so signing in with the same email always opens the same data,
 and the emulator re-imports `emulator-data/` on every start. That is
 persistence working (scenario M), but it means "sign in again" is never a
 clean slate. Three reset levels, from lightest to heaviest:
@@ -97,24 +98,23 @@ of their runs. Either *Start over* on it or pick any other number.
 
 ### A. Sign-in (Auth emulator)
 
-- Steps: `/sign-in`. The number field has a country-code chip (+84 default)
-  and a local-number input; a pasted full number such as `+84901234567` also
-  works. Send code. Get the code from Emulator UI > Authentication, or
-  `curl 127.0.0.1:9099/emulator/v1/projects/fir-testing-f96b1/verificationCodes`.
-  Type `000000` into the six boxes: the sixth digit submits automatically,
-  expect an inline error and the boxes clear. Type the real code: a fresh
-  user lands on `/setup`. Pasting a six-digit code fills all boxes. "Send
-  again" is disabled for 30 s. "Other ways to sign in" folds out the email
-  link.
+- Steps: `/sign-in`. Type any email and press "Email me a link": the card
+  changes to "Check your inbox" with a resend countdown (30 s) and "Use a
+  different email". In the emulator no mail is sent: get the link from Emulator
+  UI > Authentication, or
+  `curl 127.0.0.1:9099/emulator/v1/projects/fir-testing-f96b1/oobCodes` (the `oobLink`),
+  and open it in the same browser: a fresh user lands on `/setup`. Opening the
+  link in another browser asks you to confirm the address first; reopening a
+  used link says it has expired. No reCAPTCHA badge appears anywhere.
 - Background: the browser talks to the Auth emulator directly
-(`web/src/lib/firebase.ts`, reCAPTCHA disabled for testing). Every API
+(`web/src/lib/firebase.ts`). Every API
 request carries the ID token; `agent/app/auth.py` verifies it and uses the
 uid as the supplier id, so ownership is structural rather than checked per
 route.
 
 ### B. Profile
 
-- Steps: name `Công ty TNHH Cơ khí Minh Phát`, country VN, language `vi`, FY
+- Steps: name `Công ty TNHH Cơ khí Minh Phát`, country Vietnam, FY
   `2025-01-01` to `2025-12-31`, one site `Xưởng Nhơn Trạch`. Leave revenue
   empty for now (scenario J tests the flagged intensity answer). Save: you
   land on `/home`.
@@ -375,10 +375,10 @@ xhtml2pdf (WeasyPrint if installed). Stored at
 
 ### L. Language
 
-Open the account menu (top right, shows your number) and switch to Tiếng
+Open the account menu (top right, shows your email) and switch to Tiếng
 Việt and 日本語; all strings change, data does not. The same menu holds Sign
-out. Chat language stays whatever the profile says. Create a second
-profile with language `ja` to see Japanese questions.
+out. The reconcile questions are asked in the language the app is showing:
+switch to 日本語 and start a fresh reconcile to see Japanese questions.
 
 ### M. Persistence
 
@@ -433,7 +433,7 @@ cd agent
 .venv/bin/pytest                                  # calculator, factors, reconcile tools, API; offline
 .venv/bin/python -m scripts.eval_extraction       # golden-set accuracy, cached
 .venv/bin/python -m scripts.e2e_local             # browser: the whole journey on a fresh supplier (needs the 3 terminals)
-.venv/bin/python -m scripts.e2e_local --resume --phone +84XXXXXXXXX   # first request on the dashboard, from its inventory step (useful when Gemini is flaky)
+.venv/bin/python -m scripts.e2e_local --resume --email you@example.com   # first request on the dashboard, from its inventory step (useful when Gemini is flaky)
 .venv/bin/python -m scripts.e2e_edge              # browser: edge cases above
 ```
 
@@ -460,9 +460,8 @@ outside them. Firestore over a hosted Postgres because it is in the same
 Firebase project as Auth (one SDK, one credential), it is free at this
 scale with no connection pooling or migrations, and the submission is
 judged as a Google Cloud build.
-- Firebase Auth is the real lock-in, not Firestore. Phone OTP with test
-numbers is the demo's sign-in, and the Auth emulator is the only way to run
-it with no card.
+- Firebase Auth is the real lock-in, not Firestore. Email-link sign-in is the
+sign-in, and the Auth emulator is the only way to run it with no card.
 
 The friction is the emulator, not Firestore: the Java dependency, and the
 stack failing opaquely when the emulator is not up. Ways to reduce it without
@@ -473,8 +472,8 @@ emulator is not needed because `STORAGE_BACKEND=local` writes to disk.
 - `STORAGE_BACKEND=memory` in `.env` swaps in `MemoryRepo`: no Firestore
 emulator at all, data gone on agent restart. Fine for quick UI iteration,
 useless for the persistence scenarios. You still need the Auth emulator.
-- Real Firestore on the Spark plan (no card) works today; only Phone Auth is
-gated behind Blaze. That is the deploy-time move.
+- Real Firestore on the Spark plan (no card) works today; the deploy-time move is
+Cloud Run and App Hosting, which need the Blaze plan.
 
 Keep the three-terminal habit, watch the Emulator UI at :4000 while testing,
 and always stop the emulators with Ctrl-C so the export runs.
@@ -483,12 +482,12 @@ and always stop the emulators with Ctrl-C so the export runs.
 
 Target: the existing Firebase project `fir-testing-f96b1`. The agent runs on Cloud
 Run, the web app on Firebase App Hosting, with Firestore, a Cloud Storage bucket,
-Secret Manager and Phone Auth around them. Region `asia-southeast1`.
+Secret Manager and email-link Auth around them. Region `asia-southeast1`.
 
 ```mermaid
 flowchart LR
     Browser["Browser"] --> Web["App Hosting: Next.js"]
-    Browser -->|"phone OTP"| Auth["Firebase Auth"]
+    Browser -->|"email link"| Auth["Firebase Auth"]
     Browser -->|"Bearer ID token"| Agent["Cloud Run: agent"]
     Agent --> Fs["Firestore"]
     Agent --> Gcs["Cloud Storage bucket"]
@@ -501,7 +500,7 @@ flowchart LR
 
 1. `gcloud auth login` and `firebase login` with the account that owns the trial.
 2. Link the trial billing account to the project (needed for Cloud Run, Cloud Build
-   and Phone Auth): `gcloud billing accounts list`, then
+   and App Hosting): `gcloud billing accounts list`, then
    `gcloud billing projects link fir-testing-f96b1 --billing-account=ACCOUNT_ID`.
 3. `infra/deploy.sh setup` enables the APIs (including Solar and Geocoding), creates
    Firestore, the bucket, the Artifact Registry repository and the agent's service
@@ -509,9 +508,10 @@ flowchart LR
 4. `infra/deploy.sh secrets` copies `GOOGLE_API_KEY` and `GOOGLE_MAPS_API_KEY` from
    your `.env` into Secret Manager. Nothing is printed. In the Cloud console,
    restrict the Maps key to the Solar API and Geocoding API.
-5. Firebase console, Authentication: turn on the Phone provider and add up to ten
-   "Phone numbers for testing", each with a fixed six-digit code. These skip real SMS
-   and cost nothing. Add your App Hosting domain under Settings, Authorized domains.
+5. Firebase console, Authentication > Sign-in method: enable Email/Password and tick "Email
+   link (passwordless sign-in)". Under Settings > Authorized domains add your App Hosting
+   and custom domains. Under Project settings, set the public-facing name to "Supplier
+   Carbon": it is the name in the sign-in email.
 6. Set a budget alert (Billing, Budgets and alerts), for example 2,000 INR, so the
    trial credit cannot be spent unnoticed.
 
@@ -550,12 +550,12 @@ dependencies allowed to run install scripts; without it the App Hosting build st
 
 ### Checking the deployed stack
 
-The browser scripts cannot sign in to the deployed stack unattended. Firebase shows a reCAPTCHA
-image challenge to headless browsers, and it rejects the bypass that works for test numbers against the
-emulator. So production is verified by hand, then confirmed from the logs:
+The browser scripts cannot sign in to the deployed stack unattended: the sign-in link arrives by real
+email, while the scripts read it from the Auth emulator. So production is verified by hand, then
+confirmed from the logs:
 
-1. Sign in on the deployed site with your own number (or a fixed-code test number from the Firebase
-   console) and walk the whole flow: setup, upload bills, reconcile, inventory, questionnaire, reduce.
+1. Sign in on the deployed site with your own email (the link arrives within a minute; check spam the
+   first time) and walk the whole flow: setup, upload bills, reconcile, inventory, questionnaire, reduce.
 2. Open a bill from the inventory ("show me where") and download the filled workbook. These go through
    signed Cloud Storage links, the part most likely to differ from local.
 3. Read the agent's request log. Every call should be 2xx apart from the 404 a brand-new user gets on
@@ -567,8 +567,8 @@ gcloud logging read 'resource.type="cloud_run_revision" AND resource.labels.serv
   --format='value(timestamp,severity,httpRequest.status,httpRequest.requestUrl,textPayload)'
 ```
 
-The scripts still accept `E2E_WEB_URL` and `E2E_AGENT_URL` (and `E2E_OTP` / `E2E_PHONES` for fixed-code
-test numbers) for a headed, human-assisted run. Differences from local to expect: real Gemini calls (the
+The scripts still accept `E2E_WEB_URL` and `E2E_AGENT_URL`, but only the emulator hands them a sign-in link.
+Differences from local to expect: real Gemini calls (the
 response cache is empty on a fresh instance, so the first run spends free-tier quota and is paced at 15
 requests a minute), and signed download URLs for bill images and exports.
 
@@ -580,27 +580,27 @@ Run history:
 
 ## 5. Where your data lives, and how to look at it
 
-Everything a supplier owns is keyed by their Firebase user id (uid). **There is no phone number in the
-Storage path, and the Firestore document id is the uid, not the number.** The phone number sits in
-Authentication, and since 2026-10 it is also copied onto the supplier document as `phone` (filled the next
-time that user opens the app).
+Everything a supplier owns is keyed by their Firebase user id (uid). **There is no email in the
+Storage path, and the Firestore document id is the uid, not the email.** The email sits in
+Authentication, and it is also copied onto the supplier document as `email` (filled the next time that
+user opens the app).
 
 ```mermaid
 flowchart LR
-    Auth["Authentication > Users: phone number + User UID"] -->|"same uid"| Fs["Firestore: suppliers/uid"]
+    Auth["Authentication > Users: email + User UID"] -->|"same uid"| Fs["Firestore: suppliers/uid"]
     Auth -->|"same uid"| Gcs["Bucket: suppliers/uid/..."]
     Fs -->|"documents point at"| Gcs
 ```
 
 | Question | Where to look |
 |---|---|
-| Which numbers have signed in? | Firebase console > Authentication > Users (https://console.firebase.google.com/project/fir-testing-f96b1/authentication/users). "Identifier" is the number, "User UID" the key, plus created and last sign-in. |
-| Whose data is this Firestore row? | The document id under `suppliers` is the uid. Paste it into the Users search box. The `phone` field on the document shows the number directly. |
+| Which emails have signed in? | Firebase console > Authentication > Users (https://console.firebase.google.com/project/fir-testing-f96b1/authentication/users). "Identifier" is the email, "User UID" the key, plus created and last sign-in. |
+| Whose data is this Firestore row? | The document id under `suppliers` is the uid. Paste it into the Users search box. The `email` field on the document shows the address directly. |
 | Whose files are these? | The first folder under `suppliers/` in the bucket is the same uid. |
-| What data does a number have? | Copy its User UID, then open `suppliers/<uid>` in Firestore and `suppliers/<uid>/` in the bucket. |
+| What data does an email have? | Copy its User UID, then open `suppliers/<uid>` in Firestore and `suppliers/<uid>/` in the bucket. |
 
 **Firestore** (https://console.firebase.google.com/project/fir-testing-f96b1/firestore/databases/-default-/data):
-`suppliers/{uid}` holds the profile (`country`, `language`, `sites`, `phone`). Underneath: `requests`,
+`suppliers/{uid}` holds the profile (`country`, `language`, `sites`, `email`). Underneath: `requests`,
 `questionnaires`, and `periods/{pid}` with `documents`, `activityLines`, `assumptions`, `reconcile/state`,
 `inventoryLines` and `inventory/snapshot`. Treat it as read-only; edits bypass the calculator.
 
@@ -632,5 +632,23 @@ The site is reachable at `https://carbon.siddhantxh.com` as well as the App Host
 - **Authentication > Settings > Authorized domains** must list `carbon.siddhantxh.com`.
 - **The agent must allow the origin.** CORS is a list, set in one call (it replaces the previous list):
   `infra/deploy.sh cors https://supplier-carbon-web--fir-testing-f96b1.asia-southeast1.hosted.app https://carbon.siddhantxh.com`
-- **SMS wording** is fixed by Firebase ("<code> is your verification code for <domain>."). Only the domain
-  can change, and it follows the address the user signed in from.
+- **Sign-in email.** Firebase sends it from its own address with a subject and body it controls. The
+  name shown is the project's public-facing name ("Supplier Carbon"); the link points at the site the user
+  asked from, so it works on both addresses.
+
+## 7. Languages, countries and sites
+
+- **Language** is one setting, the app language. It changes the app text and the language of the agent's
+  follow-up questions. It never changes a number.
+- **Country** (Setup) picks the emission factors and the price checks. Only Australia has state-level
+  grid factors (NSW, VIC, QLD, SA, WA, TAS), so the state dropdown only appears for Australia; another
+  state uses the national figure.
+- **Site address** is not asked in Setup. It is entered on the Reduce page, where it is used to find the
+  roof for solar. A full address (number, street, district, city, or the lot in an industrial park) or
+  coordinates pasted from Google Maps both work. A street-level match is flagged, with a Google Maps
+  link to check it.
+- **Solar sources.** With Solar API coverage, yearly energy comes from Google's roof model (aerial or
+  satellite imagery). Google publishes coverage as a map, not a country list, and it is per building: where
+  it has none the API answers 404 and the app uses PVGIS (EU JRC, ERA5 irradiance, global) with the roof
+  area the supplier types. Vietnam has no coverage; Japan, Australia, Thailand and Indonesia do. Singapore and
+  India are not confirmed, but either way the page works.

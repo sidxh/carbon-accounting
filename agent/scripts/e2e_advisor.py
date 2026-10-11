@@ -24,7 +24,7 @@ import time
 import urllib.request
 from pathlib import Path
 
-from .e2e_common import AGENT_URL, WEB, fill_setup, new_request, pick_phone, sign_in, upload
+from .e2e_common import AGENT_URL, WEB, fill_setup, fresh_email, new_request, sign_in, upload
 
 ROOT = Path(__file__).resolve().parents[2]
 AGENT = ROOT / "agent"
@@ -46,16 +46,16 @@ def profile(token: tuple[str, str]) -> dict:
     return json.loads(urllib.request.urlopen(req).read())
 
 
-def run_supplier(p, *, label: str, phone: str, country: str, language: str, site: str, address: str, coords: tuple[float, float], files: list[str]):
+def run_supplier(p, *, label: str, email: str, country: str, site: str, address: str, coords: tuple[float, float], files: list[str]):
     browser = p.chromium.launch(headless=True)
     ctx = browser.new_context(viewport={"width": 430, "height": 900}, device_scale_factor=2, locale="en-US")
     page = ctx.new_page()
     seen: dict[str, str] = {}
     page.on("request", lambda r: seen.update(auth=r.headers.get("authorization", "").removeprefix("Bearer ")) if r.url.startswith(AGENT_URL) and r.headers.get("authorization") else None)
-    sign_in(page, phone)
+    sign_in(page, email)
     if "/setup" not in page.url:
         page.goto(f"{WEB}/setup")
-    fill_setup(page, f"E2E {label} Co", site, language=language, country=country, address=address)
+    fill_setup(page, f"E2E {label} Co", site, country=country)
     rid = new_request(page, "Aiko Corp", due="2026-01-31", share="20")
     read, failed = upload(page, files)
     print(f"[{label}] bills read {read}, failed {failed}")
@@ -68,6 +68,7 @@ def run_supplier(p, *, label: str, phone: str, country: str, language: str, site
     page.get_by_role("link", name=re.compile("Where you could cut emissions")).click()
     page.wait_for_url(re.compile(r"/reduce"))
     page.get_by_role("button", name=FIND).wait_for(timeout=30000)
+    page.locator("form input.input").first.fill(address)   # the address is entered here, where it is used
     page.get_by_role("button", name=FIND).click()
     page.wait_for_timeout(2500)
     token = (seen.get("auth", ""), "")
@@ -98,7 +99,7 @@ def main() -> int:
 
     with sync_playwright() as p:
         # --- JP: the Solar API path ------------------------------------------------------
-        browser, page, rid, _ = run_supplier(p, label="JP", phone=pick_phone(0, f"+8190{suffix}01"), country="JP", language="ja", site="刈谷工場",
+        browser, page, rid, _ = run_supplier(p, label="JP", email=f"jp{suffix}@example.com", country="JP", site="刈谷工場",
                                               address="Kariya, Aichi, Japan", coords=(34.9886, 137.0022), files=jp)
         page.get_by_text(re.compile("Solar could cover about")).wait_for(timeout=30000)
         measured = page.get_by_text(re.compile("Measured from Google roof imagery")).count() > 0
@@ -114,7 +115,7 @@ def main() -> int:
         browser.close()
 
         # --- VN: irradiance fallback + drafted answer ------------------------------------------
-        browser, page, rid, _ = run_supplier(p, label="VN", phone=pick_phone(1, f"+8493{suffix}02"), country="VN", language="vi", site="Xưởng Nhơn Trạch",
+        browser, page, rid, _ = run_supplier(p, label="VN", email=f"vn{suffix}@example.com", country="VN", site="Xưởng Nhơn Trạch",
                                               address="Khu công nghiệp Nhơn Trạch, Đồng Nai", coords=(10.7388, 106.9009), files=vn)
         page.get_by_text(re.compile("Google has no roof imagery")).wait_for(timeout=30000)
         print("[VN] asks for a roof area (no Google roof data here)")

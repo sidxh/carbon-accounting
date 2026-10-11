@@ -20,9 +20,6 @@ export function firebaseAuth(): Auth {
   const auth = getAuth(app);
   if (process.env.NEXT_PUBLIC_USE_EMULATORS === "true") {
     connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
-    // Test phone numbers configured in the emulator (and, later, the console)
-    // need no reCAPTCHA. Keeps the OTP flow free of SMS in development.
-    auth.settings.appVerificationDisabledForTesting = true;
   }
   authInstance = auth;
   return auth;

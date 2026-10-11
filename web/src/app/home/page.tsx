@@ -88,7 +88,7 @@ function RequestCard({ view, onDelete }: { view: RequestView; onDelete?: () => v
   );
 }
 
-function YearCard({ pv }: { pv: PeriodView }) {
+function YearCard({ pv, onDelete }: { pv: PeriodView; onDelete: () => void }) {
   const t = useTranslations("home");
   const locale = useLocale();
   const months = pv.summary.months.map((m) => shortMonth(m, locale));
@@ -100,7 +100,12 @@ function YearCard({ pv }: { pv: PeriodView }) {
           <div className="font-display text-xl">{pv.period.label}</div>
           <div className="text-xs text-muted">{pv.period.start} → {pv.period.end}</div>
         </div>
-        <div className="text-xs text-muted">{t("bills", { n: pv.progress.documents })}{pv.used_by.length > 0 && <> · {t("usedBy", { n: pv.used_by.length, names: pv.used_by.join(", ") })}</>}</div>
+        <div className="flex items-center gap-1">
+          <div className="text-xs text-muted">{t("bills", { n: pv.progress.documents })}{pv.used_by.length > 0 && <> · {t("usedBy", { n: pv.used_by.length, names: pv.used_by.join(", ") })}</>}</div>
+          <button className="btn btn-ghost btn-icon shrink-0 text-muted hover:text-danger" onClick={onDelete} aria-label={t("deleteYear", { year: pv.period.label })}>
+            <Trash2 className="size-4" aria-hidden />
+          </button>
+        </div>
       </div>
       {periodic.length > 0 && (
         <ul className="mt-3 space-y-2">
@@ -220,6 +225,7 @@ function Home({ profile, uid }: { profile: SupplierProfile | null; uid: string }
   const [error, setError] = useState("");
   const [creating, setCreating] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<RequestView | null>(null);
+  const [confirmYear, setConfirmYear] = useState<PeriodView | null>(null);
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(() => api.home(uid).then(setData).catch((e) => setError((e as Error).message)), [uid]);
@@ -237,6 +243,20 @@ function Home({ profile, uid }: { profile: SupplierProfile | null; uid: string }
     } finally {
       setBusy(false);
       setConfirmDelete(null);
+    }
+  }
+
+  async function removeYear(pv: PeriodView) {
+    setBusy(true);
+    try {
+      await api.deletePeriod(uid, pv.period.id);
+      toast(t("yearDeleted", { year: pv.period.label }));
+      await load();
+    } catch (e) {
+      toast((e as Error).message, "danger");
+    } finally {
+      setBusy(false);
+      setConfirmYear(null);
     }
   }
 
@@ -286,7 +306,7 @@ function Home({ profile, uid }: { profile: SupplierProfile | null; uid: string }
           <p className="card p-5 text-sm text-muted">{t("noYears")}</p>
         ) : (
           <ul className="grid gap-3">
-            {data.periods.map((pv) => <YearCard key={pv.period.id} pv={pv} />)}
+            {data.periods.map((pv) => <YearCard key={pv.period.id} pv={pv} onDelete={() => setConfirmYear(pv)} />)}
           </ul>
         )}
       </section>
@@ -303,6 +323,22 @@ function Home({ profile, uid }: { profile: SupplierProfile | null; uid: string }
         busy={busy}
         onConfirm={() => confirmDelete && remove(confirmDelete)}
         onClose={() => setConfirmDelete(null)}
+      />
+
+      <Dialog
+        open={confirmYear !== null}
+        title={t("yearDeleteTitle")}
+        description={confirmYear
+          ? confirmYear.used_by.length
+            ? t("yearDeleteBodyUsed", { year: confirmYear.period.label, n: confirmYear.progress.documents, names: confirmYear.used_by.join(", ") })
+            : t("yearDeleteBody", { year: confirmYear.period.label, n: confirmYear.progress.documents })
+          : ""}
+        confirmLabel={t("deleteConfirm")}
+        cancelLabel={t("cancel")}
+        tone="danger"
+        busy={busy}
+        onConfirm={() => confirmYear && removeYear(confirmYear)}
+        onClose={() => setConfirmYear(null)}
       />
     </div>
   );

@@ -16,9 +16,14 @@ async function token(): Promise<string> {
   return user.getIdToken();
 }
 
+function appLocale(): string {
+  return document.cookie.match(/(?:^|; )NEXT_LOCALE=(\w+)/)?.[1] ?? "en";
+}
+
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers);
   headers.set("Authorization", `Bearer ${await token()}`);
+  headers.set("X-Locale", appLocale());   // the agent asks its follow-up questions in the language the app is shown in
   const res = await fetch(`${AGENT_URL}${path}`, { ...init, headers });
   if (!res.ok) {
     let detail = res.statusText;
@@ -53,6 +58,7 @@ export interface Site {
   lat?: number | null;
   lng?: number | null;
   formatted_address?: string | null;
+  location_precision?: "exact" | "approximate" | null;
   roof_area_m2?: number | null;
 }
 
@@ -388,6 +394,8 @@ export const api = {
   patchRequest: (uid: string, rid: string, body: { customer_name?: string; due_date?: string | null; customer_share?: number | null; clear_due_date?: boolean }) =>
     json<RequestView>(R(uid, rid), "PATCH", body),
   deleteRequest: (uid: string, rid: string) => request<void>(R(uid, rid), { method: "DELETE" }),
+  /** Removes the year with its bills, inventory, files and every request made for it. */
+  deletePeriod: (uid: string, pid: string) => request<void>(`/suppliers/${uid}/periods/${pid}`, { method: "DELETE" }),
   uploadRequestTemplate: (uid: string, rid: string, file: File) => {
     const fd = new FormData();
     fd.append("file", file);

@@ -117,6 +117,9 @@ class Repo(ABC):
     def get_period(self, uid: str, pid: str) -> ReportingPeriod | None: ...
     @abstractmethod
     def put_period(self, uid: str, p: ReportingPeriod) -> None: ...
+    @abstractmethod
+    def delete_period(self, uid: str, pid: str) -> None:
+        """Remove the period record. Its data goes first, with `clear_period_data`."""
 
     # requests
     @abstractmethod
@@ -244,6 +247,9 @@ class FirestoreRepo(Repo):
 
     def put_period(self, uid, p):
         self._per(uid, p.id).set(self._dump(p))
+
+    def delete_period(self, uid, pid):
+        self._per(uid, pid).delete()
 
     # requests
     def list_requests(self, uid):
@@ -400,6 +406,9 @@ class MemoryRepo(Repo):
 
     def put_period(self, uid, p):
         self.periods.setdefault(uid, {})[p.id] = p
+
+    def delete_period(self, uid, pid):
+        self.periods.get(uid, {}).pop(pid, None)
 
     def list_requests(self, uid):
         return sorted(self.requests.get(uid, {}).values(), key=lambda r: r.created_at, reverse=True)

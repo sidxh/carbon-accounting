@@ -127,3 +127,21 @@ def test_draft_reduction_answer_is_flagged_modest_and_only_when_there_is_somethi
     assert "switch lpg heating" not in txt                                  # a lever that would raise emissions is never offered
     assert _draft_reductions(None, VN) and "rooftop solar" not in _draft_reductions(None, VN)
     assert _draft_reductions(None, []) is None
+
+
+def test_locate_marks_street_level_matches_and_takes_pasted_coordinates(client, computed, monkeypatch):
+    monkeypatch.setattr(solar, "geocode", lambda a, c=None, **k: Place(10.6, 106.6, "Long An, Vietnam", False))
+    s = client.post(f"{URL}/sites/main/locate", json={"address": "Long An"}, headers=_auth()).json()["sites"][0]
+    assert s["location_precision"] == "approximate"
+
+    monkeypatch.setattr(solar, "geocode", lambda a, c=None, **k: Place(10.73, 106.89, "Lot B2, Long Hau IP, Vietnam", True))
+    s = client.post(f"{URL}/sites/main/locate", json={"address": "Lot B2, Long Hau IP"}, headers=_auth()).json()["sites"][0]
+    assert s["location_precision"] == "exact"
+
+    def never(*a, **k):
+        raise AssertionError("coordinates must not be geocoded")
+
+    monkeypatch.setattr(solar, "geocode", never)
+    s = client.post(f"{URL}/sites/main/locate", json={"address": "10.7290, 106.7190"}, headers=_auth()).json()["sites"][0]
+    assert (s["lat"], s["lng"], s["location_precision"]) == (10.729, 106.719, "exact")
+    assert s["formatted_address"] == "10.72900, 106.71900" and s["address"] == "10.7290, 106.7190"
