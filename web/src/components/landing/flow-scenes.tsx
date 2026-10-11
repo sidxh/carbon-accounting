@@ -313,6 +313,130 @@ export function InventoryScene({ phase }: { phase: number }) {
   );
 }
 
+/** Phase lengths (ms). Reductions: roof, sun rises, panels laid, sunlight sweeps, bars grow, hold. */
+export const REDUCE_PHASES = [500, 700, 1300, 900, 1400, 2000];
+
+// The levers the advisor ranks, in tCO2e a year.
+const CUTS = [
+  { key: "solar", t: 101.7 },
+  { key: "led", t: 11.0 },
+  { key: "air", t: 7.3 },
+] as const;
+
+// Roof face in the illustration (a trapezoid seen from the front): top edge and eaves.
+const ROOF = { topY: 66, top: [96, 304], botY: 108, bot: [64, 336] };
+const ROWS = 2, COLS = 5;
+/** A point on the roof face: u across (0–1), v down (0–1). */
+function onRoof(u: number, v: number): [number, number] {
+  const y = ROOF.topY + (ROOF.botY - ROOF.topY) * v;
+  const l = ROOF.top[0] + (ROOF.bot[0] - ROOF.top[0]) * v;
+  const r = ROOF.top[1] + (ROOF.bot[1] - ROOF.top[1]) * v;
+  return [l + (r - l) * u, y];
+}
+/** Panel (row, col) as a polygon, with a small gap round each. */
+function panel(row: number, col: number) {
+  const g = 0.012, gv = 0.06;
+  const u0 = 0.04 + (col / COLS) * 0.92 + g, u1 = 0.04 + ((col + 1) / COLS) * 0.92 - g;
+  const v0 = 0.08 + (row / ROWS) * 0.84 + gv, v1 = 0.08 + ((row + 1) / ROWS) * 0.84 - gv;
+  return [onRoof(u0, v0), onRoof(u1, v0), onRoof(u1, v1), onRoof(u0, v1)].map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
+}
+
+/**
+ * The reduction plan, told with a picture: the sun rises over a factory roof,
+ * solar panels are laid across it one by one and a band of sunlight sweeps over
+ * them as they come on. Under it, the levers the advisor ranks, as bars growing
+ * in by size, with solar's payback beneath.
+ */
+export function ReduceScene({ phase }: { phase: number }) {
+  const t = useTranslations("landing.flow.reduce");
+  const max = CUTS[0].t;
+  const roofPath = `M${ROOF.top[0]} ${ROOF.topY}L${ROOF.top[1]} ${ROOF.topY}L${ROOF.bot[1]} ${ROOF.botY}L${ROOF.bot[0]} ${ROOF.botY}Z`;
+  return (
+    <div className="flex h-full flex-col gap-4">
+      <svg viewBox="0 0 400 170" className="h-[170px] w-full" aria-hidden>
+        <defs><clipPath id="roof-clip"><path d={roofPath} /></clipPath></defs>
+        {/* The sun, rising from behind the roof, its rays slowly turning. */}
+        <motion.g
+          initial={false}
+          animate={{ transform: phase >= 1 ? "translateY(0px)" : "translateY(70px)", opacity: phase >= 1 ? 1 : 0 }}
+          transition={{ duration: 0.8, ease: EASE }}
+        >
+          <g className="sun-rays" style={{ transformOrigin: "318px 34px" }}>
+            {Array.from({ length: 10 }, (_, k) => (
+              <line key={k} x1={318} y1={8} x2={318} y2={0} stroke="#f2b705" strokeWidth={3} strokeLinecap="round" transform={`rotate(${k * 36} 318 34)`} />
+            ))}
+          </g>
+          <circle cx={318} cy={34} r={17} fill="#f2b705" />
+        </motion.g>
+
+        {/* The factory. */}
+        <rect x={72} y={108} width={256} height={56} rx={3} fill="var(--raised)" stroke="var(--line-strong)" />
+        {[96, 140, 184, 228, 272].map((x) => <rect key={x} x={x} y={124} width={28} height={18} rx={2} fill="var(--signal-bg)" />)}
+        <path d={roofPath} fill="#6f6e69" />
+        <line x1={20} y1={164} x2={380} y2={164} stroke="var(--line-strong)" strokeWidth={1.5} />
+
+        {/* Panels, laid one by one. */}
+        {Array.from({ length: ROWS * COLS }, (_, k) => {
+          const row = Math.floor(k / COLS), col = k % COLS;
+          const shown = phase >= 2;
+          return (
+            <motion.polygon
+              key={k}
+              points={panel(row, col)}
+              fill={phase >= 3 ? "#2d4f7a" : "#243650"}
+              stroke="#c9d6e6"
+              strokeWidth={0.8}
+              initial={false}
+              animate={{ opacity: shown ? 1 : 0, transform: shown ? "translateY(0px)" : "translateY(-10px)" }}
+              transition={{ duration: 0.3, delay: shown ? k * 0.1 : 0, ease: EASE }}
+            />
+          );
+        })}
+
+        {/* Sunlight sweeping over the panels as they come on. */}
+        {phase >= 3 && (
+          <g clipPath="url(#roof-clip)">
+            <motion.rect
+              y={60} width={34} height={56} fill="#fff6d1" opacity={0.7}
+              initial={{ transform: "translateX(40px) skewX(-20deg)" }}
+              animate={{ transform: "translateX(360px) skewX(-20deg)" }}
+              transition={{ duration: 0.9, ease: "linear" }}
+            />
+          </g>
+        )}
+        {phase >= 3 && (
+          <motion.g initial={{ opacity: 0, transform: "translateY(6px)" }} animate={{ opacity: 1, transform: "translateY(0px)" }} transition={enter}>
+            <rect x={28} y={36} width={66} height={22} rx={11} fill="var(--signal)" />
+            <text x={61} y={51} textAnchor="middle" fontSize={11} fontWeight={600} fill="var(--signal-on)">180 kWp</text>
+          </motion.g>
+        )}
+      </svg>
+
+      {/* The levers, ranked, as bars growing in. */}
+      <ul className="flex flex-col gap-2.5">
+        {CUTS.map((c, i) => (
+          <li key={c.key} className="flex items-center gap-3 text-xs">
+            <span className="w-32 shrink-0 truncate text-ink-soft">{t(`cuts.${c.key}`)}</span>
+            <span className="relative h-3 flex-1 overflow-hidden rounded-full bg-sunken">
+              <motion.span
+                className={cn("absolute inset-y-0 left-0 rounded-full", i === 0 ? "bg-signal" : "bg-signal/55")}
+                style={{ width: `${(c.t / max) * 100}%`, transformOrigin: "left" }}
+                initial={false}
+                animate={{ transform: phase >= 4 ? "scaleX(1)" : "scaleX(0)" }}
+                transition={{ duration: 0.7, delay: phase >= 4 ? i * 0.2 : 0, ease: EASE }}
+              />
+            </span>
+            <span className={cn("w-12 shrink-0 text-right font-mono transition-opacity duration-300", phase >= 4 ? "opacity-100" : "opacity-0", i === 0 ? "font-semibold text-signal-ink" : "text-ink-soft")}>
+              −{Math.round(c.t)} t
+            </span>
+          </li>
+        ))}
+      </ul>
+      <p className={cn("text-xs text-muted transition-opacity duration-500", phase >= 4 ? "opacity-100" : "opacity-0")}>{t("payback")}</p>
+    </div>
+  );
+}
+
 /** Phase lengths (ms). Questionnaire: sheet in, six answers fill, the two for you flag, ready, hold. */
 export const FORM_PHASES = [450, 1700, 700, 2400];
 

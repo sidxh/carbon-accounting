@@ -139,11 +139,13 @@ export function Features() {
   const headScale = useTransform(p, (v) => 0.9 + 0.1 * ramp(v, 0.42, 0.7));
 
   return (
-    <section id="features" aria-labelledby="features-h">
+    // Pulled up a quarter screen so the molecule starts arriving as the steps
+    // finish, instead of after half a screen of empty page.
+    <section id="features" aria-labelledby="features-h" className="relative -mt-[25dvh]">
       {/* Pinned: molecule, burst, headline, and the features under it. */}
       <div ref={track} className="relative h-[200dvh]">
         <div className="sticky top-0 flex h-dvh flex-col items-center justify-center gap-10 overflow-hidden pt-16 lg:gap-14">
-          <motion.div style={{ scale: ballScale, opacity: ballOpacity }} className="absolute inset-0">
+          <motion.div style={{ scale: ballScale, opacity: ballOpacity }} className="pointer-events-none absolute inset-0">
             <Fullerene burst={burst} className="size-full" />
           </motion.div>
           <motion.div ref={head} style={{ opacity: headOpacity, scale: headScale }} className="relative z-10 w-full px-4">

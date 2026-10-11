@@ -11,8 +11,6 @@ import { HeroGlobe, Tag, TAGS, TICK } from "./hero-globe";
 const EASE = [0.23, 1, 0.32, 1] as const;
 // --ease-in-out: the earth is already on screen when it moves.
 const GLIDE = cubicBezier(0.77, 0, 0.175, 1);
-const STATS = ["factors", "ai", "langs"] as const;
-
 // The first view's ledger: the three gases plus the two scopes, floating round the rim.
 const FIRST = [
   { ...TAGS[0], pos: "left-[6%] top-[60%] md:left-[13%] md:top-[64%]" },
@@ -120,10 +118,13 @@ export function EarthHero({ go, cta }: { go: string; cta: string }) {
         <motion.div
           ref={copy}
           style={{ opacity: heroOpacity, y: heroY }}
-          className={cn("relative z-10 mx-auto flex max-w-3xl flex-col items-center px-4 pt-24 text-center sm:pt-[max(6rem,14vh)]", stage !== "hero" && "pointer-events-none")}
+          className={cn("relative z-10 mx-auto flex max-w-5xl flex-col items-center px-4 pt-24 text-center sm:pt-[max(6rem,14vh)]", stage !== "hero" && "pointer-events-none")}
         >
-          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }} className="eyebrow justify-center">{t("eyebrow")}</motion.p>
-          <motion.h1 initial={{ opacity: 0, transform: "translateY(16px)" }} animate={{ opacity: 1, transform: "translateY(0px)" }} transition={{ duration: 0.6, delay: 0.05, ease: EASE }} className="font-display mt-4 text-[2.9rem] leading-[0.95] text-ink sm:text-[clamp(3rem,8.5vh,5rem)]">
+          {/* The problem, as the question the supplier is already asking themselves. */}
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }} className="inline-flex items-center gap-2 rounded-full border border-signal/20 bg-signal-bg px-4 py-1.5 text-sm font-medium text-signal-ink sm:text-[15px]">
+            <span className="size-2 rounded-full bg-attention-strong" aria-hidden />{t("eyebrow")}
+          </motion.p>
+          <motion.h1 initial={{ opacity: 0, transform: "translateY(16px)" }} animate={{ opacity: 1, transform: "translateY(0px)" }} transition={{ duration: 0.6, delay: 0.05, ease: EASE }} className="font-display mt-5 text-[2.6rem] leading-[0.98] text-ink text-balance sm:text-[clamp(2.8rem,min(8vh,6.2vw),4.75rem)]">
             {t("h1a")}<br /><em className="italic text-signal-ink">{t("h1b")}</em>
           </motion.h1>
           <motion.div initial={{ opacity: 0, transform: "translateY(12px)" }} animate={{ opacity: 1, transform: "translateY(0px)" }} transition={{ duration: 0.6, delay: 0.2, ease: EASE }} className="mt-7">
@@ -164,17 +165,12 @@ export function EarthHero({ go, cta }: { go: string; cta: string }) {
         >
           <div className="mx-auto w-full max-w-6xl px-4 pb-10 md:px-8 md:pb-0">
             <div className="max-w-lg md:max-w-[min(520px,46%)]">
-              <p className="eyebrow">{t("story.eyebrow")}</p>
-              <h2 className="font-display mt-4 text-4xl leading-[1.02] text-ink text-balance sm:text-5xl">{t("story.title")}</h2>
+              {/* Same pill as the first view's question. */}
+              <p className="inline-flex items-center gap-2 rounded-full border border-signal/20 bg-signal-bg px-4 py-1.5 text-sm font-medium text-signal-ink sm:text-[15px]">
+                <span className="size-2 rounded-full bg-attention-strong" aria-hidden />{t("story.eyebrow")}
+              </p>
+              <h2 className="font-display mt-5 text-4xl leading-[1.02] text-signal-ink text-balance sm:text-5xl">{t("story.title")}</h2>
               <p className="mt-5 text-[16px] leading-relaxed text-ink-soft">{t("sub")}</p>
-              <dl className="mt-8 grid grid-cols-3 gap-4 border-t hairline pt-6">
-                {STATS.map((k) => (
-                  <div key={k} className="flex flex-col gap-1">
-                    <dt className="order-2 text-xs leading-snug text-muted">{t(`stats.${k}.label`)}</dt>
-                    <dd className="order-1 font-display text-4xl leading-none text-ink">{t(`stats.${k}.value`)}</dd>
-                  </div>
-                ))}
-              </dl>
             </div>
           </div>
         </motion.div>
