@@ -47,7 +47,8 @@
     "linkExpired": "This link has expired or was already used. Send a new one.",
     "tooMany": "Too many attempts. Wait a few minutes and try again.",
     "network": "No connection. Check your network and try again.",
-    "devHint": "Local emulator: any email works and the link is printed in the emulator log."
+    "devHint": "Local emulator: any email works and the link is printed in the emulator log.",
+    "unavailable": "Sign-in isn't available on this address yet. Use the main address of the site, or try again later."
   },
   "setup": {
     "title": "About your company",

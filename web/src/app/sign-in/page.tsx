@@ -18,7 +18,7 @@ const EMAIL_KEY = "signInEmail";
 type Step = "enter" | "sent" | "confirm" | "finishing";
 
 /** Firebase error code to the message key in `signIn`. */
-function errorKey(code: string | undefined): "invalidEmail" | "linkExpired" | "tooMany" | "network" | "error" {
+function errorKey(code: string | undefined): "invalidEmail" | "linkExpired" | "tooMany" | "network" | "unavailable" | "error" {
   switch (code) {
     case "auth/invalid-email":
     case "auth/missing-email":
@@ -31,6 +31,12 @@ function errorKey(code: string | undefined): "invalidEmail" | "linkExpired" | "t
       return "tooMany";
     case "auth/network-request-failed":
       return "network";
+    // Project settings, not something the user typed: this address is not in Authorized domains, or email
+    // links are switched off.
+    case "auth/unauthorized-continue-uri":
+    case "auth/invalid-continue-uri":
+    case "auth/operation-not-allowed":
+      return "unavailable";
     default:
       return "error";
   }
@@ -58,7 +64,11 @@ export default function SignInPage() {
     return () => clearTimeout(id);
   }, [resendIn]);
 
-  const showError = useCallback((err: unknown) => setError(t(errorKey((err as { code?: string }).code))), [t]);
+  const showError = useCallback((err: unknown) => {
+    const code = (err as { code?: string }).code;
+    console.error("sign-in failed:", code);
+    setError(t(errorKey(code)));
+  }, [t]);
 
   const finish = useCallback(
     async (address: string) => {

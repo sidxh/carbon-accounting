@@ -47,7 +47,8 @@
     "linkExpired": "Liên kết đã hết hạn hoặc đã được dùng. Hãy gửi liên kết mới.",
     "tooMany": "Quá nhiều lần thử. Vui lòng đợi vài phút rồi thử lại.",
     "network": "Không có kết nối. Kiểm tra mạng và thử lại.",
-    "devHint": "Môi trường thử nghiệm: email nào cũng được, liên kết hiển thị trong log của emulator."
+    "devHint": "Môi trường thử nghiệm: email nào cũng được, liên kết hiển thị trong log của emulator.",
+    "unavailable": "Chưa thể đăng nhập từ địa chỉ này. Hãy dùng địa chỉ chính của trang, hoặc thử lại sau."
   },
   "setup": {
     "title": "Về công ty của bạn",
