@@ -632,6 +632,13 @@ The site is reachable at `https://carbon.siddhantxh.com` as well as the App Host
 - **Authentication > Settings > Authorized domains** must list `carbon.siddhantxh.com`.
 - **The agent must allow the origin.** CORS is a list, set in one call (it replaces the previous list):
   `infra/deploy.sh cors https://supplier-carbon-web--fir-testing-f96b1.asia-southeast1.hosted.app https://carbon.siddhantxh.com`
+- **Sign-in email sender.** The From address is set in Authentication > Templates (`noreply@siddhantxh.com`,
+  domain verified with DKIM CNAMEs at `firebase1/firebase2._domainkey`). The same address is in
+  `NEXT_PUBLIC_AUTH_EMAIL_SENDER` in `web/apphosting.yaml`, which the sign-in page shows so people can find the
+  mail in spam. Deliverability needs exactly **one** SPF record on `siddhantxh.com`: Cloudflare Email Routing
+  and Firebase each add one, and two make SPF fail. Keep a single merged
+  `v=spf1 include:_spf.firebasemail.com include:_spf.mx.cloudflare.net ~all`, and add a `_dmarc` TXT record
+  (`v=DMARC1; p=none;`). Check with `dig TXT siddhantxh.com +short @8.8.8.8`.
 - **Sign-in email.** Firebase sends it from its own address with a subject and body it controls. The
   name shown is the project's public-facing name ("Supplier Carbon"); the link points at the site the user
   asked from, so it works on both addresses.
