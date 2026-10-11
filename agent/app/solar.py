@@ -96,13 +96,21 @@ def _cache_dir() -> Path:
     return d
 
 
-def _cached_get(client: httpx.Client, url: str, params: dict, *, secret: dict | None = None, ok_statuses: tuple[int, ...] = (200,)) -> tuple[int, dict]:
-    """GET with an on-disk cache. `secret` params are sent but never keyed or stored."""
+def _geocode_answer(body: dict) -> bool:
+    """Geocoding reports its errors inside an HTTP 200 (REQUEST_DENIED, OVER_QUERY_LIMIT). Only real answers are kept."""
+    return body.get("status") in ("OK", "ZERO_RESULTS")
+
+
+def _cached_get(client: httpx.Client, url: str, params: dict, *, secret: dict | None = None, ok_statuses: tuple[int, ...] = (200,),
+                keep=None) -> tuple[int, dict]:
+    """GET with an on-disk cache. `secret` params are sent but never keyed or stored.
+    `keep(body)` can veto caching, on write and on read, so a failure is never remembered."""
     key = hashlib.sha256(json.dumps([url, sorted(params.items())], default=str).encode()).hexdigest()[:32]
     f = _cache_dir() / f"{key}.json"
     if f.exists():
         d = json.loads(f.read_text())
-        return d["status"], d["body"]
+        if keep is None or keep(d["body"]):
+            return d["status"], d["body"]
     try:
         r = client.get(url, params={**params, **(secret or {})}, timeout=TIMEOUT)
     except httpx.HTTPError as e:   # the message of an httpx error can contain the full URL, key included
@@ -111,7 +119,7 @@ def _cached_get(client: httpx.Client, url: str, params: dict, *, secret: dict | 
         body = r.json()
     except ValueError:
         body = {}
-    if r.status_code in ok_statuses:
+    if r.status_code in ok_statuses and (keep is None or keep(body)):
         f.write_text(json.dumps({"status": r.status_code, "body": body}))
     return r.status_code, body
 
@@ -148,7 +156,7 @@ def geocode(address: str, country: str | None = None, *, client: httpx.Client | 
     if country:
         params["components"] = f"country:{country.upper()}"
     with _http(client) as c:
-        status, body = _cached_get(c, GEOCODE_URL, params, secret={"key": key})
+        status, body = _cached_get(c, GEOCODE_URL, params, secret={"key": key}, keep=_geocode_answer)
     if status != 200:
         raise _api_error(status, body, "geocoding")
     st = body.get("status")

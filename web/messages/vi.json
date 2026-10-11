@@ -645,7 +645,7 @@
     "toInventory": "Quay lại bảng kiểm kê",
     "locate": {
       "title": "Địa điểm này ở đâu?",
-      "hint": "Bắt đầu gõ địa chỉ tòa nhà rồi chọn trong danh sách. Trong khu công nghiệp, hãy ghi cả số lô. Hoặc dán tọa độ mái nhà từ Google Maps (nhấp chuột phải vào mái nhà, rồi nhấp vào dãy số). Chúng tôi chỉ dùng thông tin này để đo mái nhà cho điện mặt trời.",
+      "hint": "Bắt đầu gõ địa chỉ tòa nhà rồi chọn trong danh sách. Gợi ý chỉ hiển thị các địa điểm ở {country}, quốc gia bạn đã chọn cho địa điểm này. Trong khu công nghiệp, hãy ghi cả số lô. Hoặc dán tọa độ mái nhà từ Google Maps (nhấp chuột phải vào mái nhà, rồi nhấp vào dãy số). Chúng tôi chỉ dùng thông tin này để đo mái nhà cho điện mặt trời.",
       "address": "Địa chỉ",
       "placeholder": "Bắt đầu gõ: Lô B2, KCN Long Hậu, hoặc dán 10.7290, 106.7190",
       "find": "Tìm trên bản đồ",

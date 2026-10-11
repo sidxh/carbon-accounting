@@ -645,7 +645,7 @@
     "toInventory": "Back to your inventory",
     "locate": {
       "title": "Where is this site?",
-      "hint": "Start typing the building's address and pick it from the list. Include the lot number in an industrial park. Or paste the coordinates of your roof from Google Maps (right-click the roof, then click the numbers). We use this only to measure your roof for solar.",
+      "hint": "Start typing the building's address and pick it from the list. Suggestions only show places in {country}, the country you chose for this site. Include the lot number in an industrial park. Or paste the coordinates of your roof from Google Maps (right-click the roof, then click the numbers). We use this only to measure your roof for solar.",
       "address": "Site address",
       "placeholder": "Start typing: Lot B2, Long Hau Industrial Park, or paste 10.7290, 106.7190",
       "find": "Find on map",

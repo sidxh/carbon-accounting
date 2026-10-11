@@ -138,6 +138,7 @@ function LeverRow({ l, checked, onToggle }: { l: LeverResult; checked: boolean; 
 
 export default function ReducePage() {
   const t = useTranslations("reduce");
+  const locale = useLocale();
   const { uid, profile, period, request } = useRequest();
   const toast = useToast();
   const [siteId, setSiteId] = useState<string | undefined>(undefined);
@@ -164,6 +165,11 @@ export default function ReducePage() {
   useEffect(() => { setAddress(""); }, [siteId]);
 
   const activeSite = view?.site ?? null;
+  // Suggestions are limited to the site's country, so say which one by name, in the app language.
+  const siteCountry = activeSite?.country || profile.country;
+  const countryName = useMemo(() => {
+    try { return new Intl.DisplayNames([locale], { type: "region" }).of(siteCountry.toUpperCase()) ?? siteCountry; } catch { return siteCountry; }
+  }, [locale, siteCountry]);
 
   async function locate(body: { address?: string; roof_area_m2?: number; place_id?: string; session?: string }) {
     if (!activeSite) return;
@@ -222,14 +228,14 @@ export default function ReducePage() {
 
       <section className="card p-4 sm:p-5" aria-labelledby="loc-h">
         <h2 id="loc-h" className="flex items-center gap-2 font-display text-xl"><MapPin className="size-5 text-muted" aria-hidden />{t("locate.title")}</h2>
-        <p className="mt-1 text-sm text-pretty text-muted">{t("locate.hint")}</p>
+        <p className="mt-1 text-sm text-pretty text-muted">{t("locate.hint", { country: countryName })}</p>
         <form className="mt-3 flex flex-wrap items-end gap-2" onSubmit={(e) => { e.preventDefault(); if (address.trim()) locate({ address }); }}>
           <AddressSearch
             label={t("locate.address")}
             value={address}
             onChange={setAddress}
             onPick={(p) => locate({ address: p.text, place_id: p.place_id, session: p.session })}
-            country={activeSite?.country || profile.country}
+            country={siteCountry}
             placeholder={t("locate.placeholder")}
             disabled={busy}
           />

@@ -172,3 +172,32 @@ def test_parse_coordinates_accepts_what_google_maps_copies_and_nothing_else():
     assert solar.parse_coordinates("35.68° 139.69°") == (35.68, 139.69)
     for text in ("12 34 Main Street", "Lot B2, Long Hau", "10, 106", "95.0, 10.0", "10.0, 190.0", "", "10.5"):
         assert solar.parse_coordinates(text) is None, text
+
+
+def test_geocode_failures_are_never_cached_so_a_fixed_key_works_at_once():
+    denied = {"status": "REQUEST_DENIED", "error_message": "This API is not activated on your API project."}
+    ok = {"status": "OK", "results": [{"formatted_address": "Nhơn Trạch, Đồng Nai, Vietnam", "types": ["locality"], "geometry": {"location": {"lat": 10.7, "lng": 106.9}, "location_type": "APPROXIMATE"}}]}
+    answers = [denied, ok]
+    n = {"calls": 0}
+
+    def h(req):
+        n["calls"] += 1
+        return httpx.Response(200, json=answers[min(n["calls"] - 1, 1)])
+
+    with pytest.raises(solar.SolarError, match="rejected"):
+        solar.geocode("khu cong nghiep nhon trach", "VN", client=client(h))
+    p = solar.geocode("khu cong nghiep nhon trach", "VN", client=client(h))      # asks Google again, not the remembered failure
+    assert p.formatted_address.startswith("Nhơn Trạch") and n["calls"] == 2
+    solar.geocode("khu cong nghiep nhon trach", "VN", client=client(h))          # a real answer is cached
+    assert n["calls"] == 2
+
+
+def test_a_failure_cached_by_an_older_version_is_ignored():
+    import hashlib
+    q = {"address": "old poisoned entry", "components": "country:VN"}
+    key = hashlib.sha256(json.dumps([solar.GEOCODE_URL, sorted(q.items())], default=str).encode()).hexdigest()[:32]
+    d = get_settings().resolve(get_settings().solar_cache_dir)
+    d.mkdir(parents=True, exist_ok=True)
+    (d / f"{key}.json").write_text(json.dumps({"status": 200, "body": {"status": "REQUEST_DENIED"}}))
+    ok = {"status": "OK", "results": [{"formatted_address": "X", "geometry": {"location": {"lat": 1, "lng": 2}}}]}
+    assert solar.geocode("old poisoned entry", "VN", client=client(lambda r: httpx.Response(200, json=ok))).formatted_address == "X"

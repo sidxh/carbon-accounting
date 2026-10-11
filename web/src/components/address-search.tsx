@@ -35,14 +35,19 @@ export function AddressSearch({ label, value, onChange, onPick, country, placeho
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
   const session = useRef(newSession());
-  const skip = useRef(false);   // the text was just set by picking a suggestion: do not search for it again
+  // The text we last searched for or picked. The effect below also re-runs when `disabled` flips (the parent
+  // disables the box while it locates the picked place), and that must not search for the same text again:
+  // it would reopen the list with the option the user just chose.
+  const settled = useRef<string | null>(null);
 
   useEffect(() => {
-    if (skip.current) { skip.current = false; return; }
+    if (disabled) { setOpen(false); return; }
     const q = value.trim();
-    if (disabled || q.length < MIN_CHARS || COORDS.test(q)) { setItems([]); setOpen(false); return; }
+    if (q.length < MIN_CHARS || COORDS.test(q)) { settled.current = null; setItems([]); setOpen(false); return; }
+    if (q === settled.current) return;
     const ctl = new AbortController();
     const timer = window.setTimeout(() => {
+      settled.current = q;
       api.suggestPlaces(q, session.current, country, ctl.signal)
         .then((r) => { setItems(r.suggestions); setActive(-1); setOpen(r.suggestions.length > 0); })
         .catch(() => { if (!ctl.signal.aborted) { setItems([]); setOpen(false); } });   // suggestions are optional
@@ -51,7 +56,7 @@ export function AddressSearch({ label, value, onChange, onPick, country, placeho
   }, [value, country, disabled]);
 
   function pick(s: PlaceSuggestion) {
-    skip.current = true;
+    settled.current = s.text.trim();   // quiet until the user types something different
     const used = session.current;
     session.current = newSession();   // the pick ends the billing session; the next search starts a new one
     setOpen(false);

@@ -124,8 +124,11 @@ def main() -> int:
         page.get_by_role("listbox").wait_for(state="hidden")
         page.wait_for_function("document.body.innerText.includes('Matched:')", timeout=30000)
         picked = box.input_value()
-        print(f"[JP] suggestions shown: {n}; picked: {picked!r}")
-        ok &= 1 <= n <= 5 and "Kariya" in picked
+        # Once chosen the list stays closed (it used to reopen with the same option when the box was re-enabled).
+        page.wait_for_timeout(2000)
+        quiet = page.get_by_role("option").count() == 0 and box.get_attribute("aria-expanded") == "false"
+        print(f"[JP] suggestions shown: {n}; picked: {picked!r}; list stays closed after the pick: {quiet}")
+        ok &= 1 <= n <= 5 and "Kariya" in picked and quiet
         browser.close()
 
         # --- VN: irradiance fallback + drafted answer ------------------------------------------
