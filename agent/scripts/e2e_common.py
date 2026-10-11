@@ -50,15 +50,19 @@ def sign_in(page, email: str) -> None:
 
 
 def fill_setup(page, name: str, site: str, country: str = "VN") -> None:
-    page.wait_for_selector("form.card")
-    page.locator("form.card input").first.fill(name)
-    selects = page.locator("form.card select")
-    selects.nth(0).select_option(country)
-    dates = page.locator("form.card input[type=date]")
-    dates.nth(0).fill("2025-01-01")
-    dates.nth(1).fill("2025-12-31")
-    page.locator("form.card input[placeholder]").nth(0).fill(site)
-    page.get_by_role("button", name=re.compile("Save|Lưu|保存")).click()
+    """Walk the four setup steps: company, reporting year, sites, then save from the optional step."""
+    cont = re.compile("^Continue|^Tiếp tục|^次へ")
+    page.wait_for_selector("#name")
+    page.locator("#name").fill(name)
+    page.locator("#country").select_option(country)
+    page.get_by_role("button", name=cont).click()
+    page.locator("#fyStart").fill("2025-01-01")
+    page.locator("#fyEnd").fill("2025-12-31")
+    page.get_by_role("button", name=cont).click()
+    page.locator("#site-name-0").fill(site)
+    page.get_by_role("button", name=cont).click()
+    page.locator("#revenue").wait_for()
+    page.get_by_role("button", name=re.compile("^Save and continue|^Lưu và tiếp tục|^保存して次へ")).click()
     page.wait_for_url(re.compile(r"/home"), timeout=20000)
 
 

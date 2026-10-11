@@ -19,7 +19,6 @@
     "questionnaire": "Bảng câu hỏi"
   },
   "signIn": {
-    "eyebrow": "Dành cho nhà cung cấp được yêu cầu dữ liệu carbon",
     "points": {
       "p1": "Hóa đơn là của bạn: chỉ bạn đọc được tài khoản của mình.",
       "p2": "Dùng camera điện thoại là đủ; không cần máy quét hay bảng tính.",
@@ -38,6 +37,9 @@
     "noLink": "Chưa nhận được email?",
     "resend": "Gửi lại",
     "resendIn": "Gửi lại sau {s}s",
+    "big": "Đăng nhập",
+    "tag": "Không mật khẩu, không cần tạo tài khoản",
+    "formLabel": "Email của bạn",
     "confirmTitle": "Xác nhận email của bạn",
     "confirmBody": "Bạn đã mở liên kết trên một thiết bị khác. Nhập địa chỉ email đã nhận liên kết.",
     "confirmButton": "Đăng nhập",
@@ -77,6 +79,25 @@
     "removeSite": "Xóa cơ sở {n}",
     "cancel": "Hủy",
     "startedOver": "Đã xóa toàn bộ hóa đơn, câu trả lời và kết quả.",
+    "stepCompany": "Công ty",
+    "stepYear": "Năm",
+    "stepSites": "Cơ sở",
+    "stepExtras": "Tùy chọn",
+    "qCompany": "Công ty của bạn tên là gì?",
+    "qYear": "Khách hàng hỏi về năm nào?",
+    "qSites": "Bạn sẽ tải hóa đơn của những cơ sở nào?",
+    "qExtras": "Còn gì nữa không? (tùy chọn)",
+    "stepOf": "Bước {n}/{total}",
+    "next": "Tiếp tục",
+    "back": "Quay lại",
+    "skip": "Bỏ qua và hoàn tất",
+    "saveNow": "Lưu",
+    "presetCalendar": "Năm {year}",
+    "presetFiscal": "Th4 {a} – Th3 {b}",
+    "customDates": "Hoặc chọn ngày",
+    "yearOrder": "Ngày kết thúc năm báo cáo phải sau ngày bắt đầu.",
+    "nameRequired": "Nhập tên công ty để tiếp tục.",
+    "addSiteCard": "Thêm cơ sở",
     "countryHint": "Quyết định hệ số phát thải điện và việc kiểm tra giá trên hóa đơn của bạn.",
     "siteState": "Bang",
     "siteStateOther": "Bang hoặc vùng lãnh thổ khác (mức trung bình quốc gia)"
@@ -354,9 +375,9 @@
   "landing": {
     "navLabel": "Chính",
     "continue": "Tiếp tục",
-    "eyebrow": "Dành cho nhà cung cấp được yêu cầu dữ liệu carbon",
-    "h1a": "Chụp hóa đơn.",
-    "h1b": "Nhận lại bảng câu hỏi đã điền.",
+    "eyebrow": "Khách hàng hỏi số liệu phát thải carbon của bạn?",
+    "h1a": "Tải hóa đơn lên.",
+    "h1b": "Nhận lại bảng câu hỏi đã điền sẵn.",
     "sub": "Khách hàng gửi cho bạn bảng câu hỏi phát thải. Tải lên hóa đơn điện, nhiên liệu và gas lạnh; chúng tôi đọc, chỉ hỏi những gì hóa đơn không nói được, và trả lại bảng kiểm kê Phạm vi 1 và 2 với từng con số truy về tài liệu và hệ số đã công bố.",
     "cta": "Bắt đầu với hóa đơn",
     "steps": {
@@ -417,34 +438,21 @@
     "globe": {
       "aria": "Một quả địa cầu 3D quay chậm, lục địa xanh trên đại dương nhạt màu. Một nhà máy trên đó bốc khói, một xe tải chạy qua và một máy bay bay vòng quanh, tất cả đều nhả khí thải, trong khi các thẻ bên cạnh ghi CO₂, N₂O và CH₄ với số liệu tăng giảm."
     },
-    "stats": {
-      "factors": {
-        "value": "8",
-        "label": "nguồn hệ số công bố, mỗi nguồn đều được trích dẫn"
-      },
-      "ai": {
-        "value": "0",
-        "label": "con số do AI viết; mã tính toán mọi thứ"
-      },
-      "langs": {
-        "value": "3",
-        "label": "ngôn ngữ: Anh, Việt, Nhật"
-      }
-    },
     "scrollCue": "Cuộn xuống để xem cách hoạt động",
     "story": {
       "eyebrow": "Phạm vi 1 và 2, từ hóa đơn của bạn",
       "title": "Mỗi tấn đều truy được về một hóa đơn."
     },
-    "howTitle": "Bốn bước, một buổi chiều.",
+    "howTitle": "Năm bước, một buổi chiều.",
     "flow": {
       "on": "Supplier Carbon đã bật.",
-      "aria": "Supplier Carbon hoạt động: hóa đơn được tải lên và đọc, một hóa đơn được quét và hỏi về tháng còn thiếu, bảng kiểm kê Phạm vi 1 và 2 được lập, và bảng câu hỏi của khách hàng được điền.",
+      "aria": "Supplier Carbon hoạt động: hóa đơn được tải lên và đọc, một hóa đơn được quét và hỏi về tháng còn thiếu, bảng kiểm kê Phạm vi 1 và 2 được lập, kế hoạch giảm phát thải đặt điện mặt trời lên mái và xếp hạng các biện pháp, và bảng câu hỏi của khách hàng được điền.",
       "words": {
         "bills": "Đọc hóa đơn",
         "questions": "Hỏi phần còn thiếu",
         "inventory": "Lập bảng kiểm kê",
-        "questionnaire": "Điền bảng câu hỏi"
+        "questionnaire": "Điền bảng câu hỏi",
+        "reductions": "Lập kế hoạch giảm phát thải"
       },
       "upload": {
         "drop": "Thả hóa đơn vào đây",
@@ -478,6 +486,14 @@
         "answered": "đã trả lời",
         "ready": "Sẵn sàng gửi",
         "file": "bang_cau_hoi_da_dien.xlsx"
+      },
+      "reduce": {
+        "cuts": {
+          "solar": "Điện mặt trời áp mái",
+          "led": "Thay đèn LED",
+          "air": "Khắc phục rò khí nén"
+        },
+        "payback": "Điện mặt trời theo đúng mức cơ sở sử dụng, hoàn vốn sau 5,8 năm theo giá điện của bạn."
       }
     },
     "features": {
@@ -541,7 +557,8 @@
       "how": "Cách hoạt động",
       "features": "Tính năng",
       "standards": "Chuẩn mực được trích dẫn"
-    }
+    },
+    "home": "Trang chủ"
   },
   "stepLock": {
     "documents": "",

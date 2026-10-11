@@ -399,6 +399,8 @@ button.pill:active { transform: scale(0.97); }
    slowly about their hub, set per turbine in user units. */
 @keyframes footer-spin { to { transform: rotate(360deg); } }
 .footer-turbine { transform-box: view-box; animation: footer-spin 9s linear infinite; }
+/* The sun in the steps flow's reduction scene: its rays turn slowly. */
+.sun-rays { transform-box: view-box; animation: footer-spin 24s linear infinite; }
 
 /* Steps carousel (components/landing/steps-carousel.tsx): the open step's bar fills over its hold time. */
 @keyframes steps-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }

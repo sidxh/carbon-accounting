@@ -1,11 +1,11 @@
 "use client";
 
-import { AnimatePresence, motion, useInView, useMotionValueEvent, useReducedMotion, useScroll } from "motion/react";
+import { AnimatePresence, motion, useInView, useMotionValueEvent, useReducedMotion, useScroll, useTransform } from "motion/react";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { Pointer } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { FORM_PHASES, FormScene, INVENTORY_PHASES, InventoryScene, SCAN_PHASES, ScanScene, UPLOAD_PHASES, UploadScene } from "./flow-scenes";
+import { FORM_PHASES, FormScene, INVENTORY_PHASES, InventoryScene, REDUCE_PHASES, ReduceScene, SCAN_PHASES, ScanScene, UPLOAD_PHASES, UploadScene } from "./flow-scenes";
 
 const EASE = [0.23, 1, 0.32, 1] as const;
 const GLIDE = { duration: 0.7, ease: [0.77, 0, 0.175, 1] as const };
@@ -13,7 +13,7 @@ const GLIDE = { duration: 0.7, ease: [0.77, 0, 0.175, 1] as const };
 // Intro: switch off, the cursor presses, switch on (ms). It plays by itself.
 const INTRO = [450, 220, 420];
 // Each step's card plays its own stages on a timer (ms per stage).
-const SCENES = [UPLOAD_PHASES, SCAN_PHASES, INVENTORY_PHASES, FORM_PHASES];
+const SCENES = [UPLOAD_PHASES, SCAN_PHASES, INVENTORY_PHASES, REDUCE_PHASES, FORM_PHASES];
 // Scroll given to each step, in viewport heights.
 const STEP_VH = 80;
 
@@ -38,10 +38,11 @@ function Switch({ on, pressed }: { on: boolean; pressed: boolean }) {
 
 /**
  * "How it works": the section pins while the page scrolls, and the scroll moves
- * through the four steps on the left, a wheel with the active one bright and the
+ * through the five steps on the left, a wheel with the active one bright and the
  * rest fading above and below. The card on the right plays each step's animation
  * by itself when that step comes up (bills dropped into a folder, a bill scanned
- * and a gap asked about, the inventory built, the questionnaire filled) and then
+ * and a gap asked about, the inventory built, a reduction plan drawn, the
+ * questionnaire filled) and then
  * holds its last frame. Arriving at the top, a "Supplier Carbon" switch is first
  * pressed on by itself. Scenes slide up when scrolling down and back when
  * scrolling up; clicking a step scrolls to it. Under reduced motion the switch is
@@ -61,6 +62,9 @@ export function StepsFlow({ title }: { title: string }) {
 
   // The scroll picks the step; past the first stretch, the intro is skipped.
   const { scrollYProgress } = useScroll({ target: track, offset: ["start start", "end end"] });
+  // The heading's ink: from unlit to fully coloured while the section scrolls in.
+  const { scrollYProgress: arriving } = useScroll({ target: track, offset: ["start end", "start start"] });
+  const inkIn = useTransform(arriving, (v) => `${reduce ? 0 : 100 - Math.min(1, v * 1.25) * 100}% 0%`);
   useMotionValueEvent(scrollYProgress, "change", (v) => {
     const s = Math.min(SCENES.length - 1, Math.floor(v * SCENES.length));
     if (s !== scene) { setDir(s > scene ? 1 : -1); setScene(s); setPhase(0); }
@@ -96,13 +100,27 @@ export function StepsFlow({ title }: { title: string }) {
 
   const shown = reduce ? SCENES[scene].length - 1 : phase;
   const on = introBeat >= 2;
-  const words = [t("words.bills"), t("words.questions"), t("words.inventory"), t("words.questionnaire")];
+  const words = [t("words.bills"), t("words.questions"), t("words.inventory"), t("words.reductions"), t("words.questionnaire")];
 
   return (
     // A tall track to scroll through; the scene itself stays pinned in view.
     <div ref={track} id="how" className="relative" style={{ height: `calc(100dvh + ${(SCENES.length - 1) * STEP_VH}dvh)` }}>
-      <div ref={stage} className="sticky top-0 flex h-dvh flex-col justify-center gap-6 pt-20 md:gap-8">
-        <h2 id="how-h" className="font-display text-center text-3xl text-balance sm:text-4xl">{title}</h2>
+      <div ref={stage} className="sticky top-0 flex h-dvh flex-col justify-center pb-4 pt-[130px]">
+        {/* The heading sits near the top and inks in, left to right, as the section arrives. */}
+        <motion.h2
+          id="how-h"
+          className="font-display absolute inset-x-0 top-[84px] px-4 text-center text-3xl text-balance sm:text-4xl"
+          style={{
+            backgroundImage: "linear-gradient(90deg, var(--signal-ink) 0%, var(--ink) 42%, var(--line-strong) 58%, var(--line-strong) 100%)",
+            backgroundSize: "240% 100%",
+            backgroundPosition: inkIn,
+            WebkitBackgroundClip: "text",
+            backgroundClip: "text",
+            color: "transparent",
+          }}
+        >
+          {title}
+        </motion.h2>
         <div className="relative h-[560px] md:h-[480px]">
           <AnimatePresence mode="wait" initial={false}>
             {intro ? (
@@ -188,7 +206,8 @@ export function StepsFlow({ title }: { title: string }) {
                       {scene === 0 && <UploadScene phase={shown} />}
                       {scene === 1 && <ScanScene phase={shown} />}
                       {scene === 2 && <InventoryScene phase={shown} />}
-                      {scene === 3 && <FormScene phase={shown} />}
+                      {scene === 3 && <ReduceScene phase={shown} />}
+                      {scene === 4 && <FormScene phase={shown} />}
                     </motion.div>
                   </AnimatePresence>
                   {/* Progress through the four scenes. */}
