@@ -139,7 +139,14 @@
     "otherGroup": "Not yet read",
     "next": "Continue to questions",
     "needMore": "Add at least one bill to continue.",
-    "removeShared": "This year is shared with {names}: their figures change too."
+    "removeShared": "This year is shared with {names}: their figures change too.",
+    "readTitle": "What we read",
+    "reading": "Reading…",
+    "needsLook": "Needs a look",
+    "addMore": "Add more",
+    "missingFor": "Missing for: {months}",
+    "stillMissing": "{n} monthly bill(s) are still missing. We'll ask about them on the next step.",
+    "allCovered": "Every month is covered."
   },
   "reconcile": {
     "title": "A few questions",
@@ -245,10 +252,9 @@
       "estimated": "Filled from your answer to a question"
     },
     "step": {
-      "document": "Source document",
-      "quantity": "Activity quantity",
       "factor": "Emission factor",
-      "result": "Calculation"
+      "result": "Calculation",
+      "bill": "From your bill"
     },
     "factorCard": {
       "source": "Source",
@@ -259,7 +265,11 @@
       "id": "Factor id",
       "nearestYear": "The {year} factor is the nearest published vintage for your reporting year.",
       "nationalFallback": "National factor used; no sub-national factor exists for this site.",
-      "marketFallback": "No residual-mix or contract factor is published here, so the market-based figure uses the grid average (GHG Protocol Scope 2 hierarchy)."
+      "marketFallback": "No residual-mix or contract factor is published here, so the market-based figure uses the grid average (GHG Protocol Scope 2 hierarchy).",
+      "openSource": "Open source",
+      "appliesTo": "Applies to",
+      "region": "Geography",
+      "methodLabel": "Method"
     },
     "method": {
       "location": "location-based grid average",
@@ -300,7 +310,28 @@
     "site": "Site",
     "fixInQuestions": "Fix in Questions",
     "showMe": "Show me where",
-    "showMeShort": "Show me"
+    "showMeShort": "Show me",
+    "scope1Note": "Fuels and refrigerants",
+    "scope2Note": "Electricity, location-based",
+    "cut": {
+      "explore": "Tap to explore",
+      "close": "Close"
+    },
+    "recompute": "Recalculate",
+    "marketFootnote": "Market-based Scope 2: <t></t> t, reported alongside",
+    "quality": {
+      "read": "{pct} read from bills",
+      "estimated": "{pct} estimated from your answers"
+    },
+    "estimatedNote": "Estimated from your answers",
+    "showMeHint": "See exactly where {qty} is printed on the bill.",
+    "assumption": {
+      "answer": "Your answer",
+      "used": "How we used it:",
+      "asked": "What we asked",
+      "more": "Show the full question",
+      "less": "Show less"
+    }
   },
   "questionnaire": {
     "title": "Your customer's questionnaire",
@@ -539,7 +570,9 @@
       "features": "What it does",
       "standards": "Standards we cite"
     },
-    "home": "Home"
+    "home": "Home",
+    "problem": "The problem",
+    "problemNote": "This page is in English for now."
   },
   "stepLock": {
     "documents": "",
@@ -548,7 +581,7 @@
     "questionnaire": "Unlocks once the inventory is calculated"
   },
   "home": {
-    "greeting": "{n, plural, =0 {No requests yet} =1 {One request} other {# requests}}",
+    "greeting": "{n, plural, =0 {No customers yet} =1 {One customer} other {# customers}}",
     "ledeSome": "Each card is a customer who asked for your numbers. Bills and figures belong to the reporting year and are shared between requests for the same year.",
     "ledeNone": "Start with the customer who asked. Bills and figures are collected per reporting year and reused for every request on that year.",
     "newRequest": "New request",
@@ -614,7 +647,28 @@
       "create": "Create request",
       "creating": "Creating…",
       "cancel": "Cancel",
-      "created": "Request for {name} created."
+      "created": "Request for {name} created.",
+      "stepWho": "Customer",
+      "stepYear": "Year",
+      "stepDetails": "Details",
+      "qWho": "Who asked you for carbon data?",
+      "qYear": "Which year are they asking about?",
+      "qDetails": "Anything else they sent? (optional)",
+      "next": "Continue",
+      "back": "Back",
+      "yearOrder": "The year must end after it starts."
+    },
+    "firstTitle": "Let's answer your first customer.",
+    "nextLabel": "Next: {step}",
+    "customers": "Customers",
+    "open": "Open",
+    "usedByNames": "used by {names}",
+    "urgency": {
+      "overdue": "Overdue",
+      "dueSoon": "Due soon",
+      "inProgress": "In progress",
+      "notStarted": "Not started",
+      "done": "Done"
     }
   },
   "evidence": {

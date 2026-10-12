@@ -139,7 +139,14 @@
     "monthsMissing": "Thiếu {n} tháng",
     "fullYear": "Đủ năm",
     "otherGroup": "Chưa đọc",
-    "removeShared": "Năm này dùng chung với {names}: số liệu của họ cũng thay đổi."
+    "removeShared": "Năm này dùng chung với {names}: số liệu của họ cũng thay đổi.",
+    "readTitle": "Những gì đã đọc",
+    "reading": "Đang đọc…",
+    "needsLook": "Cần xem lại",
+    "addMore": "Thêm tệp",
+    "missingFor": "Thiếu: {months}",
+    "stillMissing": "Còn thiếu {n} hóa đơn tháng. Chúng tôi sẽ hỏi ở bước tiếp theo.",
+    "allCovered": "Đã đủ tất cả các tháng."
   },
   "reconcile": {
     "title": "Vài câu hỏi",
@@ -245,10 +252,9 @@
       "estimated": "Bù từ câu trả lời của bạn"
     },
     "step": {
-      "document": "Tài liệu nguồn",
-      "quantity": "Số lượng hoạt động",
       "factor": "Hệ số phát thải",
-      "result": "Phép tính"
+      "result": "Phép tính",
+      "bill": "Từ hóa đơn của bạn"
     },
     "factorCard": {
       "source": "Nguồn",
@@ -259,7 +265,11 @@
       "id": "Mã hệ số",
       "nearestYear": "Hệ số {year} là vintage gần nhất đã công bố cho năm báo cáo của bạn.",
       "nationalFallback": "Dùng hệ số quốc gia; không có hệ số vùng cho cơ sở này.",
-      "marketFallback": "Chưa có hệ số residual mix hay hợp đồng, nên số liệu theo thị trường dùng trung bình lưới (thứ bậc Phạm vi 2 của GHG Protocol)."
+      "marketFallback": "Chưa có hệ số residual mix hay hợp đồng, nên số liệu theo thị trường dùng trung bình lưới (thứ bậc Phạm vi 2 của GHG Protocol).",
+      "openSource": "Mở nguồn",
+      "appliesTo": "Áp dụng cho",
+      "region": "Khu vực",
+      "methodLabel": "Phương pháp"
     },
     "method": {
       "title": "Các con số này được tính thế nào",
@@ -300,7 +310,28 @@
     "site": "Cơ sở",
     "fixInQuestions": "Sửa ở phần Câu hỏi",
     "showMe": "Chỉ cho tôi chỗ này",
-    "showMeShort": "Xem"
+    "showMeShort": "Xem",
+    "scope1Note": "Nhiên liệu và môi chất lạnh",
+    "scope2Note": "Điện, theo địa điểm",
+    "cut": {
+      "explore": "Chạm để xem",
+      "close": "Đóng"
+    },
+    "recompute": "Tính lại",
+    "marketFootnote": "Phạm vi 2 theo thị trường: <t></t> t, báo cáo kèm",
+    "quality": {
+      "read": "{pct} đọc từ hóa đơn",
+      "estimated": "{pct} ước tính từ câu trả lời"
+    },
+    "estimatedNote": "Ước tính từ câu trả lời của bạn",
+    "showMeHint": "Xem chính xác chỗ ghi {qty} trên hóa đơn.",
+    "assumption": {
+      "answer": "Câu trả lời của bạn",
+      "used": "Cách chúng tôi dùng:",
+      "asked": "Câu hỏi",
+      "more": "Xem cả câu hỏi",
+      "less": "Thu gọn"
+    }
   },
   "questionnaire": {
     "title": "Bảng câu hỏi của khách hàng",
@@ -539,7 +570,9 @@
       "features": "Tính năng",
       "standards": "Chuẩn mực được trích dẫn"
     },
-    "home": "Trang chủ"
+    "home": "Trang chủ",
+    "problem": "Vấn đề",
+    "problemNote": "Trang này hiện chỉ có bằng tiếng Anh."
   },
   "stepLock": {
     "documents": "",
@@ -548,7 +581,7 @@
     "questionnaire": "Mở khi đã tính kiểm kê"
   },
   "home": {
-    "greeting": "{n, plural, =0 {Chưa có yêu cầu} =1 {Một yêu cầu} other {# yêu cầu}}",
+    "greeting": "{n, plural, =0 {Chưa có khách hàng} other {# khách hàng}}",
     "ledeSome": "Mỗi thẻ là một khách hàng đã hỏi số liệu của bạn. Hóa đơn và số liệu thuộc năm báo cáo và dùng chung cho các yêu cầu cùng năm.",
     "ledeNone": "Bắt đầu từ khách hàng đã hỏi. Hóa đơn và số liệu được gom theo năm báo cáo và dùng lại cho mọi yêu cầu trong năm đó.",
     "newRequest": "Yêu cầu mới",
@@ -614,7 +647,28 @@
       "create": "Tạo yêu cầu",
       "creating": "Đang tạo…",
       "cancel": "Hủy",
-      "created": "Đã tạo yêu cầu cho {name}."
+      "created": "Đã tạo yêu cầu cho {name}.",
+      "stepWho": "Khách hàng",
+      "stepYear": "Năm",
+      "stepDetails": "Chi tiết",
+      "qWho": "Ai đã hỏi bạn về dữ liệu carbon?",
+      "qYear": "Họ hỏi về năm nào?",
+      "qDetails": "Họ có gửi gì thêm không? (tùy chọn)",
+      "next": "Tiếp tục",
+      "back": "Quay lại",
+      "yearOrder": "Ngày kết thúc phải sau ngày bắt đầu."
+    },
+    "firstTitle": "Cùng trả lời khách hàng đầu tiên của bạn.",
+    "nextLabel": "Tiếp theo: {step}",
+    "customers": "Khách hàng",
+    "open": "Mở",
+    "usedByNames": "dùng cho {names}",
+    "urgency": {
+      "overdue": "Quá hạn",
+      "dueSoon": "Sắp đến hạn",
+      "inProgress": "Đang làm",
+      "notStarted": "Chưa bắt đầu",
+      "done": "Hoàn tất"
     }
   },
   "evidence": {

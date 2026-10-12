@@ -139,7 +139,14 @@
     "monthsMissing": "{n}か月不足",
     "fullYear": "通年",
     "otherGroup": "未読み取り",
-    "removeShared": "この年度は{names}と共有中です。相手の数値も変わります。"
+    "removeShared": "この年度は{names}と共有中です。相手の数値も変わります。",
+    "readTitle": "読み取った内容",
+    "reading": "読み取り中…",
+    "needsLook": "確認が必要",
+    "addMore": "さらに追加",
+    "missingFor": "不足：{months}",
+    "stillMissing": "月次の請求書が {n} 件不足しています。次のステップで確認します。",
+    "allCovered": "すべての月がそろっています。"
   },
   "reconcile": {
     "title": "いくつか確認します",
@@ -245,10 +252,9 @@
       "estimated": "質問への回答から補完"
     },
     "step": {
-      "document": "根拠書類",
-      "quantity": "活動量",
       "factor": "排出係数",
-      "result": "計算"
+      "result": "計算",
+      "bill": "請求書から"
     },
     "factorCard": {
       "source": "出典",
@@ -259,7 +265,11 @@
       "id": "係数ID",
       "nearestYear": "{year}年の係数は、報告年度に最も近い公表値です。",
       "nationalFallback": "この拠点には地域別係数がないため全国係数を使用。",
-      "marketFallback": "残余ミックスや契約係数が未公表のため、マーケット基準は系統平均を使用（GHGプロトコル スコープ2階層）。"
+      "marketFallback": "残余ミックスや契約係数が未公表のため、マーケット基準は系統平均を使用（GHGプロトコル スコープ2階層）。",
+      "openSource": "出典を開く",
+      "appliesTo": "適用年",
+      "region": "地域",
+      "methodLabel": "方法"
     },
     "method": {
       "title": "数値の算定方法",
@@ -300,7 +310,28 @@
     "site": "拠点",
     "fixInQuestions": "質問で修正",
     "showMe": "該当箇所を表示",
-    "showMeShort": "表示"
+    "showMeShort": "表示",
+    "scope1Note": "燃料と冷媒",
+    "scope2Note": "電力(ロケーション基準)",
+    "cut": {
+      "explore": "タップして見る",
+      "close": "閉じる"
+    },
+    "recompute": "再計算する",
+    "marketFootnote": "マーケット基準のスコープ2:<t></t> t(併記)",
+    "quality": {
+      "read": "{pct} 請求書から読み取り",
+      "estimated": "{pct} 回答から推計"
+    },
+    "estimatedNote": "回答から推計",
+    "showMeHint": "{qty} が請求書のどこに書かれているかを確認できます。",
+    "assumption": {
+      "answer": "あなたの回答",
+      "used": "使い方:",
+      "asked": "質問",
+      "more": "質問をすべて表示",
+      "less": "閉じる"
+    }
   },
   "questionnaire": {
     "title": "顧客の質問票",
@@ -539,7 +570,9 @@
       "features": "できること",
       "standards": "引用している基準"
     },
-    "home": "ホーム"
+    "home": "ホーム",
+    "problem": "課題",
+    "problemNote": "このページは現在英語のみです。"
   },
   "stepLock": {
     "documents": "",
@@ -548,7 +581,7 @@
     "questionnaire": "インベントリを算定すると開きます"
   },
   "home": {
-    "greeting": "{n, plural, =0 {依頼はまだありません} other {依頼 #件}}",
+    "greeting": "{n, plural, =0 {取引先はまだありません} other {取引先 #社}}",
     "ledeSome": "各カードは数値を求めてきた取引先です。請求書と数値は報告年度に属し、同じ年度の依頼間で共有されます。",
     "ledeNone": "まず依頼してきた取引先から。請求書と数値は報告年度ごとに集め、その年度のすべての依頼で再利用します。",
     "newRequest": "新しい依頼",
@@ -614,7 +647,28 @@
       "create": "依頼を作成",
       "creating": "作成中…",
       "cancel": "キャンセル",
-      "created": "{name} の依頼を作成しました。"
+      "created": "{name} の依頼を作成しました。",
+      "stepWho": "取引先",
+      "stepYear": "年度",
+      "stepDetails": "詳細",
+      "qWho": "カーボンデータを求めているのはどの取引先ですか？",
+      "qYear": "どの年度について尋ねられていますか？",
+      "qDetails": "ほかに受け取ったものは？（任意）",
+      "next": "次へ",
+      "back": "戻る",
+      "yearOrder": "終了日は開始日より後にしてください。"
+    },
+    "firstTitle": "最初の取引先に回答しましょう。",
+    "nextLabel": "次：{step}",
+    "customers": "取引先",
+    "open": "開く",
+    "usedByNames": "使用中：{names}",
+    "urgency": {
+      "overdue": "期限切れ",
+      "dueSoon": "期限間近",
+      "inProgress": "進行中",
+      "notStarted": "未着手",
+      "done": "完了"
     }
   },
   "evidence": {

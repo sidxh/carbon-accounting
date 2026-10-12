@@ -91,20 +91,29 @@ def fill_setup(page, name: str, site: str, language: str = "vi", country: str = 
 
 
 def new_request(page, customer: str, *, due: str | None = None, share: str | None = None, new_year: tuple[str, str] | None = None) -> str:
-    """Open the New request dialog from Home, submit it, and return the request id from the URL."""
+    """Walk Home's request flow (inline when there are no requests, else opened with New request), open the new request from its card, and return its id."""
+    cont = re.compile("^Continue|^Tiếp tục|^次へ")
     page.goto(f"{WEB}/home")
-    page.get_by_role("button", name=re.compile("New request|Yêu cầu mới|新しい依頼")).first.click()
-    page.get_by_role("dialog").wait_for()
+    page.locator("main h1").first.wait_for(timeout=20000)  # Home has loaded (skeleton gone)
+    if not page.locator("#nr-name").count():
+        page.get_by_role("button", name=re.compile("New request|Yêu cầu mới|新しい依頼")).first.click()
     page.locator("#nr-name").fill(customer)
+    page.get_by_role("button", name=cont).click()
     if new_year:
-        page.locator("#nr-period").select_option("__new")
+        page.locator("#nr-period-new").click()
         page.locator("#nr-start").fill(new_year[0])
         page.locator("#nr-end").fill(new_year[1])
+    page.get_by_role("button", name=cont).click()
+    page.locator("#nr-due").wait_for()
     if due:
         page.locator("#nr-due").fill(due)
     if share:
         page.locator("#nr-share").fill(share)
-    page.get_by_role("dialog").get_by_role("button", name=re.compile("Create request|Tạo yêu cầu|依頼を作成")).click()
+    page.get_by_role("button", name=re.compile("Create request|Tạo yêu cầu|依頼を作成")).click()
+    # Home stays put and lists the new customer; open it with its Start button.
+    card = page.locator("li", has_text=customer).filter(has=page.locator("a[href*='/r/req_']")).first
+    card.wait_for(timeout=20000)
+    card.locator("a[href*='/r/req_']").first.click()
     page.wait_for_url(re.compile(r"/r/(req_[a-f0-9]+)/documents"), timeout=20000)
     return re.search(r"/r/(req_[a-f0-9]+)/", page.url).group(1)
 

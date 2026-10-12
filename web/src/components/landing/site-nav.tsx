@@ -24,8 +24,10 @@ const SECTIONS = [
  * It slides away while scrolling down through the long scenes and comes back on
  * the first scroll up; at the top of the page it always shows. Off the landing
  * page (`onLanding={false}`) the sections link back to it and the button goes home.
+ * After the sections, a link to the problem page; on it (`page="problem"`) the
+ * pill sits behind that link instead.
  */
-export function SiteNav({ signedIn, onLanding = true }: { signedIn: boolean; onLanding?: boolean }) {
+export function SiteNav({ signedIn, onLanding = true, page }: { signedIn: boolean; onLanding?: boolean; page?: "problem" }) {
   const t = useTranslations("landing");
   const tc = useTranslations();
   const reduce = useReducedMotion() ?? false;
@@ -70,10 +72,10 @@ export function SiteNav({ signedIn, onLanding = true }: { signedIn: boolean; onL
         aria-label={t("navLabel")}
         className="pointer-events-auto relative flex w-full max-w-5xl items-center justify-between gap-3 overflow-hidden rounded-full border border-signal/15 bg-raised/95 py-1.5 pl-4 pr-1.5 shadow-[var(--shadow-float)]"
       >
-        <Link href="/" className="rounded-full" aria-label="Supplier Carbon"><Wordmark /></Link>
+        <Link href="/" className="shrink-0 rounded-full" aria-label="Supplier Carbon"><Wordmark /></Link>
 
         {/* Sections, with a green pill sliding behind the current one. */}
-        <ul className="hidden items-center gap-1 md:flex">
+        <ul className="hidden items-center gap-0.5 md:flex">
           {SECTIONS.map((s) => {
             const on = active === s.id;
             return (
@@ -90,17 +92,30 @@ export function SiteNav({ signedIn, onLanding = true }: { signedIn: boolean; onL
                   href={onLanding ? `#${s.id}` : `/#${s.id}`}
                   onClick={onLanding ? go(s.id) : undefined}
                   aria-current={on ? "location" : undefined}
-                  className={cn("relative block rounded-full px-4 py-2 text-sm transition-colors duration-200", on ? "font-medium text-signal-ink" : "text-ink-soft hover:text-ink")}
+                  className={cn("relative block whitespace-nowrap rounded-full px-3.5 py-2 text-sm transition-colors duration-200", on ? "font-medium text-signal-ink" : "text-ink-soft hover:text-ink")}
                 >
                   {t(`footer.${s.key}`)}
                 </a>
               </li>
             );
           })}
+          <li className="relative">
+            {page === "problem" && (
+              <motion.span layoutId="nav-current" className="absolute inset-0 rounded-full bg-signal-bg" transition={{ duration: 0.4, ease: EASE }} aria-hidden />
+            )}
+            <Link
+              href="/problem"
+              aria-current={page === "problem" ? "page" : undefined}
+              className={cn("relative block whitespace-nowrap rounded-full px-3.5 py-2 text-sm transition-colors duration-200", page === "problem" ? "font-medium text-signal-ink" : "text-ink-soft hover:text-ink")}
+            >
+              {t("problem")}
+            </Link>
+          </li>
         </ul>
 
         <div className="flex items-center gap-1.5">
-          <LanguageSwitcher className="hidden sm:inline-flex [&_select]:border-transparent [&_select]:bg-transparent" />
+          {/* In the bar from lg up (with four links it would crowd a tablet); it is always in the footer. */}
+          <LanguageSwitcher className="hidden lg:inline-flex [&_select]:border-transparent [&_select]:bg-transparent" />
           {onLanding ? (
             <Link href={signedIn ? "/home" : "/sign-in"} className="btn btn-sm rounded-full">
               {signedIn ? t("dashboard") : tc("app.signIn")}<ArrowRight className="size-4" aria-hidden />

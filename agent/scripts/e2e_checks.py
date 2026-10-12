@@ -47,7 +47,7 @@ def main() -> int:
         read, failed = upload(page, files)
         print(f"read {read}, failed {failed}")
 
-        page.get_by_role("link", name=re.compile("Continue to questions|Tiếp tục đến câu hỏi|確認へ進む")).click()
+        page.get_by_role("link", name=re.compile("Continue to questions|Tiếp tục đến câu hỏi|確認へ進む")).first.click()
         page.wait_for_url(re.compile(r"/reconcile"))
         page.get_by_text(re.compile("What we found|Những gì chúng tôi tìm thấy|確認結果")).wait_for(timeout=30000)
         page.get_by_role("button", name=re.compile("Check my bills|Kiểm tra hóa đơn|請求書を確認")).first.click()
