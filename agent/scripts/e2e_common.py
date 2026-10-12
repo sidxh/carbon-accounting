@@ -67,26 +67,31 @@ def fill_setup(page, name: str, site: str, country: str = "VN") -> None:
 
 
 def new_request(page, customer: str, *, due: str | None = None, share: str | None = None, new_year: tuple[str, str] | None = None) -> str:
-    """Open the New request dialog from Home, submit it, and return the request id from the URL."""
+    """Walk Home's request flow (inline when there are no requests, else opened with New request), then open the new request from its ringed card and return its id."""
+    cont = re.compile("^Continue|^Tiếp tục|^次へ")
     page.goto(f"{WEB}/home")
-    page.get_by_role("button", name=re.compile("New request|Yêu cầu mới|新しい依頼")).first.click()
-    page.get_by_role("dialog").wait_for()
+    page.locator("main h1").first.wait_for(timeout=20000)  # Home has loaded (skeleton gone)
+    if not page.locator("#nr-name").count():
+        page.get_by_role("button", name=re.compile("New request|Yêu cầu mới|新しい依頼")).first.click()
     page.locator("#nr-name").fill(customer)
+    page.get_by_role("button", name=cont).click()
     if new_year:
-        page.locator("#nr-period").select_option("__new")
+        page.locator("#nr-period-new").click()
         page.locator("#nr-start").fill(new_year[0])
         page.locator("#nr-end").fill(new_year[1])
+    page.get_by_role("button", name=cont).click()
+    page.locator("#nr-due").wait_for()
     if due:
         page.locator("#nr-due").fill(due)
     if share:
         page.locator("#nr-share").fill(share)
-    page.get_by_role("dialog").get_by_role("button", name=re.compile("Create request|Tạo yêu cầu|依頼を作成")).click()
+    page.get_by_role("button", name=re.compile("Create request|Tạo yêu cầu|依頼を作成")).click()
     # Creating a request keeps you on Home with the new card ringed. Read its id from the card, then open it.
     card = page.locator("[data-request-id][data-highlighted=true]")
     card.wait_for(timeout=20000)
     assert "/home" in page.url, f"expected to stay on Home, got {page.url}"
     rid = card.get_attribute("data-request-id")
-    card.get_by_role("link", name=re.compile("Start|Continue|Bắt đầu|Tiếp tục|開始|続ける")).click()
+    card.get_by_role("link", name=re.compile("Start|Continue|Open|Bắt đầu|Tiếp tục|Mở|開始|続ける|開く")).first.click()
     page.wait_for_url(re.compile(rf"/r/{rid}/documents"), timeout=20000)
     return rid
 

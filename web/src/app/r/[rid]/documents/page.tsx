@@ -4,11 +4,11 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { AnimatePresence, motion } from "motion/react";
-import { Camera, ChevronDown, FileText, ImagePlus, RotateCcw, Trash2, UploadCloud, X } from "lucide-react";
+import { ArrowRight, Camera, ChevronDown, FileText, ImagePlus, RotateCcw, Trash2, UploadCloud, X } from "lucide-react";
 import { cn as clsx } from "@/lib/cn";
 import { useRequest } from "@/components/request-context";
 import { SharedNotice } from "@/components/shared-notice";
-import { CoverageStrip, EmptyState, PageTitle, SkeletonList } from "@/components/ui/bits";
+import { SkeletonList } from "@/components/ui/bits";
 import { Dialog } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/toast";
 import { api, type DocumentRecord } from "@/lib/api";
@@ -63,6 +63,7 @@ function StagedFile({ file, onRemove, state }: { file: File; onRemove: () => voi
   );
 }
 
+/** One bill inside its energy group: thumbnail, name, what was read, its status, retry and remove. */
 function DocCard({ uid, pid, doc, onRemove, onRetry, busy }: { uid: string; pid: string; doc: DocumentRecord; onRemove: () => void; onRetry: () => void; busy: boolean }) {
   const t = useTranslations("documents");
   const lines = doc.extraction?.lines ?? [];
@@ -73,7 +74,7 @@ function DocCard({ uid, pid, doc, onRemove, onRetry, busy }: { uid: string; pid:
       animate={{ opacity: 1, transform: "translateY(0px)" }}
       exit={{ opacity: 0, transform: "scale(0.98)" }}
       transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-      className="card flex items-start gap-3 p-3"
+      className="card flex items-start gap-3 rounded-[16px] p-3 shadow-none"
     >
       <Thumb uid={uid} pid={pid} doc={doc} />
       <div className="min-w-0 flex-1">
@@ -84,22 +85,21 @@ function DocCard({ uid, pid, doc, onRemove, onRetry, busy }: { uid: string; pid:
           </span>
         </div>
         {lines.map((l, i) => (
-          <div key={i} className="mt-1 text-sm">
-            <span className="font-medium">{energyLabel(l.energy_type)}</span> ·{" "}
+          <div key={i} className="mt-0.5 text-xs text-ink-soft">
             <span className="tabular">{t("read", { quantity: l.quantity.toLocaleString(), unit: l.unit, start: l.period_start, end: l.period_end })}</span>
-            <span className={clsx("ml-2 text-xs", l.confidence < 0.7 ? "text-attention" : "text-muted")}>{t("confidence", { pct: Math.round(l.confidence * 100) })}</span>
+            <span className={clsx("ml-2", l.confidence < 0.7 ? "text-attention" : "text-muted")}>{t("confidence", { pct: Math.round(l.confidence * 100) })}</span>
           </div>
         ))}
         {empty && <p className="mt-1 text-xs text-attention">{t("emptyHint")}</p>}
         {doc.error && <p className="mt-1 break-words text-xs text-danger">{doc.error}</p>}
         {doc.extraction?.warnings?.map((w, i) => <p key={i} className="mt-1 text-xs text-attention">{w}</p>)}
-        <div className="mt-2 flex gap-1">
+        <div className="mt-1.5 flex gap-1">
           {(doc.status === "failed" || empty) && (
-            <button className="btn btn-ghost btn-sm !min-h-8 gap-1.5 px-2 text-xs" onClick={onRetry} disabled={busy}>
+            <button className="btn btn-ghost btn-sm !min-h-7 gap-1.5 px-2 text-xs" onClick={onRetry} disabled={busy}>
               <RotateCcw className="size-3.5" aria-hidden /> {t("retry")}
             </button>
           )}
-          <button className="btn btn-ghost btn-sm !min-h-8 gap-1.5 px-2 text-xs text-danger" onClick={onRemove} disabled={busy}>
+          <button className="btn btn-ghost btn-sm !min-h-7 gap-1.5 px-2 text-xs text-danger" onClick={onRemove} disabled={busy}>
             <Trash2 className="size-3.5" aria-hidden /> {t("remove")}
           </button>
         </div>
@@ -121,7 +121,8 @@ function Documents() {
   const [dragging, setDragging] = useState(false);
   const [confirmRemove, setConfirmRemove] = useState<DocumentRecord | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  // Which energy groups are open. Groups that need action (failed, unread) start open; the rest start closed.
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const pick = useRef<HTMLInputElement>(null);
   const cam = useRef<HTMLInputElement>(null);
   const siteId = profile.sites[0]?.id;
@@ -217,129 +218,151 @@ function Documents() {
 
   if (docs === null) return <SkeletonList rows={4} />;
 
+  const pending = Object.values(progress).filter((p) => p === "queued" || p === "uploading").length;
+  // Monthly bills with no bill yet, across the monthly energies (asked about on the next step).
+  const missingTotal = groups.reduce((n, [key, g]) => (PERIODIC.has(key) && months.length ? n + coverage(g.lines, months).filter((c) => c === "missing").length : n), 0);
+  const continueButton = (
+    <Link href={`/r/${request.id}/reconcile`} className={clsx("btn gap-1.5 rounded-full", extracted === 0 && "pointer-events-none opacity-60")} aria-disabled={extracted === 0}>
+      {t("next")}<ArrowRight className="size-4" aria-hidden />
+    </Link>
+  );
+
   return (
     <div className="space-y-6">
-      <PageTitle title={t("title")} lede={t("lede")} />
-      <SharedNotice sharedWith={view.shared_with} periodLabel={period.label} />
-
-      {/* Drop zone --------------------------------------------------------------- */}
-      <div
-        className={clsx("card relative flex flex-col items-center gap-3 border-dashed px-5 py-8 text-center transition-colors", dragging ? "border-signal bg-signal-bg" : "border-line-strong")}
-        onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
-        onDragLeave={() => setDragging(false)}
-        onDrop={(e) => { e.preventDefault(); setDragging(false); stage(e.dataTransfer.files); }}
-      >
-        <input ref={pick} type="file" accept={ACCEPT} multiple hidden onChange={(e) => stage(e.target.files)} />
-        <input ref={cam} type="file" accept="image/*" capture="environment" hidden onChange={(e) => stage(e.target.files)} />
-        <div className="grid size-12 place-items-center rounded-full bg-sunken text-muted"><UploadCloud className="size-5" aria-hidden /></div>
-        <div>
-          <div className="font-medium">{t("dropTitle")}</div>
-          <div className="text-sm text-muted">{t("dropBody")}</div>
+      {/* The page's next step sits with its title, top right, as on Home. */}
+      <header className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
+        <div className="max-w-2xl">
+          <h1 className="font-display text-[2rem] leading-[1.05] text-balance text-ink sm:text-[2.5rem]">{t("title")}</h1>
+          <p className="mt-2 text-[15px] leading-relaxed text-pretty text-muted">{t("lede")}</p>
         </div>
-        <div className="flex flex-wrap justify-center gap-2">
-          <button className="btn" onClick={() => pick.current?.click()} disabled={uploading}><ImagePlus className="size-4" aria-hidden />{t("pick")}</button>
-          <button className="btn btn-secondary sm:hidden" onClick={() => cam.current?.click()} disabled={uploading}><Camera className="size-4" aria-hidden />{t("camera")}</button>
+        <div className="flex w-full flex-col items-stretch gap-1.5 sm:w-auto sm:items-end">{continueButton}{extracted === 0 && <span className="text-xs text-muted">{t("needMore")}</span>}</div>
+      </header>
+
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
+        {/* Left: everything you do, held in view. ------------------------------------------ */}
+        <div className="space-y-4 lg:sticky lg:top-24">
+          <section aria-labelledby="add-h" className="overflow-hidden rounded-[24px] border border-signal/15 bg-raised shadow-[var(--shadow-raised)]">
+            <div
+              className={clsx(
+                "m-3 flex rounded-[18px] border border-dashed transition-colors",
+                // Once files are chosen it shrinks to one row, so the list and Upload stay in view.
+                staged.length ? "items-center justify-between gap-3 px-4 py-3 text-left" : "flex-col items-center gap-3 px-4 py-6 text-center",
+                dragging ? "border-signal bg-signal-bg" : "border-signal/30",
+              )}
+              onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+              onDragLeave={() => setDragging(false)}
+              onDrop={(e) => { e.preventDefault(); setDragging(false); stage(e.dataTransfer.files); }}
+            >
+              <input ref={pick} type="file" accept={ACCEPT} multiple hidden onChange={(e) => stage(e.target.files)} />
+              <input ref={cam} type="file" accept="image/*" capture="environment" hidden onChange={(e) => stage(e.target.files)} />
+              {!staged.length && <div className="grid size-11 place-items-center rounded-full bg-signal-bg text-signal-ink"><UploadCloud className="size-5" aria-hidden /></div>}
+              <div>
+                <h2 id="add-h" className="font-medium text-ink">{t("dropTitle")}</h2>
+                {!staged.length && <p className="mt-0.5 text-sm text-muted">{t("dropBody")}</p>}
+              </div>
+              <div className="flex flex-wrap justify-center gap-2">
+                <button className={clsx("btn rounded-full", staged.length > 0 && "btn-secondary btn-sm")} onClick={() => pick.current?.click()} disabled={uploading}><ImagePlus className="size-4" aria-hidden />{staged.length ? t("addMore") : t("pick")}</button>
+                <button className="btn btn-secondary rounded-full sm:hidden" onClick={() => cam.current?.click()} disabled={uploading}><Camera className="size-4" aria-hidden />{t("camera")}</button>
+              </div>
+            </div>
+
+            {/* Chosen files: a short scrolling list, with Upload always in reach. */}
+            <AnimatePresence initial={false}>
+              {staged.length > 0 && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="border-t border-dashed border-signal/25">
+                  <div className="flex items-center justify-between gap-3 px-4 pt-3" role="status" aria-live="polite">
+                    <span className="text-sm font-medium text-ink">{uploading ? t("uploading", { count: pending }) : t("readyToUpload", { n: staged.length })}</span>
+                    {!uploading && <button className="btn btn-ghost btn-sm" onClick={() => setStaged([])}>{t("clearAll")}</button>}
+                  </div>
+                  <ul className="max-h-[42dvh] divide-y divide-line overflow-auto px-4">
+                    {staged.map((f) => (
+                      <StagedFile key={f.name + f.size} file={f} state={progress[f.name + f.size] ?? "queued"} onRemove={() => setStaged((s) => s.filter((x) => x !== f))} />
+                    ))}
+                  </ul>
+                  <div className="border-t border-line bg-raised px-4 py-3">
+                    <button className="btn w-full rounded-full" onClick={uploadAll} disabled={uploading}>
+                      {uploading ? t("uploading", { count: pending }) : t("uploadN", { n: staged.length })}
+                    </button>
+                    {uploading && <p className="mt-2 text-center text-xs text-muted">{t("uploadingHint")}</p>}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </section>
+
         </div>
-      </div>
 
-      {/* Staging list ------------------------------------------------------------- */}
-      <AnimatePresence>
-        {staged.length > 0 && (
-          <motion.div initial={{ opacity: 0, transform: "translateY(8px)" }} animate={{ opacity: 1, transform: "translateY(0px)" }} exit={{ opacity: 0 }} transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }} className="card p-4">
-            <div className="flex items-center justify-between gap-3" role="status" aria-live="polite">
-              <div className="font-medium">{uploading ? t("uploading", { count: Object.values(progress).filter((p) => p === "queued" || p === "uploading").length }) : t("readyToUpload", { n: staged.length })}</div>
-              {!uploading && <button className="btn btn-ghost btn-sm" onClick={() => setStaged([])}>{t("clearAll")}</button>}
-            </div>
-            <ul className="mt-2 divide-y divide-line">
-              {staged.map((f) => (
-                <StagedFile key={f.name + f.size} file={f} state={progress[f.name + f.size] ?? "queued"} onRemove={() => setStaged((s) => s.filter((x) => x !== f))} />
-              ))}
-            </ul>
-            <div className="mt-3 flex items-center gap-3">
-              <button className="btn" onClick={uploadAll} disabled={uploading}>
-                {uploading ? t("uploading", { count: Object.values(progress).filter((p) => p === "queued" || p === "uploading").length }) : t("uploadN", { n: staged.length })}
-              </button>
-              {uploading && <span className="text-sm text-muted">{t("uploadingHint")}</span>}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Summary + coverage ------------------------------------------------------- */}
-      {docs.length > 0 && (
-        <section className="card p-4 sm:p-5" aria-labelledby="summary-h">
+        {/* Right: what was read, one dropdown per energy type. ------------------------------- */}
+        <section aria-labelledby="read-h" className="space-y-3">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h2 id="summary-h" className="font-display text-xl text-balance">{t("summaryTitle", { n: docs.length })}</h2>
+            <h2 id="read-h" className="font-mono text-xs text-signal-ink">↳ {t("readTitle")}{docs.length > 0 && <span className="text-muted"> · {t("docsCount", { n: docs.length })}</span>}</h2>
             <span className="text-xs text-muted">{period.label} · {period.start} → {period.end}</span>
           </div>
-          <div className="mt-3 grid gap-3">
-            {groups.filter(([k]) => !k.startsWith("_")).map(([key, g]) => {
-              const total = g.lines.reduce((s, l) => s + l.quantity, 0);
-              const unit = g.lines[0]?.unit ?? "";
-              const cov = PERIODIC.has(key) && months.length ? coverage(g.lines, months) : null;
-              const missing = cov?.filter((c) => c === "missing").length ?? 0;
-              return (
-                <div key={key} className="grid gap-2 sm:grid-cols-[160px_1fr_auto] sm:items-center">
-                  <div>
-                    <div className="text-sm font-medium">{energyLabel(key)}</div>
-                    <div className="text-xs text-muted">{t("docsCount", { n: g.docs.length })} · <span className="tabular">{total.toLocaleString(undefined, { maximumFractionDigits: 1 })} {unit}</span></div>
-                  </div>
-                  {cov ? (
-                    <div>
-                      <CoverageStrip states={cov} months={months.map((m) => shortMonth(m, locale))} />
-                      <div className="mt-1 flex justify-between text-[10px] text-faint"><span>{shortMonth(months[0], locale)}</span><span>{shortMonth(months[months.length - 1], locale)}</span></div>
-                    </div>
-                  ) : (
-                    <div className="text-xs text-muted">{t("notPeriodic")}</div>
-                  )}
-                  <div className="text-xs sm:text-right">
-                    {cov ? (missing ? <span className="pill pill-attention">{t("monthsMissing", { n: missing })}</span> : <span className="pill pill-primary">{t("fullYear")}</span>) : null}
-                  </div>
+          <SharedNotice sharedWith={view.shared_with} periodLabel={period.label} />
+
+          {docs.length === 0 ? (
+            <div className="rounded-[24px] border border-dashed border-signal/30 bg-raised/80 px-6 py-10 text-center">
+              <p className="font-display text-xl text-ink">{t("empty")}</p>
+              <p className="mt-1 text-sm text-muted">{t("emptyBody")}</p>
+            </div>
+          ) : (
+            <>
+              {groups.map(([key, g]) => {
+                const needsAction = key.startsWith("_");
+                const open = openGroups[key] ?? needsAction;
+                const label = key === "_failed" ? t("status.failed") : key === "_other" ? t("otherGroup") : energyLabel(key);
+                const total = g.lines.reduce((sum, l) => sum + l.quantity, 0);
+                const unit = g.lines[0]?.unit ?? "";
+                const cov = !needsAction && PERIODIC.has(key) && months.length ? coverage(g.lines, months) : null;
+                const missing = cov?.filter((c) => c === "missing").length ?? 0;
+                // The months with no bill, in plain words ("Feb, Mar, Apr"), instead of a strip of empty boxes.
+                const missingNames = cov ? months.filter((_, i) => cov[i] === "missing").map((m) => shortMonth(m, locale)).join(", ") : "";
+                const reading = g.docs.some((d) => d.status === "extracting" || d.status === "uploaded");
+                return (
+                  <section key={key} aria-labelledby={`g-${key}`} className="rounded-[20px] border border-signal/15 bg-raised shadow-[var(--shadow-raised)]">
+                    <button
+                      id={`g-${key}`}
+                      className="flex w-full items-center gap-4 rounded-[20px] px-5 py-4 text-left transition-colors hover:bg-signal-bg/40"
+                      aria-expanded={open}
+                      aria-controls={`gl-${key}`}
+                      onClick={() => setOpenGroups((o) => ({ ...o, [key]: !open }))}
+                    >
+                      <span className="min-w-0 flex-1">
+                        <span className="flex flex-wrap items-center gap-2">
+                          <span className="font-display text-xl font-semibold leading-tight text-ink">{label}</span>
+                          {cov && (missing ? <span className="pill pill-attention">{t("monthsMissing", { n: missing })}</span> : <span className="pill pill-primary">{t("fullYear")}</span>)}
+                          {needsAction && <span className="pill pill-danger">{t("needsLook")}</span>}
+                          {reading && <span className="pill pill-muted">{t("reading")}</span>}
+                        </span>
+                        <span className="mt-0.5 block text-xs text-muted">
+                          {t("docsCount", { n: g.docs.length })}
+                          {!needsAction && total > 0 && <> · <span className="tabular">{total.toLocaleString(undefined, { maximumFractionDigits: 1 })} {unit}</span></>}
+                        </span>
+                        {missing > 0 && <span className="mt-1 block text-sm text-attention">{t("missingFor", { months: missingNames })}</span>}
+                      </span>
+                      <ChevronDown className={clsx("size-5 shrink-0 text-muted transition-transform", open && "rotate-180")} aria-hidden />
+                    </button>
+                    {/* Kept in the page when closed (hidden), so every bill stays countable and findable. */}
+                    <ul id={`gl-${key}`} hidden={!open} className="space-y-2 px-3 pb-3">
+                      <AnimatePresence initial={false}>
+                        {g.docs.map((d) => (
+                          <DocCard key={d.id} uid={uid} pid={pid} doc={d} busy={busyId === d.id} onRemove={() => setConfirmRemove(d)} onRetry={() => retry(d)} />
+                        ))}
+                      </AnimatePresence>
+                    </ul>
+                  </section>
+                );
+              })}
+              {/* Where the eye ends after checking: what is still missing, and the way on. */}
+              {extracted > 0 && (
+                <div className="flex flex-wrap items-center justify-between gap-4 rounded-[20px] border border-dashed border-signal/30 bg-signal-bg/50 px-5 py-4">
+                  <p className="min-w-[12rem] flex-1 text-sm text-ink-soft">{missingTotal ? t("stillMissing", { n: missingTotal }) : t("allCovered")}</p>
+                  {continueButton}
                 </div>
-              );
-            })}
-          </div>
-          <p className="mt-3 text-xs text-muted">{t("summaryFoot")}</p>
+              )}
+            </>
+          )}
         </section>
-      )}
-
-      {/* Documents by energy type -------------------------------------------------- */}
-      {docs.length === 0 ? (
-        <EmptyState icon={ImagePlus} title={t("empty")} body={t("emptyBody")} action={<button className="btn" onClick={() => pick.current?.click()} disabled={uploading}><ImagePlus className="size-4" aria-hidden />{t("pick")}</button>} />
-      ) : (
-        <div className="space-y-4">
-          {groups.map(([key, g]) => {
-            const open = !collapsed[key];
-            const label = key === "_failed" ? t("status.failed") : key === "_other" ? t("otherGroup") : energyLabel(key);
-            return (
-              <section key={key} aria-labelledby={`g-${key}`}>
-                <button
-                  id={`g-${key}`}
-                  className="flex w-full items-center justify-between rounded-lg px-1 py-2 text-left hover:bg-sunken"
-                  aria-expanded={open}
-                  onClick={() => setCollapsed((c) => ({ ...c, [key]: open }))}
-                >
-                  <span className="flex items-center gap-2 text-sm font-semibold">{label}<span className="pill pill-muted tabular">{g.docs.length}</span></span>
-                  <ChevronDown className={clsx("size-4 text-muted transition-transform", open && "rotate-180")} aria-hidden />
-                </button>
-                {open && (
-                  <ul className="mt-1 space-y-2">
-                    <AnimatePresence initial={false}>
-                      {g.docs.map((d) => (
-                        <DocCard key={d.id} uid={uid} pid={pid} doc={d} busy={busyId === d.id} onRemove={() => setConfirmRemove(d)} onRetry={() => retry(d)} />
-                      ))}
-                    </AnimatePresence>
-                  </ul>
-                )}
-              </section>
-            );
-          })}
-        </div>
-      )}
-
-      <div className="flex items-center gap-3 pt-2">
-        <Link href={`/r/${request.id}/reconcile`} className={clsx("btn", extracted === 0 && "pointer-events-none opacity-60")} aria-disabled={extracted === 0}>{t("next")}</Link>
-        {extracted === 0 && <span className="text-sm text-muted">{t("needMore")}</span>}
       </div>
 
       <Dialog

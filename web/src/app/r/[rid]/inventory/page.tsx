@@ -1,14 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowRight, ArrowUpDown, Calculator, ChevronDown, ExternalLink, FileText, Info, Pencil, RefreshCw, ScanSearch, Sun } from "lucide-react";
+import NumberFlow from "@number-flow/react";
+import { ArrowRight, ArrowUpDown, ArrowUpRight, Calculator, Check, ChevronDown, ExternalLink, FileText, Info, Pencil, RefreshCw, ScanSearch, Sun, X } from "lucide-react";
+import { Dialog as BaseDialog } from "@base-ui/react";
 import { cn as clsx } from "@/lib/cn";
 import { useRequest } from "@/components/request-context";
+import { ReducePlanner } from "@/components/reduce-planner";
 import { SharedNotice } from "@/components/shared-notice";
-import { EmptyState, MixBar, PageTitle, SkeletonList, Stat, TIER_BAR, TIER_PILL } from "@/components/ui/bits";
+import { EmptyState, PageTitle, SkeletonList, TIER_PILL } from "@/components/ui/bits";
 import { Dialog } from "@/components/ui/dialog";
 import { CheckPills, EvidenceViewer } from "@/components/evidence-viewer";
 import { evidenceFor } from "@/lib/evidence";
@@ -20,6 +23,13 @@ const t1 = (kg: number, d = 2) => (kg / 1000).toLocaleString(undefined, { maximu
 const num = (n: number, d = 0) => n.toLocaleString(undefined, { maximumFractionDigits: d });
 
 const shortDate = (iso: string, locale?: string) => new Date(iso + "T00:00:00").toLocaleDateString(locale, { day: "2-digit", month: "short" });
+/** A line's period with its year as '26, once at the end when both dates share it: "Feb 01 – Feb 28 '26". */
+function periodLabel(start: string, end: string, locale?: string) {
+  const yy = (iso: string) => `’${iso.slice(2, 4)}`;
+  if (start === end) return `${shortDate(start, locale)} ${yy(start)}`;
+  if (start.slice(0, 4) === end.slice(0, 4)) return `${shortDate(start, locale)} – ${shortDate(end, locale)} ${yy(end)}`;
+  return `${shortDate(start, locale)} ${yy(start)} – ${shortDate(end, locale)} ${yy(end)}`;
+}
 
 // --- lineage pieces -------------------------------------------------------------
 
@@ -56,6 +66,33 @@ function Step({ n, title, children }: { n: number; title: string; children: Reac
   );
 }
 
+/** One assumption: the owner's answer, how it filled the number, and the question behind it. */
+function AssumptionCard({ a }: { a: Assumption }) {
+  const t = useTranslations("inventory");
+  const [full, setFull] = useState(false);
+  const long = a.question.length > 140;
+  return (
+    <div className="rounded-2xl border hairline bg-raised p-3 sm:p-4">
+      <div className="text-[11px] uppercase tracking-wider text-muted">{t("assumption.answer")}</div>
+      <p className="mt-1 font-display text-xl leading-snug text-pretty text-ink">&ldquo;{a.answer}&rdquo;</p>
+      {a.method && (
+        <div className="mt-3 rounded-xl bg-attention-bg p-2.5 pl-3 text-xs text-attention">
+          <span className="font-medium">{t("assumption.used")}</span> {a.method}
+        </div>
+      )}
+      <div className="mt-3 border-t hairline pt-3">
+        <div className="text-[11px] uppercase tracking-wider text-muted">{t("assumption.asked")}</div>
+        <p className={clsx("mt-1 text-xs leading-relaxed text-pretty text-ink-soft", long && !full && "line-clamp-3")}>{a.question}</p>
+        {long && (
+          <button type="button" className="mt-1 text-xs font-medium text-signal-ink underline-offset-2 hover:underline" aria-expanded={full} onClick={() => setFull((v) => !v)}>
+            {full ? t("assumption.less") : t("assumption.more")}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function Calculation({ uid, pid, line, market, activity, doc, assumptions, onChanged }: { uid: string; pid: string; line: InventoryLine; market?: InventoryLine; activity?: ActivityLine; doc?: DocumentRecord; assumptions: Assumption[]; onChanged: () => void }) {
   const t = useTranslations("inventory");
   const toast = useToast();
@@ -87,124 +124,171 @@ function Calculation({ uid, pid, line, market, activity, doc, assumptions, onCha
 
   const changed = Number(qty) !== line.quantity && !Number.isNaN(Number(qty));
 
+  // Whether the assumptions and the calculation together would run past the steps
+  // beside them (two columns only); if so the calculation goes on top.
+  const stepsRef = useRef<HTMLOListElement>(null);
+  const asmRef = useRef<HTMLElement>(null);
+  const calcRef = useRef<HTMLElement>(null);
+  const [assumptionsTall, setAssumptionsTall] = useState(false);
+  useEffect(() => {
+    const steps = stepsRef.current, asm = asmRef.current, calc = calcRef.current;
+    if (!steps || !asm || !calc) return;
+    const wide = window.matchMedia("(min-width: 1024px)");
+    const measure = () => setAssumptionsTall(wide.matches && asm.offsetHeight + 16 + calc.offsetHeight > steps.offsetHeight);
+    const ro = new ResizeObserver(measure);
+    [steps, asm, calc].forEach((el) => ro.observe(el));
+    wide.addEventListener("change", measure);
+    measure();
+    return () => { ro.disconnect(); wide.removeEventListener("change", measure); };
+  }, []);
+
   return (
-    <div className="grid gap-5 lg:grid-cols-[1fr_280px]">
-      <ol className="space-y-4">
-        <Step n={1} title={t("step.document")}>
-          <div className="flex items-start gap-3">
-            {evidence ? (
-              <button type="button" onClick={() => setShowing(true)} className="group relative shrink-0 rounded-lg" aria-label={t("showMe")}>
-                <SourceThumb uid={uid} pid={pid} docId={line.source_doc_id} doc={doc} />
-                <span className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1 rounded-b-lg bg-ink/70 py-0.5 text-[10px] font-medium text-raised"><ScanSearch className="size-3" aria-hidden />{t("showMeShort")}</span>
-              </button>
-            ) : (
-              <SourceThumb uid={uid} pid={pid} docId={line.source_doc_id} doc={doc} />
-            )}
-            <div className="min-w-0">
-              {doc?.filename && <div className="font-medium">{doc.filename}</div>}
-              <div className="font-mono text-xs text-muted">{line.source_doc_id}</div>
-              {notes.length > 0 && (
-                <ul className="mt-1 space-y-0.5 text-xs text-muted">
-                  {notes.map((n, i) => <li key={i}>· {n}</li>)}
-                </ul>
-              )}
-            </div>
-          </div>
-        </Step>
-
-        <Step n={2} title={t("step.quantity")}>
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="font-display text-2xl tabular">{num(line.quantity, 2)}</span>
-            <span className="text-muted">{line.unit}</span>
-            <span className={clsx("pill", TIER_PILL[line.tier])}>{t(`tier.${line.tier}`)}</span>
-            <span className="text-xs text-muted">{t(`tierWhy.${line.tier}`)}</span>
-          </div>
-          {activity?.checks && activity.checks.length > 0 && <CheckPills checks={activity.checks} className="mt-2" />}
-          {evidence && (
-            <button type="button" className="btn btn-secondary btn-sm mt-2 gap-1.5" onClick={() => setShowing(true)}>
-              <ScanSearch className="size-3.5" aria-hidden />{t("showMe")}
-            </button>
-          )}
-          {line.basis !== "market" && (
-            <div className="mt-2">
-              {editing ? (
-                <div className="flex flex-wrap items-center gap-2">
-                  <label className="sr-only" htmlFor={`qty-${line.id}`}>{t("correct")}</label>
-                  <input id={`qty-${line.id}`} className="input max-w-[160px] tabular" inputMode="decimal" value={qty} onChange={(e) => setQty(e.target.value)} autoFocus />
-                  <span className="text-sm">{line.unit}</span>
-                  <button className="btn btn-sm" onClick={() => setConfirm(true)} disabled={busy || !changed}>{t("save")}</button>
-                  <button className="btn btn-secondary btn-sm" onClick={() => { setEditing(false); setQty(String(line.quantity)); }}>{t("cancel")}</button>
-                </div>
+    <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
+      <ol ref={stepsRef} className="space-y-4">
+        {/* One step for the bill and what we read from it, built round "Show me where":
+            the quickest way to trust a number is to see it on the bill itself. */}
+        <Step n={1} title={t("step.bill")}>
+          <div className="rounded-2xl border hairline bg-raised p-3 sm:p-4">
+            <div className="flex items-start gap-4">
+              {evidence ? (
+                <button type="button" onClick={() => setShowing(true)} className="group relative shrink-0 rounded-lg" aria-label={t("showMe")}>
+                  <SourceThumb uid={uid} pid={pid} docId={line.source_doc_id} doc={doc} />
+                  <span className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1 rounded-b-lg bg-ink/70 py-0.5 text-[10px] font-medium text-raised transition-colors group-hover:bg-signal-ink"><ScanSearch className="size-3" aria-hidden />{t("showMeShort")}</span>
+                </button>
               ) : (
-                <button className="btn btn-ghost btn-sm gap-1.5" onClick={() => setEditing(true)}><Pencil className="size-3.5" aria-hidden />{t("correct")}</button>
+                <SourceThumb uid={uid} pid={pid} docId={line.source_doc_id} doc={doc} />
               )}
+              <div className="min-w-0 flex-1">
+                {doc?.filename && <div className="truncate font-medium">{doc.filename}</div>}
+                {notes.length > 0 && (
+                  <ul className="mt-0.5 space-y-0.5 text-xs text-muted">
+                    {notes.map((n, i) => <li key={i}>{n}</li>)}
+                  </ul>
+                )}
+                <div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                  <span className="font-display text-3xl leading-none tabular">{num(line.quantity, 2)}</span>
+                  <span className="text-muted">{line.unit}</span>
+                  <span className={clsx("pill", TIER_PILL[line.tier])} title={t(`tierWhy.${line.tier}`)}>{t(`tier.${line.tier}`)}</span>
+                </div>
+                {activity?.checks && activity.checks.length > 0 && <CheckPills checks={activity.checks} className="mt-2" />}
+              </div>
             </div>
-          )}
+
+            {evidence && (
+              <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl bg-signal-bg p-2 pl-3">
+                <span className="min-w-0 flex-1 text-sm text-signal-ink">{t("showMeHint", { qty: `${num(line.quantity, 2)} ${line.unit}` })}</span>
+                <button type="button" className="btn gap-1.5 rounded-full" onClick={() => setShowing(true)}>
+                  <ScanSearch className="size-4" aria-hidden />{t("showMe")}
+                </button>
+              </div>
+            )}
+
+            {line.basis !== "market" && (
+              <div className="mt-2">
+                {editing ? (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <label className="sr-only" htmlFor={`qty-${line.id}`}>{t("correct")}</label>
+                    <input id={`qty-${line.id}`} className="input max-w-[160px] tabular" inputMode="decimal" value={qty} onChange={(e) => setQty(e.target.value)} autoFocus />
+                    <span className="text-sm">{line.unit}</span>
+                    <button className="btn btn-sm" onClick={() => setConfirm(true)} disabled={busy || !changed}>{t("save")}</button>
+                    <button className="btn btn-secondary btn-sm" onClick={() => { setEditing(false); setQty(String(line.quantity)); }}>{t("cancel")}</button>
+                  </div>
+                ) : (
+                  <button className="btn btn-ghost btn-sm gap-1.5 text-muted" onClick={() => setEditing(true)}><Pencil className="size-3.5" aria-hidden />{t("correct")}</button>
+                )}
+              </div>
+            )}
+            <div className="mt-1 font-mono text-[11px] text-muted/80">{line.source_doc_id}</div>
+          </div>
         </Step>
 
-        <Step n={3} title={t("step.factor")}>
-          <div className="card-sunken p-3">
-            <div className="flex flex-wrap items-baseline gap-x-2">
-              <span className="font-display text-2xl tabular">{line.factor_value.toLocaleString(undefined, { maximumFractionDigits: 4 })}</span>
-              <span className="text-sm text-muted">kgCO2e / {line.unit}</span>
-              {line.factor_gas && <span className="pill pill-muted">{line.factor_gas}</span>}
+        {/* The rate the quantity is multiplied by: the number first, then whose it is,
+            then the facts an auditor checks, then any caveat. Same box as step 1. */}
+        <Step n={2} title={t("step.factor")}>
+          <div className="rounded-2xl border hairline bg-raised p-3 sm:p-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                <span className="font-display text-3xl leading-none tabular">{line.factor_value.toLocaleString(undefined, { maximumFractionDigits: 4 })}</span>
+                <span className="text-muted">kgCO2e / {line.unit}</span>
+                {line.factor_gas && <span className="pill pill-muted">{line.factor_gas}</span>}
+              </div>
+              {line.factor_source_url && (
+                <a href={line.factor_source_url} target="_blank" rel="noreferrer" className="btn btn-secondary btn-sm gap-1.5 rounded-full">
+                  {t("factorCard.openSource")}<ExternalLink className="size-3.5" aria-hidden />
+                </a>
+              )}
             </div>
-            <dl className="mt-2 grid gap-x-4 gap-y-1 text-xs sm:grid-cols-[110px_1fr]">
-              <dt className="text-muted">{t("factorCard.source")}</dt>
-              <dd className="break-words">
-                {line.factor_source_name}
-                {line.factor_source_url && (
-                  <a href={line.factor_source_url} target="_blank" rel="noreferrer" className="ml-1 inline-flex items-center gap-0.5 text-signal-ink underline-offset-2 hover:underline">
-                    {t("factorCard.open")}<ExternalLink className="size-3" aria-hidden />
-                  </a>
-                )}
-              </dd>
-              <dt className="text-muted">{t("factorCard.vintage")}</dt>
-              <dd>{line.factor_vintage} · {t("factorCard.year", { year: line.factor_year ?? "" })}</dd>
-              <dt className="text-muted">{t("factorCard.geography")}</dt>
-              <dd>{where} · {t(`method.${line.method}`)}</dd>
-              <dt className="text-muted">{t("factorCard.id")}</dt>
-              <dd className="font-mono">{line.factor_id}</dd>
+            <p className="mt-2 text-sm font-medium text-pretty text-ink">{line.factor_source_name}</p>
+
+            <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 border-t hairline pt-3 sm:grid-cols-4">
+              {[
+                [t("factorCard.vintage"), line.factor_vintage],
+                [t("factorCard.appliesTo"), line.factor_year ?? "—"],
+                [t("factorCard.region"), where],
+                [t("factorCard.methodLabel"), t(`method.${line.method}`)],
+              ].map(([k, v]) => (
+                <div key={String(k)} className="min-w-0">
+                  <dt className="text-[11px] uppercase tracking-wider text-muted">{k}</dt>
+                  <dd className="mt-0.5 text-sm text-ink">{v}</dd>
+                </div>
+              ))}
             </dl>
+
             {(!line.exact_year || !line.exact_region || line.fell_back_to) && (
-              <ul className="mt-2 space-y-1 border-t hairline pt-2 text-xs text-attention">
-                {!line.exact_year && <li>· {t("factorCard.nearestYear", { year: line.factor_year ?? "" })}</li>}
-                {!line.exact_region && <li>· {t("factorCard.nationalFallback")}</li>}
-                {line.fell_back_to && <li>· {t("factorCard.marketFallback")}</li>}
+              <ul className="mt-3 space-y-1 rounded-xl bg-attention-bg p-2.5 pl-3 text-xs text-attention">
+                {!line.exact_year && <li className="flex gap-2"><Info className="mt-px size-3.5 shrink-0" aria-hidden />{t("factorCard.nearestYear", { year: line.factor_year ?? "" })}</li>}
+                {!line.exact_region && <li className="flex gap-2"><Info className="mt-px size-3.5 shrink-0" aria-hidden />{t("factorCard.nationalFallback")}</li>}
+                {line.fell_back_to && <li className="flex gap-2"><Info className="mt-px size-3.5 shrink-0" aria-hidden />{t("factorCard.marketFallback")}</li>}
               </ul>
             )}
+            <div className="mt-2 font-mono text-[11px] text-muted/80">{line.factor_id}</div>
           </div>
         </Step>
 
-        <Step n={4} title={t("step.result")}>
-          <div className="font-mono text-sm">
-            {num(line.quantity, 2)} {line.unit} × {line.factor_value.toLocaleString(undefined, { maximumFractionDigits: 4 })} kgCO2e/{line.unit} = <b className="text-ink">{num(line.kg_co2e, 1)} kgCO2e</b> = <b className="text-signal-ink">{t1(line.kg_co2e, 3)} tCO2e</b>
-          </div>
-          {market && (
-            <div className="mt-1 font-mono text-xs text-muted">
-              {t("scope2mkt")}: {num(market.quantity, 2)} {market.unit} × {market.factor_value.toLocaleString(undefined, { maximumFractionDigits: 4 })} = {t1(market.kg_co2e, 3)} tCO2e
-            </div>
-          )}
-        </Step>
       </ol>
 
-      <aside className="space-y-3">
-        {asms.length > 0 ? (
-          <div className="card-sunken p-3 text-sm">
-            <div className="text-xs font-semibold uppercase tracking-wider text-muted">{t("assumptions")}</div>
-            {asms.map((a) => (
-              <div key={a.id} className="mt-2 space-y-1">
-                <div><span className="text-muted">Q ·</span> {a.question}</div>
-                <div><span className="text-muted">A ·</span> {a.answer}</div>
-                <div className="text-xs text-muted">{a.method}</div>
+      {/* The right column: the assumptions behind this line, then the calculation,
+          both in the same box as the steps. When the assumptions would run longer than
+          the steps beside them, the calculation moves above them so the result stays in
+          view; on phones it always follows the steps. Order is CSS only, so nothing remounts. */}
+      <div className="flex min-w-0 flex-col gap-4">
+        <aside ref={asmRef} className="min-w-0">
+          <div className="text-xs font-semibold uppercase tracking-wider text-muted">{t("assumptions")}{asms.length > 1 ? ` · ${asms.length}` : ""}</div>
+          <div className="mt-1 space-y-3">
+            {asms.length > 0 ? (
+              asms.map((a) => <AssumptionCard key={a.id} a={a} />)
+            ) : (
+              <div className="flex items-start gap-2 rounded-2xl border hairline bg-raised p-3 text-sm text-ink-soft sm:p-4">
+                <Check className="mt-0.5 size-4 shrink-0 text-signal-ink" aria-hidden />{t("noAssumptions")}
               </div>
-            ))}
+            )}
+            <div className="px-1 font-mono text-[11px] text-muted/80">{line.period_start} → {line.period_end}{line.site_id ? ` · ${line.site_id}` : ""}</div>
           </div>
-        ) : (
-          <div className="card-sunken p-3 text-xs text-muted">{t("noAssumptions")}</div>
-        )}
-        <div className="text-xs text-muted">{line.period_start} → {line.period_end}{line.site_id ? ` · ${line.site_id}` : ""}</div>
-      </aside>
+        </aside>
+
+        <section ref={calcRef} aria-label={t("step.result")} className={clsx("min-w-0 max-lg:order-first", assumptionsTall ? "lg:order-first" : "lg:order-last")}>
+          <div className="text-xs font-semibold uppercase tracking-wider text-muted">{t("step.result")}</div>
+          <div className="mt-1">
+            <div className="rounded-2xl border hairline bg-raised p-3 sm:p-4">
+              {/* Stacked, so it reads in a narrow column: quantity, × factor, = kg, = tonnes. */}
+              <div className="space-y-0.5 font-mono text-sm tabular">
+                <div>{num(line.quantity, 2)} <span className="text-muted">{line.unit}</span></div>
+                <div><span className="text-muted">×</span> {line.factor_value.toLocaleString(undefined, { maximumFractionDigits: 4 })} <span className="text-muted">kgCO2e/{line.unit}</span></div>
+                <div><span className="text-muted">=</span> {num(line.kg_co2e, 1)} <span className="text-muted">kgCO2e</span></div>
+              </div>
+              <div className="mt-2 border-t hairline pt-2 font-display text-2xl leading-none tabular text-signal-ink">
+                = {t1(line.kg_co2e, 3)} <span className="font-sans text-sm text-muted">tCO2e</span>
+              </div>
+              {market && (
+                <div className="mt-3 border-t hairline pt-2 text-xs text-muted">
+                  <div>{t("scope2mkt")}</div>
+                  <div className="mt-0.5 font-mono tabular">{num(market.quantity, 2)} {market.unit} × {market.factor_value.toLocaleString(undefined, { maximumFractionDigits: 4 })} = {t1(market.kg_co2e, 3)} tCO2e</div>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      </div>
 
       {evidence && <EvidenceViewer uid={uid} pid={pid} items={[evidence]} index={0} onIndex={() => {}} open={showing} onClose={() => setShowing(false)} />}
 
@@ -230,11 +314,12 @@ function Row({ uid, pid, line, market, activity, doc, assumptions, onChanged, op
   const id = `calc-${line.id.replace(/[^a-z0-9]/gi, "")}`;
   return (
     <>
-      <tr className={clsx("border-t hairline", open && "bg-sunken/60")}>
+      {/* The whole row opens it; the chevron button is the keyboard and screen-reader way in. */}
+      <tr className={clsx("cursor-pointer border-t hairline transition-colors", open ? "bg-sunken/60" : "hover:bg-sunken/40")} onClick={onToggle}>
         <td className="px-3 py-2">
-          <button className="flex min-h-9 items-center gap-2 text-left text-xs text-muted" aria-expanded={open} aria-controls={id} onClick={onToggle}>
+          <button className="flex min-h-9 items-center gap-2 text-left text-xs text-muted" aria-expanded={open} aria-controls={id} onClick={(e) => { e.stopPropagation(); onToggle(); }}>
             <ChevronDown className={clsx("size-4 shrink-0 transition-transform", open && "rotate-180")} aria-hidden />
-            <span className="whitespace-nowrap">{line.period_start === line.period_end ? shortDate(line.period_start, locale) : `${shortDate(line.period_start, locale)} – ${shortDate(line.period_end, locale)}`}</span>
+            <span className="whitespace-nowrap">{periodLabel(line.period_start, line.period_end, locale)}</span>
           </button>
         </td>
         <td className="px-3 py-2 text-sm">{energyLabel(line.energy_type)}</td>
@@ -258,42 +343,243 @@ function Row({ uid, pid, line, market, activity, doc, assumptions, onChanged, op
   );
 }
 
-// --- chart -----------------------------------------------------------------------
+// --- dashboard ---------------------------------------------------------------------
 
+/** Rounds a chart's top up to 1, 2 or 5 times a power of ten, so its gridlines read cleanly. */
+function niceMax(v: number) {
+  if (v <= 0) return 1;
+  const p = 10 ** Math.floor(Math.log10(v));
+  return ([1, 2, 5, 10].find((m) => m * p >= v) ?? 10) * p;
+}
+
+const sharePct = (kg: number, total: number) => {
+  const p = total ? (kg / total) * 100 : 0;
+  return `${p < 1 && p > 0 ? "<1" : Math.round(p)}%`;
+};
+
+/**
+ * Estimated means hatched, everywhere on the dashboard: yellow diagonal stripes laid
+ * over whatever colour the figure already has (a scope's colour in the bars, the
+ * neutral in the data-quality bar), so green only ever means Scope 2.
+ */
+const HATCH: React.CSSProperties = { backgroundImage: "repeating-linear-gradient(135deg, var(--attention-strong) 0 2px, transparent 2px 5px)" };
+
+type Slice = "s1" | "s2";
+
+/**
+ * The year's Scope 1 + 2 as a small ring, with its own key underneath. Hovering (or
+ * focusing) a slice or a key row brings that slice forward and puts its exact figure
+ * in the middle; otherwise the middle shows the total. Market-based Scope 2 is a
+ * footnote (it counts the same electricity a second way, it does not add), and the
+ * data quality closes the card.
+ */
+function ScopeDonut({ scope1, scope2, market, estimatedShare }: { scope1: number; scope2: number; market: number; estimatedShare: number }) {
+  const t = useTranslations("inventory");
+  const [active, setActive] = useState<Slice | null>(null);
+  const total = scope1 + scope2;
+  const p1 = total ? (scope1 / total) * 100 : 0;
+  const p2 = total ? 100 - p1 : 0;
+  const gap = p1 > 0 && p2 > 0 ? 0.8 : 0;
+  const rows = [
+    { key: "s1" as const, label: t("scope1short"), note: t("scope1Note"), kg: scope1, len: p1, offset: 0, color: "var(--ink)", dot: "bg-ink" },
+    { key: "s2" as const, label: t("scope2short"), note: t("scope2Note"), kg: scope2, len: p2, offset: p1, color: "var(--signal)", dot: "bg-signal" },
+  ];
+  const shown = rows.find((r) => r.key === active);
+  const on = (k: Slice) => ({ onPointerEnter: () => setActive(k), onPointerLeave: () => setActive(null), onFocus: () => setActive(k), onBlur: () => setActive(null) });
+  const est = Math.round(estimatedShare * 100);
+
+  return (
+    <section className="card flex flex-col p-5 sm:p-6" aria-labelledby="donut-h">
+      <h2 id="donut-h" className="font-display text-xl">{t("total")}</h2>
+      <div className="flex flex-1 items-center justify-center py-4">
+        <div className="relative size-40 shrink-0">
+          <svg viewBox="0 0 100 100" className="size-full -rotate-90" role="img" aria-label={rows.map((r) => `${r.label} ${t1(r.kg)} tCO2e (${sharePct(r.kg, total)})`).join(", ")}>
+            <circle cx={50} cy={50} r={40} fill="none" stroke="var(--sunken)" strokeWidth={14} />
+            {rows.map((r) => r.len - gap > 0 && (
+              <circle
+                key={r.key}
+                {...on(r.key)}
+                cx={50} cy={50} r={40} fill="none" stroke={r.color} pathLength={100}
+                strokeWidth={active === r.key ? 18 : 14}
+                strokeDasharray={`${r.len - gap} ${100 - r.len + gap}`}
+                strokeDashoffset={-r.offset - gap / 2}
+                opacity={active && active !== r.key ? 0.3 : 1}
+                className="cursor-default transition-[stroke-width,opacity] duration-150"
+              />
+            ))}
+          </svg>
+          {/* The middle: the total, or the hovered slice's exact figure. */}
+          <div className="pointer-events-none absolute inset-0 grid place-content-center text-center" aria-live="polite">
+            {shown ? (
+              <motion.div key={shown.key} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }}>
+                <div className="font-display text-[1.6rem] leading-none tabular text-ink">{t1(shown.kg)}<span className="ml-0.5 font-sans text-[11px] text-muted">t</span></div>
+                <div className="mt-1 whitespace-nowrap text-[11px] text-muted">{shown.label} · {sharePct(shown.kg, total)}</div>
+              </motion.div>
+            ) : (
+              <div>
+                <div data-total data-value={(total / 1000).toFixed(2)} className="font-display text-[1.75rem] leading-none tabular text-signal-ink">
+                  <NumberFlow value={total / 1000} format={{ maximumFractionDigits: total >= 100000 ? 1 : 2 }} transformTiming={{ duration: 500, easing: "cubic-bezier(0.23, 1, 0.32, 1)" }} spinTiming={{ duration: 500, easing: "cubic-bezier(0.23, 1, 0.32, 1)" }} />
+                </div>
+                <div className="mt-0.5 text-[11px] text-muted">{t("tonnes")}</div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* The ring's key: dot, what it covers, tonnes, share, in aligned columns. */}
+      <ul className="grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-baseline gap-x-3 text-sm">
+        {rows.map((r) => (
+          <li key={r.key} tabIndex={0} {...on(r.key)} className={clsx("col-span-4 grid grid-cols-subgrid items-start rounded-lg px-2 py-1.5 outline-none transition-colors", active === r.key ? "bg-sunken" : "hover:bg-sunken")}>
+            <span className={clsx("mt-1.5 size-2.5 rounded-full", r.dot)} aria-hidden />
+            <span className="min-w-0"><span className="block font-medium text-ink">{r.label}</span><span className="block truncate text-xs text-muted">{r.note}</span></span>
+            <span data-stat data-value={(r.kg / 1000).toFixed(2)} className="text-right tabular text-ink">{t1(r.kg)} <span className="text-xs text-muted">t</span></span>
+            <span className="w-9 pt-0.5 text-right text-xs tabular text-muted">{sharePct(r.kg, total)}</span>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-1 px-2 text-xs text-muted">
+        {t.rich("marketFootnote", { t: () => <span data-stat data-value={(market / 1000).toFixed(2)} className="tabular">{t1(market)}</span> })}
+      </p>
+
+      {/* Data quality: read from bills (solid) against estimated (hatched). No green here. */}
+      <div className="mt-4 border-t hairline px-2 pt-4">
+        <div className="flex h-2 overflow-hidden rounded-full bg-sunken" role="img" aria-label={`${t("quality.read", { pct: `${100 - est}%` })}, ${t("quality.estimated", { pct: `${est}%` })}`}>
+          <span className="block bg-ink/70" style={{ width: `${100 - est}%` }} />
+          <span className="block bg-attention-bg" style={{ width: `${est}%`, ...HATCH }} />
+        </div>
+        <div className="mt-2 flex flex-wrap justify-between gap-x-3 text-xs text-muted">
+          <span className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-ink/70" aria-hidden />{t("quality.read", { pct: `${100 - est}%` })}</span>
+          {est > 0 && <span className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-attention-bg" style={HATCH} aria-hidden />{t("quality.estimated", { pct: `${est}%` })}</span>}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/**
+ * The months as stacked bars in the ring's colours (Scope 1 ink, Scope 2 signal); the
+ * estimated part of a month is hatched over them. Hovering or focusing a month shows
+ * its exact figures; the year is marked under the first month and each January.
+ */
 function MonthlyChart({ byMonth }: { byMonth: Record<string, { scope1: number; scope2_location: number; estimated: number }> }) {
   const t = useTranslations("inventory");
   const locale = useLocale();
+  const [hover, setHover] = useState<number | null>(null);
   const months = Object.keys(byMonth).sort();
-  if (!months.length) return null;
-  const max = Math.max(...months.map((m) => byMonth[m].scope1 + byMonth[m].scope2_location), 1);
-  const W = 100 / months.length;
+  const top = niceMax(Math.max(...months.map((m) => byMonth[m].scope1 + byMonth[m].scope2_location), 1) / 1000) * 1000;
+  const anyEstimated = months.some((m) => byMonth[m].estimated > 0);
+  const yy = (m: string) => `’${m.slice(2, 4)}`;
   return (
-    <figure className="card p-4 sm:p-5">
+    <figure className="card flex flex-col p-5 sm:p-6">
       <figcaption className="flex flex-wrap items-baseline justify-between gap-2">
         <span className="font-display text-xl">{t("chart.title")}</span>
-        <span className="flex flex-wrap gap-3 text-[11px] text-muted">
-          <span className="flex items-center gap-1.5"><span className="inline-block size-2.5 rounded-sm bg-ink" />{t("scope1short")}</span>
-          <span className="flex items-center gap-1.5"><span className="inline-block size-2.5 rounded-sm bg-signal" />{t("scope2short")}</span>
-          <span className="flex items-center gap-1.5"><span className="inline-block size-2.5 rounded-sm bg-attention-strong" />{t("tier.estimated")}</span>
+        <span className="flex flex-wrap gap-3 text-xs text-muted">
+          <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-full bg-ink" aria-hidden />{t("scope1short")}</span>
+          <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-full bg-signal" aria-hidden />{t("scope2short")}</span>
+          {anyEstimated && <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-[3px] bg-attention-bg" style={HATCH} aria-hidden />{t("tier.estimated")}</span>}
         </span>
       </figcaption>
-      <svg viewBox="0 0 100 40" className="mt-3 h-40 w-full" role="img" aria-label={months.map((m) => `${shortMonth(m, locale)}: ${t1(byMonth[m].scope1 + byMonth[m].scope2_location)} tCO2e`).join(", ")}>
-        {months.map((m, i) => {
-          const b = byMonth[m];
-          const h1 = (b.scope1 / max) * 34, h2 = (b.scope2_location / max) * 34, he = (b.estimated / max) * 34;
-          const x = i * W + W * 0.15, w = W * 0.7;
-          return (
-            <g key={m}>
-              <title>{`${shortMonth(m, locale)} · ${t("scope1short")} ${t1(b.scope1)} · ${t("scope2short")} ${t1(b.scope2_location)}${b.estimated ? ` · ${t("tier.estimated")} ${t1(b.estimated)}` : ""} tCO2e`}</title>
-              <rect x={x} y={36 - h2} width={w} height={h2} fill="var(--signal)" rx={0.4} />
-              <rect x={x} y={36 - h2 - h1} width={w} height={h1} fill="var(--ink)" rx={0.4} />
-              {he > 0 && <rect x={x} y={36 - he} width={w} height={he} fill="var(--attention-strong)" opacity={0.85} rx={0.4} />}
-              <text x={x + w / 2} y={39.5} fontSize={2.6} textAnchor="middle" fill="var(--muted)">{shortMonth(m, locale)}</text>
-            </g>
-          );
-        })}
-      </svg>
+      {months.length > 0 && (
+        <div className="mt-5 flex h-48 flex-1 gap-2">
+          {/* The scale: top, half and zero, in tonnes. */}
+          <div className="flex flex-col justify-between pb-8 text-right text-[10px] leading-none tabular text-muted" aria-hidden>
+            <span>{t1(top, 1)}</span><span>{t1(top / 2, 1)}</span><span>0</span>
+          </div>
+          <div className="relative flex-1">
+            <div className="pointer-events-none absolute inset-x-0 top-0 bottom-8 flex flex-col justify-between" aria-hidden>
+              {[0, 1, 2].map((i) => <span key={i} className={clsx("block border-t", i === 2 ? "border-line-strong" : "border-dashed border-line")} />)}
+            </div>
+            <ul className="relative flex h-full">
+              {months.map((m, i) => {
+                const b = byMonth[m];
+                const sum = b.scope1 + b.scope2_location;
+                const h = (sum / top) * 100;
+                const label = `${shortMonth(m, locale)} ${yy(m)}`;
+                const showYear = i === 0 || m.endsWith("-01");
+                const align = i < 2 ? "left-0" : i > months.length - 3 ? "right-0" : "left-1/2 -translate-x-1/2";
+                return (
+                  <li
+                    key={m}
+                    tabIndex={0}
+                    aria-label={`${label}: ${t("scope1short")} ${t1(b.scope1)}, ${t("scope2short")} ${t1(b.scope2_location)} tCO2e${b.estimated ? `, ${t("estimatedNote")}` : ""}`}
+                    onPointerEnter={() => setHover(i)} onPointerLeave={() => setHover(null)} onFocus={() => setHover(i)} onBlur={() => setHover(null)}
+                    className={clsx("relative flex h-full min-w-0 flex-1 flex-col items-center rounded-md outline-none transition-colors", hover === i && "bg-sunken/70")}
+                  >
+                    <div className="relative flex w-full flex-1 flex-col justify-end">
+                      <div className="relative mx-auto flex w-[62%] max-w-7 flex-col overflow-hidden rounded-t-[6px] rounded-b-[2px]" style={{ height: `${h}%` }}>
+                        <span className="block bg-ink" style={{ height: sum ? `${(b.scope1 / sum) * 100}%` : 0 }} />
+                        <span className="block flex-1 bg-signal" />
+                        {b.estimated > 0 && <span className="absolute inset-x-0 bottom-0 block" style={{ height: `${Math.min(1, b.estimated / (sum || 1)) * 100}%`, ...HATCH }} />}
+                      </div>
+                      {hover === i && (
+                        <div className={clsx("pointer-events-none absolute z-10 w-max min-w-36 rounded-xl border hairline bg-raised px-3 py-2 text-xs shadow-[var(--shadow-float)]", align)} style={{ bottom: `calc(${h}% + 8px)` }} aria-hidden>
+                          <div className="font-medium text-ink">{label}</div>
+                          <div className="mt-1 grid grid-cols-[auto_1fr_auto] items-center gap-x-2 gap-y-0.5 tabular">
+                            <span className="size-2 rounded-full bg-ink" /><span className="text-muted">{t("scope1short")}</span><span className="text-right">{t1(b.scope1)} t</span>
+                            <span className="size-2 rounded-full bg-signal" /><span className="text-muted">{t("scope2short")}</span><span className="text-right">{t1(b.scope2_location)} t</span>
+                            <span /><span className="font-medium text-ink">{t("total")}</span><span className="text-right font-medium text-ink">{t1(sum)} t</span>
+                          </div>
+                          {b.estimated > 0 && <div className="mt-1 flex items-center gap-1.5 text-muted"><span className="size-2 rounded-[2px] bg-attention-bg" style={HATCH} />{t("estimatedNote")}</div>}
+                        </div>
+                      )}
+                    </div>
+                    <span className="mt-1.5 h-3 text-[10px] leading-none text-muted">{shortMonth(m, locale)}</span>
+                    <span className="h-3.5 pt-0.5 text-[9px] leading-none text-muted/80">{showYear ? yy(m) : ""}</span>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </div>
+      )}
     </figure>
+  );
+}
+
+// --- where to cut ---------------------------------------------------------------------
+
+/**
+ * "Where you could cut emissions": an invitation that opens the reduction plan in
+ * a dialog over the inventory (the page behind blurred), rather than a new page.
+ */
+function CutCard() {
+  const t = useTranslations("inventory.cut");
+  const tReduce = useTranslations("reduce");
+  const [open, setOpen] = useState(false);
+  return (
+    <BaseDialog.Root open={open} onOpenChange={setOpen}>
+      <BaseDialog.Trigger className="card group flex w-full items-center gap-4 p-5 text-left transition-colors hover:bg-sunken sm:p-6">
+        <span className="grid size-11 shrink-0 place-items-center rounded-full bg-attention-bg text-attention"><Sun className="size-5" aria-hidden /></span>
+        <span className="min-w-0 flex-1">
+          <span className="block font-display text-xl text-balance">{tReduce("card.title")}</span>
+          <span className="mt-0.5 block text-sm text-pretty text-muted">{tReduce("card.body")}</span>
+        </span>
+        <span className="hidden shrink-0 items-center gap-2 text-sm font-medium text-signal-ink sm:inline-flex">
+          {t("explore")}
+          <span className="grid size-8 place-items-center rounded-full border hairline transition-colors group-hover:bg-raised"><ArrowUpRight className="size-4" aria-hidden /></span>
+        </span>
+        <ArrowUpRight className="size-5 shrink-0 text-signal-ink sm:hidden" aria-hidden />
+      </BaseDialog.Trigger>
+      <BaseDialog.Portal>
+        <BaseDialog.Backdrop className="fixed inset-0 z-dialog bg-ink/25 backdrop-blur-md transition-opacity duration-[var(--dur-enter)] ease-[var(--ease-out)] data-[starting-style]:opacity-0 data-[ending-style]:opacity-0" />
+        <BaseDialog.Popup className="card fixed left-1/2 top-1/2 z-dialog flex max-h-[92dvh] w-[calc(100%-1.5rem)] max-w-3xl -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden shadow-[var(--shadow-float)] outline-none transition-[scale,opacity] duration-[var(--dur-enter)] ease-[var(--ease-out)] data-[starting-style]:scale-95 data-[starting-style]:opacity-0 data-[ending-style]:scale-[0.98] data-[ending-style]:opacity-0 sm:max-h-[88dvh]">
+          <div className="flex items-start gap-4 border-b hairline p-5 sm:p-6">
+            <span className="grid size-10 shrink-0 place-items-center rounded-full bg-attention-bg text-attention"><Sun className="size-5" aria-hidden /></span>
+            <div className="min-w-0 flex-1">
+              <BaseDialog.Title className="font-display text-2xl leading-tight text-balance text-ink">{tReduce("title")}</BaseDialog.Title>
+              <BaseDialog.Description className="mt-1 text-sm text-pretty text-muted">{tReduce("lede")}</BaseDialog.Description>
+            </div>
+            <BaseDialog.Close className="grid size-9 shrink-0 place-items-center rounded-full border hairline text-muted transition-colors hover:bg-sunken hover:text-ink" aria-label={t("close")}>
+              <X className="size-4" aria-hidden />
+            </BaseDialog.Close>
+          </div>
+          <div className="overflow-y-auto overscroll-contain p-5 sm:p-6">
+            {open && <ReducePlanner variant="dialog" />}
+          </div>
+        </BaseDialog.Popup>
+      </BaseDialog.Portal>
+    </BaseDialog.Root>
   );
 }
 
@@ -305,7 +591,6 @@ function Inventory() {
   const { uid, profile, period, request, view: rv, reload } = useRequest();
   const pid = period.id;
   const t = useTranslations("inventory");
-  const tReduce = useTranslations("reduce.card");
   const toast = useToast();
   const [data, setData] = useState<{ lines: InventoryLine[]; snapshot: Snapshot | null; assumptions: Assumption[]; activityLines: ActivityLine[] } | null>(null);
   const [docs, setDocs] = useState<Record<string, DocumentRecord>>({});
@@ -373,9 +658,6 @@ function Inventory() {
   }
 
   const tot = snapshot.totals;
-  const total = tot.scope1_kg + tot.scope2_location_kg;
-  const share = (kg: number) => (total ? `${((kg / total) * 100).toFixed(0)}%` : "—");
-  const tierSegs = Object.entries(tot.tier_mix).map(([k, v]) => ({ key: k, share: v, className: TIER_BAR[k] ?? "bg-muted", label: t(`tier.${k}`) }));
   const sites = profile.sites;
   const siteName = (id: string) => sites.find((s) => s.id === id)?.name ?? id;
 
@@ -384,28 +666,16 @@ function Inventory() {
       <PageTitle
         title={t("title")}
         lede={t("lede")}
-        aside={<button className="btn btn-secondary btn-sm gap-1.5" onClick={compute} disabled={busy}><RefreshCw className={clsx("size-3.5", busy && "animate-spin")} aria-hidden />{t("compute")}</button>}
+        aside={<button className="btn btn-secondary btn-sm gap-1.5" onClick={compute} disabled={busy}><RefreshCw className={clsx("size-3.5", busy && "animate-spin")} aria-hidden />{t("recompute")}</button>}
       />
       <SharedNotice sharedWith={rv.shared_with} periodLabel={period.label} />
 
-      {/* Headline band --------------------------------------------------------------- */}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat label={t("scope1")} value={tot.scope1_kg / 1000} unit={t("tonnes")} sub={t("shareOfTotal", { pct: share(tot.scope1_kg) })} />
-        <Stat label={t("scope2loc")} value={tot.scope2_location_kg / 1000} unit={t("tonnes")} sub={t("shareOfTotal", { pct: share(tot.scope2_location_kg) })} />
-        <Stat label={t("scope2mkt")} value={tot.scope2_market_kg / 1000} unit={t("tonnes")} tone="muted" sub={t("marketNote")} />
-        <Stat label={t("total")} value={total / 1000} unit={t("tonnes")} tone="signal" sub={<><MixBar segments={tierSegs} className="mt-1" /><span className="mt-1 block">{tierSegs.map((s) => `${s.label} ${(s.share * 100).toFixed(1)}%`).join(" · ")}</span></>} />
+      {/* Dashboard: the year's split beside its months; below, where it could be cut. */}
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,8fr)]">
+        <ScopeDonut scope1={tot.scope1_kg} scope2={tot.scope2_location_kg} market={tot.scope2_market_kg} estimatedShare={tot.tier_mix.estimated ?? 0} />
+        <MonthlyChart byMonth={tot.by_month ?? {}} />
       </div>
-
-      <MonthlyChart byMonth={tot.by_month ?? {}} />
-
-      <Link href={`/r/${request.id}/reduce`} className="card flex items-center gap-4 p-4 transition-colors hover:bg-sunken sm:p-5">
-        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-attention-bg text-attention"><Sun className="size-5" aria-hidden /></span>
-        <span className="min-w-0 flex-1">
-          <span className="block font-display text-xl text-balance">{tReduce("title")}</span>
-          <span className="mt-0.5 block text-sm text-pretty text-muted">{tReduce("body")}</span>
-        </span>
-        <span className="hidden shrink-0 items-center gap-1.5 text-sm font-medium text-signal-ink sm:inline-flex">{tReduce("cta")}<ArrowRight className="size-4" aria-hidden /></span>
-      </Link>
+      <CutCard />
 
       {/* Method card ------------------------------------------------------------------- */}
       <section className="card" aria-labelledby="method-h">

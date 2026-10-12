@@ -7,7 +7,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { ArrowLeft, ArrowRight, Plus, Trash2 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { RequireAuth } from "@/components/require-auth";
-import { Landscape } from "@/components/landing/landscape";
+import { BlobBackdrop } from "@/components/blob-backdrop";
 import { Shell } from "@/components/shell";
 import { Dialog } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/toast";
@@ -160,7 +160,7 @@ function Form({ profile, uid }: { profile: SupplierProfile | null; uid: string }
   ];
 
   return (
-    <div className="relative z-10 space-y-8 pb-[22dvh]">
+    <div className="relative z-10 space-y-8 pb-12">
       <div>
         <p className="inline-flex items-center gap-2 rounded-full border border-signal/20 bg-signal-bg px-4 py-1.5 text-sm font-medium text-signal-ink">
           <span className="size-2 rounded-full bg-attention-strong" aria-hidden />{t("title")}
@@ -370,11 +370,7 @@ function Form({ profile, uid }: { profile: SupplierProfile | null; uid: string }
 export default function SetupPage() {
   return (
     <Shell>
-      {/* The landing footer's landscape, held at the foot of the screen behind the whole page. */}
-      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-0" aria-hidden>
-        {/* Cropped from the top of the drawing (not the footer's y=60), so the ridges and the tree's crown are whole. */}
-        <Landscape viewBox="0 0 1440 420" className="block h-[40dvh] w-full sm:h-[46dvh]" />
-      </div>
+      <BlobBackdrop />
       <RequireAuth>{(profile, uid) => <Form profile={profile} uid={uid} />}</RequireAuth>
     </Shell>
   );

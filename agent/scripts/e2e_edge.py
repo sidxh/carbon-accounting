@@ -82,7 +82,7 @@ def main() -> int:
         ok("non-bill-offers-retry", page.locator("li.card", has_text="not-a-bill").get_by_role("button", name=re.compile("Read again")).count() == 1)
 
         # 3. Ambiguous answer -> agent asks again, records nothing -------------------
-        page.get_by_role("link", name=re.compile("Continue to questions")).click()
+        page.get_by_role("link", name=re.compile("Continue to questions")).first.click()
         page.get_by_role("button", name=re.compile("Check my bills")).first.click()
         page.wait_for_selector("input.input", timeout=60000)
         q1 = chat_bubbles(page)[-1]

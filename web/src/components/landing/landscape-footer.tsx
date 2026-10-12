@@ -42,8 +42,9 @@ export function LandscapeFooter({ go, cta }: { go: string; cta: string }) {
           <nav aria-label={t("product")} className="lg:px-8">
             <h2 className={heading}>{t("product")}</h2>
             <ul className="space-y-3">
-              <li><a href="#how" className={link}>{t("how")}</a></li>
-              <li><a href="#features" className={link}>{t("features")}</a></li>
+              <li><Link href="/#how" className={link}>{t("how")}</Link></li>
+              <li><Link href="/#features" className={link}>{t("features")}</Link></li>
+              <li><Link href="/problem" className={link}>{tl("problem")}</Link></li>
               <li><Link href={go} className={link}>{cta}</Link></li>
             </ul>
           </nav>
