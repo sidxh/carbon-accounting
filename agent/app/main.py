@@ -15,20 +15,23 @@ import mimetypes
 import time
 import uuid
 from collections import defaultdict, deque
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 
 from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Query, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from pydantic import BaseModel, Field
 
+from . import solar
 from .agents import reconciler
 from .agents.filler import LOCKED_FIELDS, Answer, fill_workbook, write_answers
-from . import solar
 from .auth import Caller, current_caller, require_supplier
 from .checks import confirm_failed_checks
 from .exporters.methodology import build_pdf
+from .facts import FactContext, previous_year_of
 from .models import ReportingPeriod, Request, Site, SupplierProfile
+from .packs import PACK_BANKS, build_pack, to_pdf, to_xlsx
+from .questionnaires import get_bank
 from .reconcile_tools import summarise
 from .repo import QuestionnaireRecord, ReconcileState, get_repo
 from .services import (
@@ -51,6 +54,7 @@ from .services import (
 )
 from .settings import get_settings
 from .storage import get_storage
+from .vsme import VsmeError, fill_vsme
 
 settings = get_settings()
 app = FastAPI(title="Supplier carbon reporting agent", version="0.2.0")
@@ -85,6 +89,8 @@ class SupplierIn(BaseModel):
     sector: str = ""
     revenue: float | None = None
     revenue_currency: str | None = None
+    headcount: int | None = Field(default=None, ge=0, le=10_000_000)
+    nace_code: str = Field(default="", max_length=40)
 
 
 class LocateIn(BaseModel):
@@ -215,7 +221,8 @@ def upsert_supplier(body: SupplierIn, caller: Caller = Depends(current_caller)):
         id=caller.uid, name=body.name, country=body.country.upper(), language=body.language,
         fiscal_year_start=body.fiscal_year_start, fiscal_year_end=body.fiscal_year_end, sites=sites,
         sector=body.sector, revenue=body.revenue, revenue_currency=body.revenue_currency,
-        created_at=existing.created_at if existing else datetime.now(timezone.utc),
+        headcount=body.headcount, nace_code=body.nace_code.strip(),
+        created_at=existing.created_at if existing else datetime.now(UTC),
         email=caller.email or (existing.email if existing else None),
     )
     repo.put_supplier(profile)
@@ -358,7 +365,7 @@ def get_request(supplier_id: str, rid: str, caller: Caller = Depends(require_sup
 @app.patch("/suppliers/{supplier_id}/requests/{rid}")
 def patch_request(supplier_id: str, rid: str, body: RequestPatch, caller: Caller = Depends(require_supplier)):
     req = _request_or_404(supplier_id, rid)
-    upd: dict = {"updated_at": datetime.now(timezone.utc)}
+    upd: dict = {"updated_at": datetime.now(UTC)}
     if body.customer_name is not None and body.customer_name.strip():
         upd["customer_name"] = body.customer_name.strip()
     if body.due_date is not None:
@@ -380,7 +387,7 @@ def upload_request_template(supplier_id: str, rid: str, file: UploadFile = File(
         raise HTTPException(status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, "The questionnaire must be an .xlsx workbook.")
     key = f"suppliers/{supplier_id}/requests/{rid}/template.xlsx"
     get_storage().put(key, file.file.read(), XLSX)
-    req = req.model_copy(update={"template_key": key, "template_filename": file.filename, "updated_at": datetime.now(timezone.utc)})
+    req = req.model_copy(update={"template_key": key, "template_filename": file.filename, "updated_at": datetime.now(UTC)})
     get_repo().put_request(supplier_id, req)
     return _request_view(supplier_id, req)
 
@@ -690,6 +697,92 @@ def methodology_file(supplier_id: str, pid: str, caller: Caller = Depends(requir
     return _file_response(f"{period_prefix(supplier_id, pid)}outputs/methodology-note.pdf", "methodology-note.pdf")
 
 
+def _fact_context(supplier_id: str, pid: str, *, customer_share: float | None = None, customer_name: str = "") -> FactContext:
+    """What every deterministic answer is computed from, for a period with a computed inventory."""
+    profile = _profile_or_404(supplier_id)
+    period = _period_or_404(supplier_id, pid)
+    repo = get_repo()
+    lines, snap = repo.list_inventory(supplier_id, pid)
+    if snap is None:
+        raise HTTPException(status.HTTP_409_CONFLICT, "Compute the inventory first.")
+    try:
+        advice = build_advice(repo, profile, pid, default_site_id(profile))["advice"]
+    except Exception:       # the draft reduction answer is a nicety; never block an answer on it
+        advice = None
+    return FactContext(
+        profile.for_period(period), snap, lines, repo.list_assumptions(supplier_id, pid), customer_share, advice,
+        previous_year_of(repo, supplier_id, period), customer_name,
+    )
+
+
+# --- routes: answer packs for portal questionnaires ---------------------------------------------------
+
+def _pack_for(supplier_id: str, rid: str, bank_id: str):
+    if bank_id not in PACK_BANKS:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "No answer pack for this questionnaire.")
+    req = _request_or_404(supplier_id, rid)
+    ctx = _fact_context(supplier_id, req.period_id, customer_share=req.customer_share, customer_name=req.customer_name)
+    docs = {d.id: d.filename for d in get_repo().list_documents(supplier_id, req.period_id)}
+    return build_pack(bank_id, ctx, docs=docs), ctx, docs
+
+
+@app.get("/suppliers/{supplier_id}/packs")
+def list_packs(supplier_id: str, caller: Caller = Depends(require_supplier)):
+    """The questionnaires that are answered in a portal, for which we build an answer pack."""
+    out = []
+    for bid in PACK_BANKS:
+        b = get_bank(bid)
+        out.append({"id": b.id, "name": b.name, "publisher": b.publisher, "version": b.version, "questions": len(b.questions)})
+    return {"packs": out}
+
+
+@app.get("/suppliers/{supplier_id}/requests/{rid}/packs/{bank_id}")
+def get_pack(supplier_id: str, rid: str, bank_id: str, caller: Caller = Depends(require_supplier)):
+    pack, _, _ = _pack_for(supplier_id, rid, bank_id)
+    base = f"/suppliers/{supplier_id}/requests/{rid}/packs/{bank_id}"
+    return {"pack": pack, "counts": pack.counts, "downloads": {"xlsx": f"{base}/xlsx", "pdf": f"{base}/pdf"}}
+
+
+@app.get("/suppliers/{supplier_id}/requests/{rid}/packs/{bank_id}/xlsx")
+def pack_xlsx(supplier_id: str, rid: str, bank_id: str, caller: Caller = Depends(require_supplier)):
+    pack, ctx, docs = _pack_for(supplier_id, rid, bank_id)
+    return Response(
+        content=to_xlsx(pack, ctx.lines, docs), media_type=XLSX,
+        headers={"Content-Disposition": f'attachment; filename="{bank_id}-answer-pack.xlsx"'},
+    )
+
+
+@app.get("/suppliers/{supplier_id}/requests/{rid}/packs/{bank_id}/pdf")
+def pack_pdf(supplier_id: str, rid: str, bank_id: str, caller: Caller = Depends(require_supplier)):
+    pack, _, _ = _pack_for(supplier_id, rid, bank_id)
+    return Response(
+        content=to_pdf(pack), media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{bank_id}-answer-pack.pdf"'},
+    )
+
+
+# --- routes: EFRAG VSME digital template ----------------------------------------------------------
+
+@app.get("/suppliers/{supplier_id}/periods/{pid}/vsme")
+def vsme(supplier_id: str, pid: str, caller: Caller = Depends(require_supplier)):
+    """EFRAG's own VSME Digital Template (B1, B3) filled from the inventory, plus what was left for the supplier."""
+    try:
+        res = fill_vsme(_fact_context(supplier_id, pid))
+    except VsmeError as e:
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, f"The VSME template could not be filled: {e}")
+    get_storage().put(f"{period_prefix(supplier_id, pid)}outputs/vsme-digital-template.xlsx", res.xlsx, XLSX)
+    return {
+        "download": f"/suppliers/{supplier_id}/periods/{pid}/vsme/file",
+        "filled": [{"ref": f.ref, "cell": f.cell, "value": f.value, "source": f.source} for f in res.filled],
+        "open_items": [{"ref": o.ref, "label": o.label, "reason": o.reason} for o in res.open_items],
+    }
+
+
+@app.get("/suppliers/{supplier_id}/periods/{pid}/vsme/file")
+def vsme_file(supplier_id: str, pid: str, caller: Caller = Depends(require_supplier)):
+    return _file_response(f"{period_prefix(supplier_id, pid)}outputs/vsme-digital-template.xlsx", "VSME-Digital-Template-filled.xlsx")
+
+
 # --- routes: questionnaire (request) --------------------------------------------------------------
 
 @app.post("/suppliers/{supplier_id}/requests/{rid}/questionnaire")
@@ -731,6 +824,7 @@ def fill_request_questionnaire(
         filled, answers, offset = fill_workbook(
             template, profile=profile.for_period(period), snap=snap, lines=lines,
             assumptions=repo.list_assumptions(supplier_id, period.id), customer_share=share, advice=advice,
+            previous=previous_year_of(repo, supplier_id, period), customer_name=req.customer_name,
         )
     except ValueError as e:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, str(e))
@@ -745,7 +839,7 @@ def fill_request_questionnaire(
     if req.questionnaire_id:
         repo.delete_questionnaire(supplier_id, req.questionnaire_id)
     repo.put_questionnaire(rec)
-    req = req.model_copy(update={"questionnaire_id": qid, "customer_share": share, "updated_at": datetime.now(timezone.utc)})
+    req = req.model_copy(update={"questionnaire_id": qid, "customer_share": share, "updated_at": datetime.now(UTC)})
     repo.put_request(supplier_id, req)
     return {"questionnaire": rec, "request": _request_view(supplier_id, req), "download": f"/suppliers/{supplier_id}/questionnaire/{qid}/file"}
 
@@ -779,6 +873,11 @@ def edit_answer(supplier_id: str, qid: str, question_id: str, body: AnswerPatch,
     value = body.value.strip()
     if not value:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Answer is empty.")
+    if target.options:
+        match = next((o for o in target.options if o.strip().lower() == value.lower()), None)
+        if match is None:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "This cell is a dropdown in the customer's sheet. Choose one of: " + ", ".join(target.options[:12]))
+        value = match
     generated_previous = target.value if (not target.flagged and not target.edited) else None
     target.value = value
     target.flagged = False

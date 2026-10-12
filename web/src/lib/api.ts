@@ -75,6 +75,8 @@ export interface SupplierProfile {
   sector: string;
   revenue?: number | null;
   revenue_currency?: string | null;
+  headcount?: number | null;
+  nace_code?: string;
 }
 
 export interface DocumentRecord {
@@ -251,6 +253,60 @@ export interface QuestionnaireRecord {
   answers: Answer[];
   status: string;
   created_at: string;
+}
+
+export interface PackCell {
+  label?: string | null;
+  value: string | number | null;
+  unit?: string | null;
+  source: string;
+  flagged: boolean;
+  reason?: string | null;
+  /** Only the supplier can answer this one, in the portal. */
+  portal: boolean;
+  /** The portal's own answer list, when the publisher prints one. */
+  options: string[];
+}
+
+export interface PackItem {
+  ref: string;
+  ref_id?: string | null;
+  text: string;
+  wording: "verbatim" | "metric_name" | "topic";
+  format: string;
+  status: "answered" | "needs_you" | "portal";
+  cells: PackCell[];
+  evidence: string[];
+  note?: string | null;
+}
+
+export interface Pack {
+  bank_id: string;
+  name: string;
+  publisher: string;
+  version: string;
+  wording: "verbatim" | "metric_name" | "topic";
+  sources: { title: string; url: string }[];
+  notes: string[];
+  company: string;
+  period: string;
+  generated_at: string;
+  items: PackItem[];
+  evidence_files: string[];
+}
+
+export interface PackSummary {
+  id: string;
+  name: string;
+  publisher: string;
+  version: string;
+  questions: number;
+}
+
+export interface VsmeResult {
+  download: string;
+  filled: { ref: string; cell: string; value: string | number; source: string }[];
+  open_items: { ref: string; label: string; reason: string }[];
 }
 
 export interface ReportingPeriod {
@@ -459,6 +515,12 @@ export const api = {
   editAnswer: (uid: string, qid: string, questionId: string, value: string) =>
     json<{ questionnaire: QuestionnaireRecord }>(`/suppliers/${uid}/questionnaire/${qid}/answers/${questionId}`, "PATCH", { value }),
   questionnaireFilePath: (uid: string, qid: string) => `/suppliers/${uid}/questionnaire/${qid}/file`,
+
+  // portal questionnaires: answer packs, and EFRAG's VSME template
+  packs: (uid: string) => request<{ packs: PackSummary[] }>(`/suppliers/${uid}/packs`),
+  getPack: (uid: string, rid: string, bank: string) =>
+    request<{ pack: Pack; counts: Record<string, number>; downloads: { xlsx: string; pdf: string } }>(`${R(uid, rid)}/packs/${bank}`),
+  vsme: (uid: string, pid: string) => request<VsmeResult>(`${P(uid, pid)}/vsme`),
 
   /** Download a protected file by fetching with the token and saving via a blob link. */
   download: async (path: string, filename: string) => {

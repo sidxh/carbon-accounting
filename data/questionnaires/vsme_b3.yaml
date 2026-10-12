@@ -1,0 +1,111 @@
+# EU Voluntary Sustainability Reporting Standard for non-listed SMEs (VSME), modules B1 and B3.
+#
+# The labels are the English labels printed in EFRAG's own VSME Digital Template. `named_range` is the
+# Excel defined name that the template (and EFRAG's XBRL converter) reads, so we fill the official file
+# and no model maps anything. Each entry also carries the template's own paragraph reference where it
+# prints one.
+#
+# Why buyers send it: from financial years starting 1 January 2027 an EU company reporting under CSRD may
+# only ask value-chain companies with 1,000 employees or fewer for the VSME datapoints, which is why a
+# VSME-shaped request is the one an EU buyer is allowed to send a small supplier.
+id: vsme_b3
+name: EU VSME, B1 basis for preparation and B3 energy and greenhouse gas emissions
+publisher: EFRAG (European Financial Reporting Advisory Group)
+delivery: excel
+version: "VSME Digital Template 1.3.0 (EFRAG, published June 2026)"
+wording: verbatim
+template_file: vsme/VSME-Digital-Template-1.3.0.xlsx
+sources:
+  - title: "EFRAG VSME Digital Template and XBRL taxonomy (download page)"
+    url: https://www.efrag.org/en/vsme-digital-template-and-xbrl-taxonomy
+  - title: "VSME Digital Template 1.3.0 (xlsx, MIT licence)"
+    url: https://xbrl.efrag.org/downloads/vsme/VSME-Digital-Template-1.3.0.xlsx
+notes:
+  - "Open the filled file in Excel once before converting it with EFRAG's tool: the template computes its validation status when Excel opens it."
+  - "EFRAG's hosted web converter is for non-automated use; use the template's own XBRL export or the open-source converter."
+questions:
+  - ref: "B1 name"
+    text: "Name of the reporting entity"
+    field: company_name
+    named_range: template_reporting_entity_name
+    format: text
+    evidence: [none]
+  - ref: "B1 period"
+    text: "Reporting period start date (YYYY-MM-DD)"
+    field: reporting_period
+    named_range: template_reporting_period_startdate
+    format: date
+    evidence: [none]
+  - ref: "B1 currency"
+    text: "Currency of the monetary values in the report"
+    field: currency
+    named_range: template_currency
+    format: choice
+    evidence: [none]
+  - ref: "B1 24(e)(ii)"
+    text: "NACE sector classification code(s)"
+    field: sector_code
+    named_range: NaceSectorClassificationCodes
+    format: choice
+    evidence: [none]
+  - ref: "B1 24(e)(iv)"
+    text: "Turnover in"
+    field: turnover
+    named_range: Turnover
+    format: number
+    evidence: [none]
+  - ref: "B1 24(e)(v)"
+    text: "Number of employees"
+    field: employees
+    named_range: NumberOfEmployees
+    format: number
+    evidence: [none]
+  - ref: "B1 24(e)(vi)"
+    text: "Country of primary operations and location of significant asset(s)"
+    field: country
+    named_range: CountryOfPrimaryOperationsAndLocationOfSignificantAssets
+    format: choice
+    evidence: [none]
+  - ref: "B3 29 total"
+    text: "Total Energy Consumption"
+    field: total_energy_mwh
+    named_range: TotalEnergyConsumption
+    unit: MWh
+    format: number
+    evidence: [bills, calc]
+  - ref: "B3 30 Scope 1"
+    text: "Gross Scope 1 GHG Emissions"
+    field: scope1_tco2e
+    named_range: GrossScope1GreenhouseGasEmissions
+    unit: tCO2e
+    format: number
+    evidence: [bills, calc]
+  - ref: "B3 30 Scope 2 location"
+    text: "Gross Scope 2 location-based GHG Emissions"
+    field: scope2_location_tco2e
+    named_range: GrossLocationBasedScope2GreenhouseGasEmissions
+    unit: tCO2e
+    format: number
+    evidence: [bills, calc]
+  - ref: "B3 30 Scope 2 market"
+    text: "Gross scope 2 market-based GHG Emissions"
+    field: scope2_market_tco2e
+    named_range: GrossMarketBasedScope2GreenhouseGasEmissions
+    unit: tCO2e
+    format: number
+    evidence: [bills, calc]
+  - ref: "B3 31 intensity"
+    text: "Scope 1 and Scope 2 GHG Emissions intensity (location-based)"
+    field: ghg_intensity_turnover
+    named_range: Scope1AndScope2GreenhouseGasEmissionsIntensityValueLocationBased
+    unit: tCO2e per unit of turnover
+    format: number
+    evidence: [calc]
+    note: "A formula in the template (emissions divided by turnover). It is computed, not entered."
+  - ref: "B3 29 breakdown"
+    text: "B3 - Breakdown of energy consumption (in MWh)"
+    field: null
+    named_range: BreakdownOfEnergyConsumptionTable
+    format: table
+    evidence: [bills]
+    note: "Needs the renewable share of purchased electricity, which bills do not carry. Left for the supplier."

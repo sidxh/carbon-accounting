@@ -111,6 +111,9 @@ class SupplierProfile(BaseModel):
     sector: str = ""
     revenue: float | None = None
     revenue_currency: str | None = None
+    # Buyers ask for both: CDP SME eligibility and VSME B1 want the employee count, VSME B1 the NACE code.
+    headcount: int | None = None
+    nace_code: str = ""
     created_at: datetime | None = None
     # From the verified sign-in token, so a supplier document can be matched to a person in the
     # Firestore console without opening Authentication. The uid (the document id) stays the key.

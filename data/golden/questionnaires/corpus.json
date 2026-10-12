@@ -1,0 +1,531 @@
+{
+  "profile": {
+    "name": "Hoa Sen Garments",
+    "country": "VN",
+    "headcount": 420,
+    "revenue": 24000000000,
+    "revenue_currency": "VND",
+    "nace_code": "C.13.20"
+  },
+  "cases": [
+    {
+      "name": "bespoke_en_unit_column",
+      "kind": "excel",
+      "file": "bespoke_en_unit_column.xlsx",
+      "lang": "en",
+      "shape": "header row with unit and answer columns, dropdown, pre-answered cell",
+      "mapping": {
+        "Electricity purchased from the grid": [
+          "energy_by_source",
+          "electricity"
+        ],
+        "LPG consumed": [
+          "energy_by_source",
+          "lpg"
+        ],
+        "Diesel consumed": [
+          "energy_by_source",
+          "diesel"
+        ],
+        "Total energy consumed": [
+          "total_energy_mwh",
+          null
+        ],
+        "Scope 1 emissions": [
+          "scope1_tco2e",
+          null
+        ],
+        "Scope 2 emissions, location-based": [
+          "scope2_location_tco2e",
+          null
+        ],
+        "Scope 2 emissions, market-based": [
+          "scope2_market_tco2e",
+          null
+        ],
+        "Number of employees": [
+          "employees",
+          null
+        ],
+        "Annual turnover": [
+          "turnover",
+          null
+        ],
+        "Are the figures verified by a third party?": [
+          "verification_status",
+          null
+        ]
+      },
+      "expect": [
+        {
+          "sheet": "Energy and emissions",
+          "cell": "C5",
+          "unchanged": "Acme Co"
+        },
+        {
+          "sheet": "Energy and emissions",
+          "cell": "C6",
+          "value": 600000,
+          "kind": "number"
+        },
+        {
+          "sheet": "Energy and emissions",
+          "cell": "C7",
+          "value": 10,
+          "kind": "number"
+        },
+        {
+          "sheet": "Energy and emissions",
+          "cell": "C8",
+          "flagged": true,
+          "kind": "flag"
+        },
+        {
+          "sheet": "Energy and emissions",
+          "cell": "C9",
+          "value": 731.4,
+          "kind": "number"
+        },
+        {
+          "sheet": "Energy and emissions",
+          "cell": "C10",
+          "value": 36.71,
+          "kind": "number"
+        },
+        {
+          "sheet": "Energy and emissions",
+          "cell": "C11",
+          "value": 395520,
+          "kind": "number"
+        },
+        {
+          "sheet": "Energy and emissions",
+          "cell": "C12",
+          "value": 408,
+          "kind": "number"
+        },
+        {
+          "sheet": "Energy and emissions",
+          "cell": "C13",
+          "value": 420,
+          "kind": "number"
+        },
+        {
+          "sheet": "Energy and emissions",
+          "cell": "C14",
+          "value": 24000000000,
+          "kind": "number"
+        },
+        {
+          "sheet": "Energy and emissions",
+          "cell": "C15",
+          "value": "No",
+          "kind": "choice"
+        }
+      ]
+    },
+    {
+      "name": "bespoke_ja_energy_table",
+      "kind": "excel",
+      "file": "bespoke_ja_energy_table.xlsx",
+      "lang": "ja",
+      "shape": "Japanese headers, unit column in kL and GJ, dropdown from a hidden list sheet",
+      "mapping": {
+        "購入電力量": [
+          "energy_by_source",
+          "electricity"
+        ],
+        "LPG使用量": [
+          "energy_by_source",
+          "lpg"
+        ],
+        "軽油使用量": [
+          "energy_by_source",
+          "diesel"
+        ],
+        "エネルギー使用量合計": [
+          "total_energy_mwh",
+          null
+        ],
+        "CO2排出量(スコープ1)": [
+          "scope1_tco2e",
+          null
+        ],
+        "CO2排出量(スコープ2・ロケーション基準)": [
+          "scope2_location_tco2e",
+          null
+        ],
+        "所在国": [
+          "country",
+          null
+        ],
+        "従業員数": [
+          "employees",
+          null
+        ]
+      },
+      "expect": [
+        {
+          "sheet": "調査票",
+          "cell": "C4",
+          "value": 600000,
+          "kind": "number"
+        },
+        {
+          "sheet": "調査票",
+          "cell": "C5",
+          "value": 10,
+          "kind": "number"
+        },
+        {
+          "sheet": "調査票",
+          "cell": "C6",
+          "flagged": true,
+          "kind": "flag"
+        },
+        {
+          "sheet": "調査票",
+          "cell": "C7",
+          "value": 2633,
+          "kind": "number"
+        },
+        {
+          "sheet": "調査票",
+          "cell": "C8",
+          "value": 36.71,
+          "kind": "number"
+        },
+        {
+          "sheet": "調査票",
+          "cell": "C9",
+          "value": 395.52,
+          "kind": "number"
+        },
+        {
+          "sheet": "調査票",
+          "cell": "C10",
+          "value": "ベトナム",
+          "kind": "choice"
+        },
+        {
+          "sheet": "調査票",
+          "cell": "C11",
+          "value": 420,
+          "kind": "number"
+        }
+      ]
+    },
+    {
+      "name": "bespoke_vi_merged",
+      "kind": "excel",
+      "file": "bespoke_vi_merged.xlsx",
+      "lang": "vi",
+      "shape": "merged question cells, answer right of the merge, answer box below a question, inline dropdown",
+      "mapping": {
+        "Tổng lượng phát thải Phạm vi 1 trong năm báo cáo (tCO2e)?": [
+          "scope1_tco2e",
+          null
+        ],
+        "Tổng lượng phát thải Phạm vi 2 theo phương pháp thị trường (tCO2e)?": [
+          "scope2_market_tco2e",
+          null
+        ],
+        "Mô tả phương pháp doanh nghiệp dùng để tính phát thải.": [
+          "methodology",
+          null
+        ],
+        "Số liệu phát thải có được bên thứ ba kiểm chứng không?": [
+          "verification_status",
+          null
+        ]
+      },
+      "expect": [
+        {
+          "sheet": "Khảo sát",
+          "cell": "E3",
+          "value": 36.71,
+          "kind": "number"
+        },
+        {
+          "sheet": "Khảo sát",
+          "cell": "E4",
+          "value": 408,
+          "kind": "number"
+        },
+        {
+          "sheet": "Khảo sát",
+          "cell": "B6",
+          "startswith": "GHG Protocol Corporate Standard",
+          "kind": "text"
+        },
+        {
+          "sheet": "Khảo sát",
+          "cell": "E7",
+          "value": "Không",
+          "kind": "choice"
+        }
+      ]
+    },
+    {
+      "name": "cdp_sme_offline_sheet",
+      "kind": "excel",
+      "file": "../../templates/cdp_sme_questionnaire.xlsx",
+      "lang": "en",
+      "shape": "CDP numbering, table questions as one row per column, dropdowns from a hidden list",
+      "mapping": {
+        "State the end date of the year for which you are reporting data.": [
+          "reporting_period_end",
+          null
+        ],
+        "Select the countries/areas in which the entities reported in 14.5 are based and/or conduct business.": [
+          "country",
+          null
+        ],
+        "Do you evaluate your organization’s greenhouse gas (GHG) emissions? Note that you can measure your emissions or estimate them using the assistance of a carbon accounting tool.": [
+          "not_a_question",
+          null
+        ],
+        "Select the name of the standard, protocol, or methodology you have used to collect activity data and calculate emissions.": [
+          "methodology",
+          null
+        ],
+        "Are there any sources (e.g. facilities, specific GHGs, activities, geographies, etc.) of Scope 1, Scope 2 or Scope 3 emissions which are attributed to the entities you are including in your CDP response which are not included in your disclosure?": [
+          "not_a_question",
+          null
+        ],
+        "What were your organization’s gross global Scope 1 emissions in metric tons CO2e?": [
+          "scope1_tco2e",
+          null
+        ],
+        "Gross global Scope 1 emissions (metric tons CO2e)": [
+          "scope1_tco2e",
+          null
+        ],
+        "Methodological details": [
+          "methodology",
+          null
+        ],
+        "What were your organization’s gross global Scope 2 emissions in metric tons CO2e?": [
+          "scope2_both",
+          null
+        ],
+        "Gross global Scope 2, location-based emissions (metric tons CO2e)": [
+          "scope2_location_tco2e",
+          null
+        ],
+        "Gross global Scope 2, market-based emissions (metric tons CO2e)": [
+          "scope2_market_tco2e",
+          null
+        ],
+        "What was the % of revenue produced in the countries/areas reported in 14.7?": [
+          "not_a_question",
+          null
+        ],
+        "Account for your organization’s gross global Scope 3 emissions, disclosing and explaining any exclusions.": [
+          "scope3",
+          null
+        ],
+        "Indicate the verification/assurance status that applies to your reported emissions.": [
+          "verification_status",
+          null
+        ],
+        "How do your gross global emissions (Scope 1 and 2 combined) for the reporting year compare to those of the previous reporting year?": [
+          "emissions_previous_year",
+          null
+        ],
+        "Reason": [
+          "not_a_question",
+          null
+        ],
+        "Please explain": [
+          "not_a_question",
+          null
+        ],
+        "Allocate your emissions to your customers listed below according to the goods or services you have sold them in this reporting period.": [
+          "allocation_to_customer",
+          null
+        ],
+        "Requesting member": [
+          "customer_name",
+          null
+        ],
+        "Scope of emissions": [
+          "allocation_scope",
+          null
+        ],
+        "Allocation level": [
+          "allocation_level",
+          null
+        ],
+        "Allocation method": [
+          "not_a_question",
+          null
+        ],
+        "Market value or quantity of goods/services supplied to the requesting member (numerator)": [
+          "not_a_question",
+          null
+        ],
+        "Emissions in metric tons of CO2e": [
+          "allocation_tco2e",
+          null
+        ],
+        "What are the challenges in allocating emissions to different customers, and what would help you to overcome these challenges?": [
+          "not_a_question",
+          null
+        ],
+        "Do you plan to develop your capabilities to allocate emissions to your customers in the future?": [
+          "not_a_question",
+          null
+        ],
+        "Does your organization break down its electricity consumption by country/area": [
+          "not_a_question",
+          null
+        ],
+        "Report your organization’s consumption of purchased or acquired electricity in MWh.": [
+          "electricity_mwh",
+          null
+        ],
+        "MWh from renewable sources": [
+          "renewable_electricity_mwh",
+          null
+        ],
+        "MWh from non-renewable sources": [
+          "nonrenewable_electricity_mwh",
+          null
+        ],
+        "Total (renewable + non-renewable) MWh": [
+          "electricity_mwh",
+          null
+        ],
+        "Comment": [
+          "not_a_question",
+          null
+        ],
+        "Did you have an emissions or other climate-related target that was active in the reporting year?": [
+          "reduction_target",
+          null
+        ],
+        "Provide details of your absolute emissions targets and progress made against those targets.": [
+          "reduction_target",
+          null
+        ],
+        "Did you have emissions reduction initiatives that were active within the reporting year? Note that this can include those in the planning and/or implementation phases.": [
+          "reduction_activities",
+          null
+        ],
+        "Provide details on the emissions reduction initiatives implemented in the reporting year in the table below.": [
+          "reduction_activities",
+          null
+        ]
+      },
+      "expect": [
+        {
+          "sheet": "Climate module",
+          "cell": "C7",
+          "value": "2025-12-31",
+          "kind": "text"
+        },
+        {
+          "sheet": "Climate module",
+          "cell": "C12",
+          "value": 36.71,
+          "kind": "number"
+        },
+        {
+          "sheet": "Climate module",
+          "cell": "C15",
+          "value": 395.52,
+          "kind": "number"
+        },
+        {
+          "sheet": "Climate module",
+          "cell": "C16",
+          "value": 408,
+          "kind": "number"
+        },
+        {
+          "sheet": "Climate module",
+          "cell": "C19",
+          "value": "No third-party verification or assurance",
+          "kind": "choice"
+        },
+        {
+          "sheet": "Climate module",
+          "cell": "C20",
+          "flagged": true,
+          "kind": "flag"
+        },
+        {
+          "sheet": "Climate module",
+          "cell": "C23",
+          "flagged": true,
+          "kind": "flag"
+        },
+        {
+          "sheet": "Climate module",
+          "cell": "C24",
+          "value": 600,
+          "kind": "number"
+        }
+      ]
+    },
+    {
+      "name": "efrag_vsme_digital_template",
+      "kind": "vsme",
+      "lang": "en",
+      "shape": "official EFRAG xlsx, named ranges, dropdown validations kept",
+      "expect": [
+        {
+          "named_range": "template_reporting_entity_name",
+          "value": "Hoa Sen Garments",
+          "kind": "text"
+        },
+        {
+          "named_range": "template_currency",
+          "value": "VND",
+          "kind": "choice"
+        },
+        {
+          "named_range": "NaceSectorClassificationCodes",
+          "value": "NACE C - 13.20 Weaving of textiles",
+          "kind": "choice"
+        },
+        {
+          "named_range": "Turnover",
+          "value": 24000000000,
+          "kind": "number"
+        },
+        {
+          "named_range": "NumberOfEmployees",
+          "value": 420,
+          "kind": "number"
+        },
+        {
+          "named_range": "CountryOfPrimaryOperationsAndLocationOfSignificantAssets",
+          "value": "Viet Nam",
+          "kind": "choice"
+        },
+        {
+          "named_range": "TotalEnergyConsumption",
+          "value": 731.4,
+          "kind": "number"
+        },
+        {
+          "named_range": "GrossScope1GreenhouseGasEmissions",
+          "value": 36.71,
+          "kind": "number"
+        },
+        {
+          "named_range": "GrossLocationBasedScope2GreenhouseGasEmissions",
+          "value": 395.52,
+          "kind": "number"
+        },
+        {
+          "named_range": "GrossMarketBasedScope2GreenhouseGasEmissions",
+          "value": 408,
+          "kind": "number"
+        }
+      ]
+    }
+  ]
+}

@@ -64,6 +64,10 @@
     "addSite": "拠点を追加",
     "revenue": "年間売上（任意、原単位算出用）",
     "currency": "通貨",
+    "headcount": "従業員数（任意）",
+    "headcountHint": "CDP SMEとEUのVSMEで尋ねられます。CDPのSME質問票は従業員500人未満が対象です。",
+    "nace": "産業コード NACE（任意）",
+    "naceHint": "VSMEの様式ではNACEコードを尋ねられます。例：織物業はC.13.20。",
     "save": "保存して次へ",
     "saved": "保存しました。",
     "startOver": "最初からやり直す",
@@ -312,7 +316,7 @@
     "fromData": "データから",
     "legend": "緑のセルは請求書と計算機から。青はご自身の入力。黄はご自身で記入する項目で、理由を横に記載。",
     "emptyTitle": "まだ質問票を記入していません",
-    "emptyBody": "取引先から届いたExcelをアップロード。CDP SME気候モジュールは data/templates/cdp_sme_questionnaire.xlsx で試せます。",
+    "emptyBody": "取引先から届いたExcelをアップロード。data/templates/cdp_sme_questionnaire.xlsx は、買い手が配布するオフライン版CDPシートと同じ構成のサンプルです。",
     "ring": {
       "auto": "データから",
       "yours": "ご自身で回答",
@@ -326,7 +330,21 @@
     "fillAttached": "添付の質問票を記入",
     "showBills": "根拠の請求書を見る",
     "billsBehind": "この数字の根拠となる請求書",
-    "noBills": "この数字の根拠となる請求書はありません。"
+    "noBills": "この数字の根拠となる請求書はありません。",
+    "portal": {
+      "title": "Excelがない場合: ポータル用の回答、またはEUのテンプレート",
+      "lede": "CDP、Higg、EcoVadisは各プラットフォーム上で回答します。回答、計算方法、添付すべき書類をまとめてお渡しします。",
+      "questions": "{n}問",
+      "openPack": "回答パックを開く",
+      "needInventory": "先にインベントリを計算してください。",
+      "vsmeTitle": "EU VSME: EFRAG公式のデジタルテンプレート",
+      "vsmeBody": "VSME基準で報告するEUの取引先向け。EFRAGのExcelテンプレートのB1とB3を入力し、他はEFRAG配布のままにします。",
+      "vsmeDownload": "入力済みテンプレートをダウンロード",
+      "vsmeBusy": "入力中…",
+      "vsmeFilled": "プロフィールとインベントリから{n}セルを入力しました。",
+      "vsmeOpen": "テンプレートに残した項目:",
+      "vsmeExcel": "変換する前にExcelで一度開いてください。テンプレートは開いたときに自身のチェックを計算します。"
+    }
   },
   "common": {
     "loading": "読み込み中…",
@@ -701,6 +719,33 @@
       "title": "排出量を減らせる場所",
       "body": "使用量に合わせた屋根置き太陽光と、数値への影響が大きい対策。",
       "cta": "削減のヒントを見る"
+    }
+  },
+  "pack": {
+    "back": "質問票に戻る",
+    "lede": "各回答をポータルに入力してください。質問の前の番号は発行元のもので、ポータルで探せます。",
+    "xlsx": "スプレッドシート",
+    "pdf": "PDF",
+    "copy": "コピー",
+    "copied": "コピーしました。",
+    "copyFailed": "コピーできませんでした。テキストを選択してください。",
+    "how": "計算方法",
+    "confirm": "ご確認ください",
+    "options": "ポータルの選択肢",
+    "portalAnswer": "ポータルで回答",
+    "notProvided": "未提供",
+    "needInventory": "先にインベントリを計算してください。",
+    "unavailable": "回答パックはまだ利用できません",
+    "sources": "質問の出典",
+    "status": {
+      "answered": "請求書から",
+      "needs_you": "ご自身で記入",
+      "portal": "ポータルで回答"
+    },
+    "wording": {
+      "verbatim": "質問番号と文言は発行元のものです。",
+      "metric_name": "発行元が掲載している指標名です。この発行元は質問番号や文言を公開していません。",
+      "topic": "データ項目について当社が記述したものです。発行元は文言を公開していません。"
     }
   }
 }

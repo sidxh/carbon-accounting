@@ -4,13 +4,13 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { AnimatePresence, motion } from "motion/react";
-import { Download, FileSpreadsheet, FileText, Lock, Pencil, ScanSearch, UploadCloud } from "lucide-react";
+import { ArrowRight, Download, FileSpreadsheet, FileText, Globe, Lock, Pencil, ScanSearch, UploadCloud } from "lucide-react";
 import { cn as clsx } from "@/lib/cn";
 import { useRequest } from "@/components/request-context";
 import { EmptyState, PageTitle, SkeletonList } from "@/components/ui/bits";
 import { useToast } from "@/components/ui/toast";
 import { EvidenceViewer, type EvidenceItem } from "@/components/evidence-viewer";
-import { api, ApiError, type Answer, type QuestionnaireRecord } from "@/lib/api";
+import { api, ApiError, type Answer, type PackSummary, type QuestionnaireRecord, type VsmeResult } from "@/lib/api";
 import { hasBillsBehind, itemsForLines, linesForField } from "@/lib/evidence";
 
 /** Three-segment ring: answered from data, answered by you, still open. */
@@ -113,8 +113,71 @@ function sectionOf(ref: string | null | undefined, fallback: string): string {
   return m ? m[1] : fallback;
 }
 
+/** Questionnaires with no spreadsheet to fill: portal packs, and EFRAG's own template for the EU VSME. */
+function PortalOptions({ uid, rid, periodId }: { uid: string; rid: string; periodId: string }) {
+  const t = useTranslations("questionnaire.portal");
+  const toast = useToast();
+  const [packs, setPacks] = useState<PackSummary[]>([]);
+  const [vsme, setVsme] = useState<VsmeResult | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => { api.packs(uid).then((r) => setPacks(r.packs)).catch(() => setPacks([])); }, [uid]);
+
+  async function buildVsme() {
+    setBusy(true);
+    try {
+      const r = await api.vsme(uid, periodId);
+      setVsme(r);
+      await api.download(r.download, "VSME-Digital-Template-filled.xlsx");
+    } catch (e) {
+      toast(e instanceof ApiError && e.status === 409 ? t("needInventory") : (e as Error).message, "danger");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <section className="space-y-3" aria-labelledby="portal-h">
+      <div>
+        <h2 id="portal-h" className="font-display text-lg">{t("title")}</h2>
+        <p className="text-sm text-muted">{t("lede")}</p>
+      </div>
+      <ul className="grid gap-3 md:grid-cols-2">
+        {packs.map((p) => (
+          <li key={p.id} className="card flex flex-col justify-between gap-3 p-4 text-sm">
+            <div>
+              <div className="flex items-center gap-2 font-medium"><Globe className="size-4 text-muted" aria-hidden />{p.name}</div>
+              <div className="text-xs text-muted">{p.publisher} · {t("questions", { n: p.questions })}</div>
+            </div>
+            <Link href={`/r/${rid}/pack/${p.id}`} className="btn btn-secondary btn-sm self-start">{t("openPack")}<ArrowRight className="size-4" aria-hidden /></Link>
+          </li>
+        ))}
+        <li className="card flex flex-col justify-between gap-3 p-4 text-sm md:col-span-2">
+          <div>
+            <div className="flex items-center gap-2 font-medium"><FileSpreadsheet className="size-4 text-muted" aria-hidden />{t("vsmeTitle")}</div>
+            <p className="text-xs text-muted">{t("vsmeBody")}</p>
+          </div>
+          <div>
+            <button className="btn btn-secondary btn-sm" onClick={buildVsme} disabled={busy}><Download className="size-4" aria-hidden />{busy ? t("vsmeBusy") : t("vsmeDownload")}</button>
+          </div>
+          {vsme && (
+            <div className="space-y-2 rounded-lg bg-sunken p-3 text-xs" role="status">
+              <p className="font-medium">{t("vsmeFilled", { n: vsme.filled.length })}</p>
+              <p className="font-medium">{t("vsmeOpen")}</p>
+              <ul className="list-disc space-y-0.5 pl-4 text-muted">
+                {vsme.open_items.map((o) => <li key={o.ref}><span className="font-mono">{o.ref}</span> {o.label}. {o.reason}</li>)}
+              </ul>
+              <p className="text-muted">{t("vsmeExcel")}</p>
+            </div>
+          )}
+        </li>
+      </ul>
+    </section>
+  );
+}
+
 function Questionnaire() {
-  const { uid, period, request, reload } = useRequest();
+  const { uid, period, request, progress, reload } = useRequest();
   const rid = request.id;
   const t = useTranslations("questionnaire");
   const locale = useLocale();
@@ -283,6 +346,8 @@ function Questionnaire() {
           ))}
         </AnimatePresence>
       )}
+
+      {progress.inventory && <PortalOptions uid={uid} rid={rid} periodId={period.id} />}
 
       {evidence && (
         <EvidenceViewer

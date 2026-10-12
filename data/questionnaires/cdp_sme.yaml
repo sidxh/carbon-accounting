@@ -1,0 +1,170 @@
+# CDP SME questionnaire, climate module 20 and the identification questions it leans on.
+#
+# Wording is copied verbatim from CDP's own reporting guidance PDF (quoted below). Nothing here is
+# paraphrased or invented. A question with `field: null` is one we cannot answer from bills, so the
+# answer pack tells the supplier to answer it in the portal.
+#
+# CDP SME is answered in the CDP Portal. CDP does not publish an Excel version, so the
+# data/templates/cdp_sme_questionnaire.xlsx we ship is the offline sheet that buyers circulate, laid out
+# from this bank. It is not a CDP file.
+id: cdp_sme
+name: CDP SME questionnaire (climate, module 20)
+publisher: CDP
+delivery: portal
+version: "2024 SME Questionnaire and Reporting Guidance, Modules 14-21, version 1.0 (released 30 April 2024)"
+wording: verbatim
+sources:
+  - title: "CDP 2024 SME Questionnaire and Reporting Guidance, Modules 14-21 (PDF export)"
+    url: https://cdn.cdp.net/cdp-production/comfy/cms/files/files/000/009/090/original/CDP_2024_SME_Questionnaire_-_PDF_export.pdf
+notes:
+  - "Checked against the 2024 edition because it is the latest PDF CDP has published for the SME questionnaire. Re-check the numbers against the current edition when CDP publishes a new PDF export."
+  - "SMEs under 500 employees and under USD 50M revenue are eligible for the SME questionnaire."
+  - "20.12 is the question a requesting supply chain member sees; it only displays the rows of that member."
+questions:
+  - ref: "14.4"
+    text: "State the end date of the year for which you are reporting data."
+    field: reporting_period_end
+    format: date
+    evidence: [none]
+  - ref: "14.7"
+    text: "Select the countries/areas in which the entities reported in 14.5 are based and/or conduct business."
+    field: country
+    format: choice
+    evidence: [none]
+  - ref: "20.1"
+    text: "Do you evaluate your organization’s greenhouse gas (GHG) emissions? Note that you can measure your emissions or estimate them using the assistance of a carbon accounting tool."
+    field: null
+    format: table
+    evidence: [none]
+    note: "A gate question: its answers decide which of the later questions appear. Answer it in the portal."
+  - ref: "20.2"
+    text: "Select the name of the standard, protocol, or methodology you have used to collect activity data and calculate emissions."
+    field: methodology
+    format: choice
+    evidence: [method]
+    options_note: "Pick from the portal list, for example “The Greenhouse Gas Protocol: A Corporate Accounting and Reporting Standard (Revised Edition)”."
+  - ref: "20.3"
+    text: "Are there any sources (e.g. facilities, specific GHGs, activities, geographies, etc.) of Scope 1, Scope 2 or Scope 3 emissions which are attributed to the entities you are including in your CDP response which are not included in your disclosure?"
+    field: null
+    format: choice
+    evidence: [none]
+    note: "Only the supplier knows what was left out."
+  - ref: "20.4"
+    text: "What were your organization’s gross global Scope 1 emissions in metric tons CO2e?"
+    field: scope1_tco2e
+    unit: tCO2e
+    format: number
+    evidence: [bills, calc]
+    columns:
+      - {label: "Gross global Scope 1 emissions (metric tons CO2e)", field: scope1_tco2e, unit: tCO2e}
+      - {label: "Methodological details", field: methodology}
+  - ref: "20.5"
+    text: "What were your organization’s gross global Scope 2 emissions in metric tons CO2e?"
+    field: scope2_both
+    unit: tCO2e
+    format: number
+    evidence: [bills, calc]
+    note: "One question with a column for each approach, not two questions."
+    columns:
+      - {label: "Gross global Scope 2, location-based emissions (metric tons CO2e)", field: scope2_location_tco2e, unit: tCO2e}
+      - {label: "Gross global Scope 2, market-based emissions (metric tons CO2e)", field: scope2_market_tco2e, unit: tCO2e}
+      - {label: "Methodological details", field: methodology}
+  - ref: "20.6"
+    text: "What was the % of revenue produced in the countries/areas reported in 14.7?"
+    field: null
+    format: number
+    unit: "%"
+    evidence: [none]
+    note: "Revenue split by country is a finance figure, not something bills can give."
+  - ref: "20.7"
+    text: "Account for your organization’s gross global Scope 3 emissions, disclosing and explaining any exclusions."
+    field: scope3
+    format: table
+    evidence: [none]
+  - ref: "20.8"
+    text: "Indicate the verification/assurance status that applies to your reported emissions."
+    field: verification_status
+    format: choice
+    evidence: [none]
+    options:
+      - "No third-party verification or assurance"
+      - "Third-party verification or assurance process in place"
+  - ref: "20.9"
+    text: "How do your gross global emissions (Scope 1 and 2 combined) for the reporting year compare to those of the previous reporting year?"
+    field: emissions_previous_year
+    format: choice
+    evidence: [calc]
+    options:
+      - "Increased"
+      - "Decreased"
+      - "Remained the same overall"
+      - "This is our first year of reporting, so we cannot compare to last year"
+    columns:
+      - {label: "How do your gross global emissions (Scope 1 and 2 combined) for the reporting year compare to those of the previous reporting year?", field: emissions_previous_year}
+      - {label: "Reason", field: null}
+      - {label: "Please explain", field: null}
+  - ref: "20.12"
+    text: "Allocate your emissions to your customers listed below according to the goods or services you have sold them in this reporting period."
+    field: allocation_to_customer
+    format: table
+    unit: tCO2e
+    evidence: [calc]
+    note: "Mandatory when a supply chain member requests it. Only the customer chosen in column 1 sees the row."
+    columns:
+      - {label: "Requesting member", field: customer_name}
+      - {label: "Scope of emissions", field: allocation_scope}
+      - {label: "Allocation level", field: allocation_level}
+      - {label: "Allocation method", field: null}
+      - {label: "Market value or quantity of goods/services supplied to the requesting member (numerator)", field: null}
+      - {label: "Emissions in metric tons of CO2e", field: allocation_tco2e, unit: tCO2e}
+  - ref: "20.13"
+    text: "What are the challenges in allocating emissions to different customers, and what would help you to overcome these challenges?"
+    field: null
+    format: text
+    evidence: [none]
+  - ref: "20.14"
+    text: "Do you plan to develop your capabilities to allocate emissions to your customers in the future?"
+    field: null
+    format: choice
+    evidence: [none]
+  - ref: "20.15"
+    text: "Does your organization break down its electricity consumption by country/area"
+    field: null
+    format: choice
+    evidence: [none]
+    note: "Answer Yes for a multi-country supplier (then 20.15.1), No for a single-country one (then 20.15.2)."
+  - ref: "20.15.2"
+    text: "Report your organization’s consumption of purchased or acquired electricity in MWh."
+    field: electricity_mwh
+    unit: MWh
+    format: number
+    evidence: [bills]
+    columns:
+      - {label: "MWh from renewable sources", field: renewable_electricity_mwh, unit: MWh}
+      - {label: "MWh from non-renewable sources", field: nonrenewable_electricity_mwh, unit: MWh}
+      - {label: "Total (renewable + non-renewable) MWh", field: electricity_mwh, unit: MWh}
+      - {label: "Comment", field: null}
+  - ref: "20.16"
+    text: "Did you have an emissions or other climate-related target that was active in the reporting year?"
+    field: reduction_target
+    format: choice
+    evidence: [none]
+  - ref: "20.16.1"
+    text: "Provide details of your absolute emissions targets and progress made against those targets."
+    field: reduction_target
+    format: table
+    evidence: [none]
+  - ref: "20.17"
+    text: "Did you have emissions reduction initiatives that were active within the reporting year? Note that this can include those in the planning and/or implementation phases."
+    field: reduction_activities
+    format: choice
+    evidence: [none]
+    options:
+      - "Yes"
+      - "No, but we plan to within the next two years"
+      - "No, and we do not plan to within the next two years"
+  - ref: "20.17.1"
+    text: "Provide details on the emissions reduction initiatives implemented in the reporting year in the table below."
+    field: reduction_activities
+    format: table
+    evidence: [none]

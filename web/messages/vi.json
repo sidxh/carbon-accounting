@@ -64,6 +64,10 @@
     "addSite": "Thêm cơ sở",
     "revenue": "Doanh thu năm (tùy chọn, để tính cường độ)",
     "currency": "Đơn vị tiền",
+    "headcount": "Số nhân viên (tùy chọn)",
+    "headcountHint": "CDP SME và mẫu VSME của EU có hỏi; bảng hỏi CDP SME dành cho doanh nghiệp dưới 500 nhân viên.",
+    "nace": "Mã ngành NACE (tùy chọn)",
+    "naceHint": "Mẫu VSME hỏi mã NACE, ví dụ C.13.20 cho dệt vải.",
     "save": "Lưu và tiếp tục",
     "saved": "Đã lưu.",
     "startOver": "Bắt đầu lại",
@@ -312,7 +316,7 @@
     "fromData": "Từ dữ liệu của bạn",
     "legend": "Ô xanh lá lấy từ hóa đơn và máy tính. Ô xanh dương do bạn nhập. Ô vàng dành cho bạn hoàn thành; lý do ghi bên cạnh.",
     "emptyTitle": "Chưa điền bảng câu hỏi nào",
-    "emptyBody": "Tải lên file Excel khách hàng gửi. Thử data/templates/cdp_sme_questionnaire.xlsx cho mô-đun khí hậu CDP SME.",
+    "emptyBody": "Tải lên file Excel khách hàng gửi. data/templates/cdp_sme_questionnaire.xlsx là mẫu bố cục giống bảng CDP ngoại tuyến mà người mua thường lưu hành.",
     "ring": {
       "auto": "Từ dữ liệu",
       "yours": "Bạn trả lời",
@@ -326,7 +330,21 @@
     "fillAttached": "Điền bảng câu hỏi đã đính kèm",
     "showBills": "Xem hóa đơn của con số này",
     "billsBehind": "Hóa đơn của con số này",
-    "noBills": "Không có hóa đơn nào cho con số này."
+    "noBills": "Không có hóa đơn nào cho con số này.",
+    "portal": {
+      "title": "Không có file Excel? Câu trả lời cho cổng thông tin, hoặc mẫu của EU",
+      "lede": "CDP, Higg và EcoVadis được trả lời ngay trên nền tảng của họ. Chúng tôi đưa sẵn từng câu trả lời, cách tính và tài liệu cần đính kèm.",
+      "questions": "{n} câu hỏi",
+      "openPack": "Mở gói câu trả lời",
+      "needInventory": "Hãy tính kiểm kê của bạn trước.",
+      "vsmeTitle": "VSME của EU: mẫu số của chính EFRAG",
+      "vsmeBody": "Dành cho khách hàng EU báo cáo theo chuẩn VSME. Chúng tôi điền mẫu Excel của EFRAG, các mô-đun B1 và B3, phần còn lại giữ nguyên như EFRAG phát hành.",
+      "vsmeDownload": "Tải mẫu đã điền",
+      "vsmeBusy": "Đang điền…",
+      "vsmeFilled": "Đã điền {n} ô từ hồ sơ và kiểm kê của bạn.",
+      "vsmeOpen": "Để lại cho bạn trong mẫu:",
+      "vsmeExcel": "Hãy mở file bằng Excel một lần trước khi chuyển đổi: mẫu tự tính các kiểm tra khi mở."
+    }
   },
   "common": {
     "loading": "Đang tải…",
@@ -701,6 +719,33 @@
       "title": "Bạn có thể giảm phát thải ở đâu",
       "body": "Điện mặt trời áp mái theo mức dùng thực tế, cùng những thay đổi tác động nhiều nhất.",
       "cta": "Xem gợi ý giảm phát thải"
+    }
+  },
+  "pack": {
+    "back": "Quay lại bảng câu hỏi",
+    "lede": "Nhập từng câu trả lời vào cổng thông tin. Số đứng trước câu hỏi là số của chính nhà phát hành, để bạn tìm thấy ở đó.",
+    "xlsx": "Bảng tính",
+    "pdf": "PDF",
+    "copy": "Sao chép",
+    "copied": "Đã sao chép.",
+    "copyFailed": "Không sao chép được. Hãy chọn văn bản.",
+    "how": "Cách tính",
+    "confirm": "Vui lòng xác nhận",
+    "options": "Lựa chọn trên cổng",
+    "portalAnswer": "Trả lời trên cổng",
+    "notProvided": "Chưa có",
+    "needInventory": "Hãy tính kiểm kê của bạn trước.",
+    "unavailable": "Gói câu trả lời chưa sẵn sàng",
+    "sources": "Nguồn của các câu hỏi",
+    "status": {
+      "answered": "Từ hóa đơn của bạn",
+      "needs_you": "Dành cho bạn hoàn thành",
+      "portal": "Trả lời trên cổng"
+    },
+    "wording": {
+      "verbatim": "Số câu hỏi và nội dung là của chính nhà phát hành.",
+      "metric_name": "Đây là tên chỉ số mà nhà phát hành công bố. Nhà phát hành này không công khai số câu hỏi hay nội dung.",
+      "topic": "Đây là mô tả của chúng tôi về các chỉ tiêu. Nhà phát hành không công bố nội dung câu hỏi."
     }
   }
 }

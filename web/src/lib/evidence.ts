@@ -51,6 +51,11 @@ export function linesForField(field: string, lines: InventoryLine[]): InventoryL
       return lines.filter((l) => l.scope === 2 && l.basis === "market");
     case "scope1_2_total_tco2e":
       return lines.filter((l) => s1(l) || s2loc(l));
+    case "scope2_both":
+      return lines.filter((l) => l.scope === 2);
+    case "total_energy_mwh":
+    case "energy_by_source":
+      return lines.filter((l) => (s1(l) || s2loc(l)) && l.energy_type !== "refrigerant");
     case "electricity_mwh":
       return lines.filter((l) => s2loc(l) && l.energy_type === "electricity");
     case "biogenic_tco2":

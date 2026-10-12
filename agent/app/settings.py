@@ -58,6 +58,8 @@ class Settings(BaseSettings):
     factors_dir: Path = REPO_ROOT / "data" / "factors"
     price_bands_dir: Path = REPO_ROOT / "data" / "price_bands"
     levers_dir: Path = REPO_ROOT / "data" / "levers"
+    questionnaires_dir: Path = REPO_ROOT / "data" / "questionnaires"
+    templates_dir: Path = REPO_ROOT / "data" / "templates"
 
     @property
     def cors_origin_list(self) -> list[str]:

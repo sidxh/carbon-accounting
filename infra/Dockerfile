@@ -17,6 +17,8 @@ COPY agent/app ./app
 COPY data/factors ./data/factors
 COPY data/price_bands ./data/price_bands
 COPY data/levers ./data/levers
+COPY data/questionnaires ./data/questionnaires
+COPY data/templates ./data/templates
 RUN uv pip install --system --no-cache ".[pdf]"
 
 # Data paths are absolute: inside the image the package no longer sits two levels under the
@@ -24,6 +26,7 @@ RUN uv pip install --system --no-cache ".[pdf]"
 # read-only apart from /tmp, which is where the two response caches go. Both are best effort.
 ENV PORT=8080 PYTHONUNBUFFERED=1 \
     FACTORS_DIR=/srv/data/factors PRICE_BANDS_DIR=/srv/data/price_bands LEVERS_DIR=/srv/data/levers \
+    QUESTIONNAIRES_DIR=/srv/data/questionnaires TEMPLATES_DIR=/srv/data/templates \
     GEMINI_CACHE_DIR=/tmp/gemini SOLAR_CACHE_DIR=/tmp/solar LOCAL_STORAGE_DIR=/tmp/storage \
     STORAGE_BACKEND=gcs
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]

@@ -40,3 +40,4 @@ data/golden/rendered/*.pdf
 # playwright browsers (project-local, see data/golden/render.py)
 agent/.playwright/
 eval_report.json
+questionnaire_eval_report.json

@@ -32,6 +32,8 @@ function Form({ profile, uid }: { profile: SupplierProfile | null; uid: string }
     sector: profile?.sector ?? "",
     revenue: profile?.revenue?.toString() ?? "",
     revenue_currency: profile?.revenue_currency ?? "",
+    headcount: profile?.headcount?.toString() ?? "",
+    nace_code: profile?.nace_code ?? "",
   });
 
   async function save(e: React.FormEvent) {
@@ -47,6 +49,8 @@ function Form({ profile, uid }: { profile: SupplierProfile | null; uid: string }
         sector: f.sector,
         revenue: f.revenue ? Number(f.revenue) : null,
         revenue_currency: f.revenue_currency || null,
+        headcount: f.headcount ? Math.round(Number(f.headcount)) : null,
+        nace_code: f.nace_code.trim(),
         // No address here: it is entered on the Reduce page, where it is used. Leaving it out keeps any stored one.
         sites: f.sites.filter((s) => s.name.trim()).map((s) => ({ name: s.name, country: f.country, region: f.country === "AU" ? s.region || null : null })),
       });
@@ -134,6 +138,19 @@ function Form({ profile, uid }: { profile: SupplierProfile | null; uid: string }
           <div>
             <label className="label" htmlFor="currency">{t("currency")}</label>
             <input id="currency" className="input" placeholder="VND" value={f.revenue_currency} onChange={(e) => setF({ ...f, revenue_currency: e.target.value.toUpperCase() })} />
+          </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="label" htmlFor="headcount">{t("headcount")}</label>
+            <input id="headcount" className="input tabular" inputMode="numeric" aria-describedby="headcount-hint" value={f.headcount} onChange={(e) => setF({ ...f, headcount: e.target.value.replace(/[^0-9]/g, "") })} />
+            <p id="headcount-hint" className="mt-1 text-xs text-muted">{t("headcountHint")}</p>
+          </div>
+          <div>
+            <label className="label" htmlFor="nace">{t("nace")}</label>
+            <input id="nace" className="input" placeholder="C.13.20" aria-describedby="nace-hint" value={f.nace_code} onChange={(e) => setF({ ...f, nace_code: e.target.value })} />
+            <p id="nace-hint" className="mt-1 text-xs text-muted">{t("naceHint")}</p>
           </div>
         </div>
 

@@ -1,0 +1,102 @@
+# Higg Facility Environmental Module (FEM) 2025, Energy Use and GHG section.
+#
+# Wording and Ref IDs are copied verbatim from Cascale's published "Higg FEM 2025 Question by Question
+# Guidance". The FEM is answered in the Higg platform (Worldly) and is verified on site by a Cascale-
+# approved verifier, which is why the pack lists the invoices and meter records to bring. Nothing here
+# is paraphrased: a question we cannot answer from bills has `field: null`.
+id: higg_fem_energy
+name: Higg FEM 2025, Energy Use and GHG
+publisher: Cascale (Higg Index), answered on Worldly
+delivery: portal
+version: "Higg FEM 2025 Question by Question Guidance, Energy Use & GHG 2025"
+wording: verbatim
+sources:
+  - title: "How to Higg: Higg FEM 2025 Energy Use & GHG, question by question guidance"
+    url: https://howtohigg.cascale.org/higg-index-tools/higg-fem/higg-fem-2025-question-by-question-guidance/energy-use-ghg-2025/
+notes:
+  - "The FEM calculates Scope 1 and 2 itself from the energy quantities entered, so the numbers to enter are quantities by source, not emissions."
+  - "Higg FEM converts energy to MJ and uses IPCC AR6 100-year GWPs, so our tCO2e will differ slightly from the FEM's own result."
+  - "Quantities are entered per energy source in the table that follows Q7 (one table, or a domestic and a production table)."
+questions:
+  - ref: "Q1"
+    ref_id: ensourcefacility
+    text: "Select all sources of energy for your facility (exclude sources used for company owned and controlled vehicles). Select all that apply:"
+    field: energy_by_source
+    format: choice
+    evidence: [bills]
+  - ref: "Q1 quantity"
+    text: "What is the quantity of energy used by this source during this reporting year?"
+    field: energy_by_source
+    format: table
+    evidence: [bills]
+    note: "Asked for each energy source in the table that follows Q7."
+  - ref: "Q2"
+    ref_id: ensourcevehicleany
+    text: "Does your company have any owned and controlled vehicles?"
+    field: null
+    format: choice
+    evidence: [none]
+    note: "Fuel used by company vehicles is entered separately from facility energy. Only the supplier knows which fuel went to vehicles."
+  - ref: "Q3"
+    ref_id: ensourcepurcheac
+    text: "Does your facility purchase Energy Attribute Certificates (EACs) (e.g., Renewable Energy Certificates (RECs))?"
+    field: null
+    format: choice
+    evidence: [none]
+    note: "EACs must be retired under the facility's name. A bill alone does not show it."
+  - ref: "Q3 quantity"
+    text: "How many MWh did your facility purchase and retire in the reporting year?"
+    field: null
+    format: number
+    unit: MWh
+    evidence: [none]
+  - ref: "Q4"
+    ref_id: enpurchco
+    text: "Does your facility purchase Carbon Offsets?"
+    field: null
+    format: choice
+    evidence: [none]
+  - ref: "Q5"
+    ref_id: ensourcetrackopt
+    text: "Does your facility track any of its energy use? (excluding energy used for company owned and controlled vehicles)"
+    field: energy_tracking
+    format: choice
+    evidence: [bills]
+  - ref: "Q6"
+    ref_id: ensourcetrackopteach
+    text: "Does your facility track energy use from each energy source your facility utilizes?"
+    field: energy_tracking
+    format: choice
+    evidence: [bills]
+  - ref: "Q7"
+    ref_id: ensourcetracksepdomprod
+    text: "Does your facility identify and track separately energy use in domestic vs. production?"
+    field: null
+    format: choice
+    evidence: [none]
+    note: "Bills do not separate domestic from production use."
+  - ref: "Q14"
+    ref_id: enGHGtarget
+    text: "Has your facility set targets for reducing your facility overall Scope 1 and Scope 2 GHG emissions?"
+    field: reduction_target
+    format: choice
+    evidence: [none]
+  - ref: "Q15"
+    ref_id: enimproveplan
+    text: "Does your facility have an implementation plan to improve energy use and/or GHG Emissions?"
+    field: reduction_activities
+    format: choice
+    evidence: [none]
+  - ref: "Q19"
+    ref_id: enscope1and2reduction
+    text: "Has your facility reduced your facilities overall Scope 1 and Scope 2 GHG emission compared with its baseline in the reporting year?"
+    field: emissions_previous_year
+    format: choice
+    evidence: [calc]
+    note: "Compares with the baseline the facility set, which may not be last year."
+  - ref: "Q20"
+    ref_id: enscope3ghg
+    text: "Were your facility’s annual Scope 3 greenhouse gas (GHG) emissions calculated during this reporting year?"
+    field: scope3
+    format: choice
+    evidence: [none]

@@ -313,17 +313,23 @@ a gap was filled.
 ### J. Questionnaire
 
 - Steps: enter customer share `20`, pick
-`data/templates/cdp_sme_questionnaire.xlsx`. Expect about 15–17 answers.
-Flagged (yellow): Scope 3, reduction target, reduction activities,
-intensity per revenue (revenue is empty). Not flagged: Scope 1, Scope 2
-location and market, total, electricity MWh, fuel summary, methodology
-paragraph, verification status, data quality, allocation (you gave a
-share).
+`data/templates/cdp_sme_questionnaire.xlsx`. Expect 16 answer rows, 11
+answered and 5 flagged. Answered: the reporting end date, country, the
+methodology (20.2), Scope 1, Scope 2 location and market, the methodology
+column, the verification status, the allocation to this customer, and the
+total electricity MWh. Flagged (yellow): Scope 3 (20.7), the year-on-year
+comparison (20.9, until a second year exists), renewable MWh (20.15.2: a
+green tariff is never assumed), the target (20.16) and reduction
+initiatives (20.17). The sheet says in its second row that CDP itself is
+answered on the CDP Portal and that this is the offline sheet buyers circulate.
+- The dropdown rows (20.8, 20.9, 20.17) take one of CDP's own entries or stay
+empty and yellow: 20.8 gets "No third-party verification or assurance", the
+others are yours to choose.
 - Download and open the xlsx: green cells hold answers, yellow cells read
 "NOT PROVIDED — reason", every written cell has a comment "Source: …".
-- Go back to Setup, add revenue `50000000000` VND, return and fill again:
-  intensity is now answered. (Until then that row only offers **Edit**; it
-  does not point back to Setup.)
+- Go back to Setup, add headcount `420`, a NACE code `C.13.20` and revenue
+  `50000000000` VND, return and fill again. Nothing on this sheet asks for
+  them, but the EU VSME template does (see J2).
 - **What "For you to complete" means**: the filler writes a cell only from a
   fact it has (calculator snapshot, profile, or a templated statement) and
   never guesses. A target, a reduction plan or Scope 3 are not in any bill,
@@ -333,15 +339,16 @@ share).
 - **Editing answers**: every text or flagged row has an *Edit* link under
   it. Edit 20.16 with "Cut Scope 2 by 30 % by 2030 with rooftop solar",
   Save: the pill changes from "For you to complete" to "Answered by you", the
-  row turns light blue, source reads "entered by supplier". Edit 20.6
+  row turns light blue, source reads "entered by supplier". Edit 20.2
   (methodology, a generated paragraph): source becomes "edited by supplier;
   generated answer was: …" so the original is not lost. Download again and
   open the xlsx: the edited cells are blue with a "Source: entered by
   supplier" comment. Reload the page: edits persist (stored on the
   questionnaire record in Firestore; the workbook is regenerated from the
   stored template on every edit, so download and screen never disagree).
-- **Locked rows**: Scope 1, Scope 2 (both), electricity MWh and computed
-  intensity show "From your bills — correct the quantity in the inventory"
+- **Dropdown rows** (20.8, 20.9, 20.17): editing accepts only one of the
+  sheet's own entries; anything else returns 400 listing them.
+- **Locked rows**: Scope 1, Scope 2 (both) and electricity MWh show "From your bills — correct the quantity in the inventory"
   instead of Edit. Typing over a calculator number here would break the
   document → factor → cell lineage, so the fix is the inline correction in
   scenario I followed by "Fill it in" again. Trying the PATCH directly
@@ -358,16 +365,79 @@ share).
   never produces a figure. Edits go through
   `PATCH /suppliers/{uid}/questionnaire/{qid}/answers/{question_id}` and
   `write_answers()` rewrites the workbook from the stored answers.
-- **How realistic is the template?** `cdp_sme_questionnaire.xlsx` is our
-  reconstruction (`agent/scripts/make_cdp_template.py`) of the 2026 CDP SME
-  climate data points (20.4–20.17) laid out as a procurement team would send
-  them, not CDP's own file; real CDP SME is answered on CDP's portal. Its
-  length is faithful for the CDP case. Bespoke buyer sheets (a Japanese
-  OEM's 調査票, an EcoVadis-style form) are usually longer, 25–60 rows, and
-  ask for things outside the current field enum: renewable-electricity
-  share, per-site energy, Scope 3 by category, SBTi status, governance.
-  The pipeline accepts any xlsx, but those rows will map to the nearest
-  field or be flagged. A longer bespoke template is a pending test asset.
+- **How realistic is the template?** `cdp_sme_questionnaire.xlsx` is built
+  by `agent/scripts/make_cdp_template.py` from the official question bank in
+  `data/questionnaires/cdp_sme.yaml`: CDP's numbering and wording, copied from
+  its 2024 SME PDF (version 1.0, the latest CDP has published). It is not CDP's
+  file. CDP publishes no Excel for the SME questionnaire, which is answered on
+  the portal; this is the offline sheet buyers circulate, and a test fails if the
+  committed file drifts from the bank. Longer bespoke buyer sheets are covered
+  by the evaluation corpus in J2.
+
+### J2. Which questionnaires we support
+
+Ranked by how often a small supplier meets them and what answering them is worth:
+
+| # | Questionnaire | What we do |
+|---|---|---|
+| 1 | The buyer's own spreadsheet | Fill it in place. The sheet's shape is read per row (unit column, merged cells, answer box below, dropdowns), the model only maps wording to a field, and code writes every number. |
+| 2 | CDP Supply Chain (SME, module 20) | An answer pack for the portal, plus the offline sheet buyers circulate. CDP numbering and wording from the official PDF. |
+| 3 | EcoVadis | An answer pack. EcoVadis publishes metric names, not question numbers, so the pack says so. |
+| 4 | Higg FEM (Cascale, answered on Worldly) | An answer pack with Cascale's Ref IDs, the energy quantities by source and the invoices to bring to the verifier. |
+| 5 | EU VSME B3 (Delegated Regulation (EU) 2026/1560, in force 24 September 2026) | Fill EFRAG's own Digital Template through its named ranges (B1 and B3), with no model. |
+| 6 | PACT / Catena-X product carbon footprint | Out of scope. It is a product footprint, not a company inventory. |
+| 7 | Buyer portals (Secaro, Project Gigaton and similar) | Not integrated. The answer pack carries the same numbers to type in. |
+
+Two output modes. For a spreadsheet we write the answers into the buyer's file.
+For a portal there is nothing to write into, so the request page offers an
+**answer pack**: each question with the publisher's number, the answer to enter,
+how it was computed, and which documents to attach. It exports to a spreadsheet
+and a PDF.
+
+Checks:
+
+- On a request with a computed inventory, open Questionnaire. Under "No
+  spreadsheet?" there are three pack cards and the EU VSME card.
+- Open the CDP pack. Each question shows CDP's number. Scope 1, Scope 2
+  (location and market) and the total electricity are numbers with a Copy
+  button; 20.8 reads "No third-party verification or assurance"; 20.1, 20.3
+  and 20.6 read "Answer in the portal"; yellow rows say what to confirm. The
+  spreadsheet export has an Answers sheet (green, yellow and grey rows), the
+  calculation lines, the evidence to attach and the sources.
+- Open the Higg FEM pack: Q1 quantity lists electricity in kWh and LPG in kg,
+  the units the bills use. Q2 (owned vehicles) is "Answer in the portal".
+- Click "Download the filled template" on the EU VSME card. The list below it
+  says what was filled and what is left for you (entity identifier, basis for
+  preparation, how employees are counted, the energy breakdown). Open the file
+  in Excel once: the dropdowns are intact (the country list, for one). Choose
+  the basis for preparation and the template's own check cells (column F) report
+  on the rows we filled. We have no spreadsheet engine in CI, so the tests check
+  that every cell we fill is one its check formula reads, not the recalculated
+  result.
+- Fill the Vietnamese sample from the corpus (below) in the app and open it: the
+  merged question cells have their answers to the right of the merge, and the
+  answer box under question 3 holds the methodology.
+
+The evaluation corpus is `data/golden/questionnaires/` (built by
+`agent/scripts/make_eval_corpus.py`): three bespoke buyer sheets in English,
+Japanese and Vietnamese, our CDP offline sheet, and EFRAG's official VSME
+template (MIT licence). Every expected value is worked out by hand from one fixed
+inventory (600 MWh grid electricity, 10 t of LPG, 3.5 kg of refrigerant). The JAPIA
+energy-use survey is not in it: JAPIA gives it to member companies as a zip and
+states no licence to republish it. Put your own copy beside a `corpus.json` in
+the same format and run `--dir` to score it.
+
+```bash
+cd agent
+PYTHONPATH=. .venv/bin/python -m scripts.eval_questionnaires          # offline, deterministic, runs in pytest
+PYTHONPATH=. .venv/bin/python -m scripts.eval_questionnaires --live   # Gemini maps the wording
+```
+
+Offline: 41 of 41 cells, no wrong number, no unsafe fill. With the live model
+mapping the same cells, also 41 of 41 at the last run. The two numbers to watch
+are a **wrong number** (a cell holding a different figure than the arithmetic) and
+an **unsafe fill** (a cell that should be left to the supplier but was answered).
+Both must stay at 0.
 
 ### K. Methodology PDF
 
@@ -435,6 +505,7 @@ colour is never the only signal.
 cd agent
 .venv/bin/pytest                                  # calculator, factors, reconcile tools, API; offline
 .venv/bin/python -m scripts.eval_extraction       # golden-set accuracy, cached
+PYTHONPATH=. .venv/bin/python -m scripts.eval_questionnaires   # questionnaire filling against hand-worked answers (J2)
 .venv/bin/python -m scripts.e2e_local             # browser: the whole journey on a fresh supplier (needs the 3 terminals)
 .venv/bin/python -m scripts.e2e_local --resume --email you@example.com   # first request on the dashboard, from its inventory step (useful when Gemini is flaky)
 .venv/bin/python -m scripts.e2e_edge              # browser: edge cases above

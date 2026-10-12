@@ -1,0 +1,76 @@
+# EcoVadis, carbon metrics in the Environment theme (energy consumption and GHG).
+#
+# EcoVadis does not publish its question text. What it publishes is its methodology notes and the names
+# of the carbon metrics, so these entries are the metric names as EcoVadis prints them
+# (`wording: metric_name`) and are never presented as question numbers or quotations. Anything we could not
+# confirm is marked `wording: topic` and describes the datapoint in our own words.
+#
+# EcoVadis is answered in its portal and scores the answer on the evidence behind it, so the pack lists the
+# document to attach for each metric. The reliability level (low, medium, high, third-party verified) is
+# EcoVadis's own judgement of the evidence and is not something we can set.
+id: ecovadis_carbon
+name: EcoVadis, carbon metrics (Environment theme)
+publisher: EcoVadis
+delivery: portal
+version: "EcoVadis Methodology Updates Q1 2026 (release 32.9, 7 May 2026)"
+wording: metric_name
+sources:
+  - title: "EcoVadis Help Center, Methodology Updates Q1 2026 (32.9 Scope 2 market- and location-based reporting)"
+    url: https://support.ecovadis.com/hc/en-us/articles/34621845310994-Methodology-Updates-Q1-2026
+notes:
+  - "Since 7 May 2026 EcoVadis collects Scope 2 as two metrics, location-based and market-based, in place of one undifferentiated figure."
+  - "Applies to company sizes S, M, L and XL. The carbon questions sit under Energy Consumption & GHGs."
+  - "A basic annual spreadsheet using a consistent methodology is accepted as evidence at the start of the carbon journey."
+questions:
+  - ref: "Scope 1"
+    text: "Total gross Scope 1 GHG emissions"
+    wording: topic
+    field: scope1_tco2e
+    unit: tCO2e
+    format: number
+    evidence: [bills, calc]
+  - ref: "Scope 2 (location-based)"
+    text: "Total gross location-based Scope 2 GHG emissions"
+    wording: metric_name
+    field: scope2_location_tco2e
+    unit: tCO2e
+    format: number
+    evidence: [bills, calc]
+  - ref: "Scope 2 (market-based)"
+    text: "Total gross market-based Scope 2 GHG emissions"
+    wording: metric_name
+    field: scope2_market_tco2e
+    unit: tCO2e
+    format: number
+    evidence: [bills, calc]
+  - ref: "Methodology"
+    text: "Calculation methodology followed (the GHG Protocol is the benchmark EcoVadis names)"
+    wording: topic
+    field: methodology
+    format: text
+    evidence: [method]
+  - ref: "Energy"
+    text: "Total energy consumption for the reporting year"
+    wording: topic
+    field: total_energy_mwh
+    unit: MWh
+    format: number
+    evidence: [bills]
+  - ref: "Verification"
+    text: "Whether the GHG data is third-party verified"
+    wording: topic
+    field: verification_status
+    format: choice
+    evidence: [none]
+  - ref: "Scope 3"
+    text: "Scope 3 GHG emissions, where calculated"
+    wording: topic
+    field: scope3
+    format: text
+    evidence: [none]
+  - ref: "Target"
+    text: "GHG reduction target and its Scope 2 basis (location- or market-based)"
+    wording: topic
+    field: reduction_target
+    format: text
+    evidence: [none]

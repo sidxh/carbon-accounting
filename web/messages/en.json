@@ -62,8 +62,12 @@
     "sites": "Sites",
     "siteName": "Site name",
     "addSite": "Add another site",
-    "revenue": "Annual revenue (optional, for intensity)",
+    "revenue": "Annual revenue or turnover (optional, for intensity)",
     "currency": "Currency",
+    "headcount": "Employees (optional)",
+    "headcountHint": "CDP SME and the EU VSME ask for it; CDP's SME questionnaire is for under 500 employees.",
+    "nace": "Industry code, NACE (optional)",
+    "naceHint": "The VSME form asks for a NACE code, for example C.13.20 for weaving of textiles.",
     "save": "Save and continue",
     "saved": "Saved.",
     "startOver": "Start over",
@@ -312,7 +316,7 @@
     "fromData": "From your data",
     "legend": "Green cells come from your bills and the calculator. Blue cells you typed. Yellow cells are for you to complete; the reason is written beside them.",
     "emptyTitle": "No questionnaire filled yet",
-    "emptyBody": "Upload the Excel your customer sent. Try data/templates/cdp_sme_questionnaire.xlsx for the CDP SME climate module.",
+    "emptyBody": "Upload the Excel your customer sent. data/templates/cdp_sme_questionnaire.xlsx is a sample laid out like the offline CDP sheet that buyers circulate.",
     "ring": {
       "auto": "From your data",
       "yours": "Answered by you",
@@ -326,7 +330,21 @@
     "fillAttached": "Fill the attached questionnaire",
     "showBills": "Show the bills behind this",
     "billsBehind": "Bills behind this number",
-    "noBills": "No bill is behind this number."
+    "noBills": "No bill is behind this number.",
+    "portal": {
+      "title": "No spreadsheet? Answers for a portal, or the EU template",
+      "lede": "CDP, Higg and EcoVadis are answered inside their own platforms. We give you every answer, how it was computed and which documents to attach.",
+      "questions": "{n} questions",
+      "openPack": "Open the answer pack",
+      "needInventory": "Calculate your inventory first.",
+      "vsmeTitle": "EU VSME: EFRAG's own Digital Template",
+      "vsmeBody": "For an EU customer that reports under the VSME standard. We fill EFRAG's Excel template, modules B1 and B3, and leave the rest as EFRAG shipped it.",
+      "vsmeDownload": "Download the filled template",
+      "vsmeBusy": "Filling…",
+      "vsmeFilled": "{n} cells filled from your profile and inventory.",
+      "vsmeOpen": "Left for you in the template:",
+      "vsmeExcel": "Open the file in Excel once before converting it: the template works out its own checks when it opens."
+    }
   },
   "common": {
     "loading": "Loading…",
@@ -701,6 +719,33 @@
       "title": "Where you could cut emissions",
       "body": "Rooftop solar sized to your own use, plus the changes that would move your numbers most.",
       "cta": "See reduction ideas"
+    }
+  },
+  "pack": {
+    "back": "Back to the questionnaire",
+    "lede": "Enter each answer in the portal. The number in front of a question is the publisher's own, so you can find it there.",
+    "xlsx": "Spreadsheet",
+    "pdf": "PDF",
+    "copy": "Copy",
+    "copied": "Copied.",
+    "copyFailed": "Could not copy. Select the text instead.",
+    "how": "How it was computed",
+    "confirm": "Please confirm",
+    "options": "Portal options",
+    "portalAnswer": "Answer in the portal",
+    "notProvided": "Not provided",
+    "needInventory": "Calculate your inventory first.",
+    "unavailable": "The answer pack is not available yet",
+    "sources": "Where these questions come from",
+    "status": {
+      "answered": "From your bills",
+      "needs_you": "For you to complete",
+      "portal": "Answer in the portal"
+    },
+    "wording": {
+      "verbatim": "Question numbers and wording are the publisher's own.",
+      "metric_name": "These are the metric names the publisher prints. This publisher does not publish question numbers or wording openly.",
+      "topic": "These are our descriptions of the datapoints. The publisher does not publish the wording."
     }
   }
 }
