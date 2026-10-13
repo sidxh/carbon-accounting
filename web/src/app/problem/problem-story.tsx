@@ -4,17 +4,17 @@ import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@/lib/cn";
 import { useAuth } from "@/components/auth-provider";
 import { SiteNav } from "@/components/landing/site-nav";
-import { HANDS_SHAPE, ReachingHands } from "./reaching-hands";
+import { ReachingHands } from "./reaching-hands";
 
-// The problem statement, in plain words for someone outside the industry, laid
-// out like a newspaper page around a picture: a human hand slanting in from the
-// top and a hand of leaves from the left, their fingertips almost touching. The
-// picture floats left and the text wraps its outline (CSS shape-outside), so the
-// claim runs beside the falling arm and the four numbered sections (who it hits,
-// why it is hard, what is at stake, who is asking) start round the fingertips and
-// widen below. Key phrases are highlighted; facts carry numbered references to
-// the sources at the end. No motion, no product. English only for now. Every fact
-// is from the team's sourced research note (ca-problem-statement-facts-sops-detailed.md).
+// The problem statement, in plain words for someone outside the industry: the
+// claim at the top, then the four numbered sections, in one ordinary column.
+// Behind it, big and faint, is the picture (a human hand reaching down, a hand
+// of leaves reaching up, fingertips almost touching): the gap the page is about.
+// The sections are (who it hits, why it is hard, what is at stake, who is asking)
+// in the same column. Key phrases are highlighted; facts carry numbered
+// references to the sources at the end. No motion, no product. English only for
+// now. Every fact is from the team's sourced research note
+// (ca-problem-statement-facts-sops-detailed.md).
 
 // The sources, in the order they are first cited.
 const SOURCES: [string, string][] = [
@@ -52,9 +52,8 @@ function Ref({ n }: { n: number }) {
 }
 
 /**
- * One numbered section, set like a newspaper subhead so its lines can wrap the
- * picture: the numeral and title on one line, a small subtitle, then the text.
- * (No full-width rule: a rule cannot follow the picture's outline.)
+ * One numbered section, set like a newspaper subhead: the numeral and title on
+ * one line, a small subtitle, then the text.
  */
 function Block({ n, title, subtitle, children }: { n: string; title: string; subtitle: string; children: React.ReactNode }) {
   return (
@@ -80,37 +79,43 @@ export function ProblemStory() {
     <div className="min-h-dvh overflow-x-clip">
       <SiteNav signedIn={!!user} onLanding={false} page="problem" />
 
-      {/* One column of text, centred; the picture floats into it from the page's left edge. */}
-      <main className="mx-auto max-w-[1100px] px-4 pb-24 sm:px-8 lg:px-16">
-        {/* The picture. On wide screens it floats left, pulled out to the page edge, and the
-            text wraps its outline; on phones it sits above the words. */}
+      {/* One column of text, centred; the picture sits big and faint behind it. */}
+      <main className="relative isolate mx-auto max-w-[1100px] px-4 pb-24 sm:px-8 lg:px-16">
+        {/* The picture, as a backdrop: large, low in opacity, dissolving towards the bottom so the
+            sections below read on a clean page. Decorative, so hidden from screen readers. */}
         <div
-          className="relative -mx-4 mt-16 aspect-[900/560] sm:-mx-8 lg:float-left lg:mb-4 lg:mt-0 lg:mr-6 lg:w-[50vw] lg:[margin-left:calc((min(100vw,1100px)-100vw)/2-4rem)] lg:[shape-margin:1.25rem]"
-          style={{ shapeOutside: HANDS_SHAPE }}
+          aria-hidden
+          className="pointer-events-none absolute left-1/2 top-0 -z-10 w-[max(100vw,900px)] -translate-x-1/2 opacity-[0.2]"
+          style={{
+            maskImage: "linear-gradient(to bottom, #000 82%, transparent 100%)",
+            WebkitMaskImage: "linear-gradient(to bottom, #000 82%, transparent 100%)",
+          }}
         >
-          <ReachingHands className="block size-full" />
+          <div className="aspect-[900/560]">
+            <ReachingHands className="block size-full" />
+          </div>
         </div>
 
-        {/* The claim, beside the falling arm; its lines step in gently along the picture's outline. */}
-        <div className="relative isolate pt-6 lg:pt-28">
+        {/* The claim. */}
+        <div className="relative isolate pt-28 lg:pt-36">
           {/* A very light green blob behind the claim (a soft, blurred radial wash; the page's one glow). */}
           <div
             aria-hidden
-            className="pointer-events-none absolute -z-10 left-[35%] top-[45%] h-[130%] w-[95%] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl lg:left-[62%] lg:top-[58%]"
+            className="pointer-events-none absolute -z-10 left-1/2 top-[55%] h-[130%] w-[95%] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl"
             style={{ background: "radial-gradient(closest-side, color-mix(in oklab, var(--signal) 16%, transparent), color-mix(in oklab, var(--signal) 6%, transparent) 55%, transparent)" }}
           />
           {locale !== "en" && <p className="mb-4 text-xs text-muted">{t("problemNote")}</p>}
           <p className={cn(kicker, "text-signal-ink")}>Problem statement</p>
-          <h1 className="font-display mt-4 text-[clamp(2.2rem,3.3vw,3.5rem)] leading-[1.03] tracking-[-0.015em] text-balance text-ink">
+          <h1 className="font-display mt-4 max-w-4xl text-[clamp(2.2rem,4vw,3.75rem)] leading-[1.03] tracking-[-0.015em] text-balance text-ink">
             The world&rsquo;s largest companies now have to count their suppliers&rsquo; carbon. <em className="text-signal-ink">The suppliers have no way to count it.</em>
           </h1>
-          <p className="mt-5 text-lg leading-relaxed text-ink-soft">
+          <p className="mt-5 max-w-2xl text-lg leading-relaxed text-ink-soft">
             Carbon reporting means adding up the greenhouse gases a business is responsible for, from the fuel it burns and the electricity it buys.
           </p>
         </div>
 
-        {/* The sections, all from the same left edge, below the picture. */}
-        <div className="mt-12 lg:clear-left lg:mt-0 lg:pt-2">
+        {/* The sections. */}
+        <div className="mt-20 lg:mt-28">
           <Block n="01" title="Who it hits" subtitle="The supplier at the bottom of the chain">
             <p>
               A factory owner in Vietnam, Thailand or Indonesia runs a business of 10 to 200 people, with no environmental team and no accountant who knows carbon. Then a large customer in Japan, Australia, Singapore or Europe sends a spreadsheet: <Mark>count your greenhouse-gas emissions, exactly, within weeks.</Mark>
@@ -153,7 +158,7 @@ export function ProblemStory() {
         </div>
 
         {/* Sources --------------------------------------------------------------------- */}
-        <section aria-labelledby="sources-h" className="clear-both mt-14 border-t border-dashed border-signal/25 pt-6">
+        <section aria-labelledby="sources-h" className="mt-14 border-t border-dashed border-signal/25 pt-6">
           <h2 id="sources-h" className={cn(kicker, "text-signal-ink")}>Sources</h2>
           <ol className="mt-3 grid gap-x-6 gap-y-1.5 text-xs text-ink-soft sm:grid-cols-2">
             {SOURCES.map(([name, href], i) => (
