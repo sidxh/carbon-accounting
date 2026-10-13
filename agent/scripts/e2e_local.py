@@ -105,6 +105,7 @@ def main() -> int:
 
         # 4. Delete one uploaded bill, then upload the one we removed at staging --------------
         n_before = page.locator("li.card").count()
+        page.locator("button[aria-controls^='gl-'][aria-expanded=false]").first.click()   # bills sit in collapsed energy groups
         page.get_by_role("button", name=re.compile("^Remove$|^Xóa$|^削除$")).first.click()
         dlg = page.locator("[role=alertdialog],[role=dialog]")
         dlg.wait_for()
