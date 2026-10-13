@@ -54,7 +54,7 @@ export default function Home() {
         {/* Pulled up into the space under the pinned scene's centred story. */}
         <div className="relative -mt-20">
           <GreenWash />
-          <section className="relative mx-auto max-w-6xl px-4 pb-24 pt-10" aria-labelledby="how-h">
+          <section className="relative mx-auto max-w-6xl px-4 pt-10" aria-labelledby="how-h">
             {/* Pins and plays as the page scrolls. */}
             <StepsFlow title={t("howTitle")} />
           </section>
@@ -64,7 +64,7 @@ export default function Home() {
         <Features />
 
         {/* CTA ---------------------------------------------------------------------------- */}
-        <section className="mx-auto max-w-3xl px-4 pb-20 pt-4 text-center">
+        <section className="mx-auto max-w-3xl px-4 pb-6 pt-4 text-center">
           <Reveal>
             <h2 className="font-display text-3xl text-balance sm:text-4xl">{t("finalTitle")}</h2>
             <p className="mt-3 text-muted">{t("finalBody")}</p>

@@ -31,7 +31,7 @@ AGENT = ROOT / "agent"
 GOLDEN = ROOT / "data" / "golden"
 SHOTS = AGENT / ".local_storage" / "e2e"
 os.environ.setdefault("PLAYWRIGHT_BROWSERS_PATH", str(AGENT / ".playwright"))
-COMPUTE = re.compile("Calculate|Compute|Tính|計算")
+COMPUTE = re.compile("Recalculate|Calculate|Compute|Tính|計算")
 FIND = re.compile("Find on map|Look up again|Tìm trên bản đồ|Tra cứu lại|地図で探す|もう一度調べる")
 
 
@@ -63,10 +63,11 @@ def run_supplier(p, *, label: str, email: str, country: str, site: str, address:
     page.goto(f"{WEB}/r/{rid}/inventory")
     page.get_by_role("button", name=COMPUTE).first.click()
     page.wait_for_selector("table", timeout=60000)
-    assert page.get_by_role("link", name=re.compile("Where you could cut emissions|Bạn có thể giảm|排出量を減らせる")).count(), "inventory card to the advisor is missing"
+    assert page.get_by_role("button", name=re.compile("Where you could cut emissions|Bạn có thể giảm|排出量を減らせる")).count(), "inventory card to the advisor is missing"
 
-    page.get_by_role("link", name=re.compile("Where you could cut emissions")).click()
-    page.wait_for_url(re.compile(r"/reduce"))
+    # The plan opens in a dialog over the inventory.
+    page.get_by_role("button", name=re.compile("Where you could cut emissions")).click()
+    page.get_by_role("dialog").wait_for()
     page.get_by_role("button", name=FIND).wait_for(timeout=30000)
     page.locator("form input.input").first.fill(address)   # the address is entered here, where it is used
     page.get_by_role("button", name=FIND).click()
@@ -83,6 +84,8 @@ def run_supplier(p, *, label: str, email: str, country: str, site: str, address:
         site_id = profile(token)["sites"][0]["id"]
         pin(token, site_id, {"lat": coords[0], "lng": coords[1]})
         page.reload()
+        page.get_by_role("button", name=re.compile("Where you could cut emissions")).click()
+        page.get_by_role("dialog").wait_for()
     page.wait_for_timeout(1500)
     return browser, page, rid, token
 

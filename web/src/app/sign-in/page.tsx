@@ -1,15 +1,14 @@
 "use client";
 
 import { isSignInWithEmailLink, sendSignInLinkToEmail, signInWithEmailLink } from "firebase/auth";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { motion } from "motion/react";
-import { ArrowLeft, Mail, MailQuestion } from "lucide-react";
+import { ArrowLeft, MailQuestion } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
-import { LanguageSwitcher } from "@/components/language-switcher";
-import { Wordmark } from "@/components/shell";
+import { Smokescape } from "@/components/landing/smokescape";
+import { SiteNav } from "@/components/landing/site-nav";
 import { AUTH_EMAIL_SENDER, firebaseAuth } from "@/lib/firebase";
 
 const EMULATOR = process.env.NEXT_PUBLIC_USE_EMULATORS === "true";
@@ -41,6 +40,10 @@ function errorKey(code: string | undefined): "invalidEmail" | "linkExpired" | "t
       return "error";
   }
 }
+
+// Underline fields, as in the landing's light editorial style.
+const field = "w-full rounded-none border-0 border-b border-dashed border-signal/40 bg-transparent px-0 py-2.5 font-mono text-base text-ink placeholder:text-faint focus:border-solid focus:border-signal focus-visible:outline-none";
+const fieldLabel = "text-xs font-medium text-signal-ink";
 
 export default function SignInPage() {
   const t = useTranslations("signIn");
@@ -116,82 +119,105 @@ export default function SignInPage() {
     }
   }
 
-  const errorBox = error && <p role="alert" className="rounded-lg bg-danger-bg px-3 py-2 text-sm text-danger">{error}</p>;
+  const errorBox = error && <p role="alert" className="rounded-[12px] bg-danger-bg px-3 py-2 text-sm text-danger">{error}</p>;
 
   return (
-    <div className="min-h-dvh">
-      <header className="mx-auto flex w-full max-w-5xl items-center justify-between px-4 pt-4 sm:px-6">
-        <Link href="/" className="rounded-lg"><Wordmark /></Link>
-        <LanguageSwitcher />
-      </header>
+    <div className="relative min-h-dvh overflow-x-clip">
+      <SiteNav signedIn={false} onLanding={false} />
 
-      <main className="mx-auto grid w-full max-w-5xl gap-10 px-4 pb-16 pt-10 sm:px-6 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:pt-20">
-        <motion.div initial={{ opacity: 0, transform: "translateY(8px)" }} animate={{ opacity: 1, transform: "translateY(0px)" }} transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }} className="max-w-lg">
-          <p className="eyebrow">{t("eyebrow")}</p>
-          <h1 className="font-display mt-4 text-4xl leading-[1.02] text-balance sm:text-5xl">{t("title")}</h1>
-          <p className="mt-4 text-[15px] leading-relaxed text-pretty text-muted">{t("lede")}</p>
-          <ul className="mt-6 hidden space-y-2 text-sm text-ink-soft lg:block">
-            {["p1", "p2", "p3"].map((k) => <li key={k} className="flex gap-2"><span className="mt-2 size-1.5 shrink-0 rounded-full bg-attention-strong" aria-hidden />{t(`points.${k}`)}</li>)}
-          </ul>
-        </motion.div>
+      {/* The factory smoke turning into landscape, across the page behind the sign-in column. */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 hidden h-dvh md:block">
+        <Smokescape className="size-full" />
+      </div>
 
-        <motion.div initial={{ opacity: 0, transform: "translateY(8px) scale(0.98)" }} animate={{ opacity: 1, transform: "translateY(0px) scale(1)" }} transition={{ duration: 0.22, delay: 0.05, ease: [0.23, 1, 0.32, 1] }} className="card w-full max-w-md p-6 shadow-[var(--shadow-float)] lg:ml-auto">
-          {step === "enter" && (
-            <form onSubmit={sendLink} className="space-y-4">
-              <label className="flex items-center gap-2 text-sm font-medium" htmlFor="email"><Mail className="size-4 text-muted" aria-hidden />{t("emailLabel")}</label>
-              <input id="email" className="input" type="email" inputMode="email" autoComplete="email" placeholder={t("emailPlaceholder")} value={email} onChange={(e) => setEmail(e.target.value)} autoFocus required />
-              <button className="btn w-full" disabled={busy || !email.includes("@")}>{busy ? t("sending") : t("sendLink")}</button>
-              {errorBox}
-            </form>
-          )}
+      <main className="relative mx-auto grid min-h-dvh w-full max-w-6xl items-center gap-8 px-4 pb-10 pt-24 md:grid-cols-2 lg:pt-28">
+        {/* Phones: the picture as a strip above the form. */}
+        <div className="-mx-4 h-64 overflow-hidden md:hidden" aria-hidden>
+          <Smokescape className="size-full" />
+        </div>
+        <div className="hidden md:block" aria-hidden />
 
-          {step === "sent" && (
-            <div className="space-y-4">
-              <button type="button" className="btn btn-ghost btn-sm -ml-2 gap-1.5" onClick={() => { setStep("enter"); setError(""); }}>
-                <ArrowLeft className="size-4" aria-hidden />{t("changeEmail")}
-              </button>
-              <div>
-                <div className="font-display text-2xl">{t("checkTitle")}</div>
-                <p className="mt-2 text-sm text-pretty text-ink-soft">{t("linkSentTo", { email: email.trim() })}</p>
-              </div>
-              <div role="note" className="flex gap-2.5 rounded-lg bg-attention-bg px-3 py-2.5 text-sm text-ink-soft">
-                <MailQuestion className="mt-0.5 size-4 shrink-0 text-attention" aria-hidden />
+        <motion.div
+          initial={{ opacity: 0, transform: "translateY(10px)" }}
+          animate={{ opacity: 1, transform: "translateY(0px)" }}
+          transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
+          className="relative mx-auto w-full max-w-md md:mr-0"
+        >
+          <p className="inline-flex items-center gap-2 rounded-full border border-signal/20 bg-signal-bg px-4 py-1.5 text-sm font-medium text-signal-ink">
+            <span className="size-2 rounded-full bg-attention-strong" aria-hidden />{t("tag")}
+          </p>
+          <h1 className="font-display mt-5 text-[clamp(3rem,6vw,5rem)] leading-[0.92] text-ink">{t("big")}</h1>
+          <p className="mt-4 text-[15px] leading-relaxed text-pretty text-ink-soft">{t("lede")}</p>
+
+          <div className="mt-7 rounded-[28px] border border-signal/15 bg-[linear-gradient(155deg,var(--raised)_0%,var(--raised)_45%,var(--signal-bg)_100%)] p-6 shadow-[var(--shadow-float)] sm:p-8">
+            <p className="font-mono text-xs text-signal-ink">↳ {t("formLabel")}</p>
+
+            {step === "enter" && (
+              <form onSubmit={sendLink} className="mt-6 space-y-6">
                 <div>
-                  <p className="font-medium text-ink">{t("spamTitle")}</p>
-                  <p className="mt-0.5 text-pretty">{t("spamHint", { sender: AUTH_EMAIL_SENDER })}</p>
+                  <label className={fieldLabel} htmlFor="email">{t("emailLabel")}</label>
+                  <input id="email" className={field} type="email" inputMode="email" autoComplete="email" placeholder={t("emailPlaceholder")} value={email} onChange={(e) => setEmail(e.target.value)} autoFocus required />
+                </div>
+                <button className="btn w-full rounded-full" disabled={busy || !email.includes("@")}>{busy ? t("sending") : t("sendLink")}</button>
+                {errorBox}
+              </form>
+            )}
+
+            {step === "sent" && (
+              <div className="mt-6 space-y-5">
+                <button type="button" className="btn btn-ghost btn-sm -ml-2 gap-1.5" onClick={() => { setStep("enter"); setError(""); }}>
+                  <ArrowLeft className="size-4" aria-hidden />{t("changeEmail")}
+                </button>
+                <div>
+                  <div className="font-display text-2xl">{t("checkTitle")}</div>
+                  <p className="mt-2 text-sm text-pretty text-ink-soft">{t("linkSentTo", { email: email.trim() })}</p>
+                </div>
+                <div role="note" className="flex gap-2.5 rounded-[12px] bg-attention-bg px-3 py-2.5 text-sm text-ink-soft">
+                  <MailQuestion className="mt-0.5 size-4 shrink-0 text-attention" aria-hidden />
+                  <div>
+                    <p className="font-medium text-ink">{t("spamTitle")}</p>
+                    <p className="mt-0.5 text-pretty">{t("spamHint", { sender: AUTH_EMAIL_SENDER })}</p>
+                  </div>
+                </div>
+                <p className="text-xs text-muted">{t("linkNote")}</p>
+                {errorBox}
+                <div className="flex items-center justify-between text-xs text-muted">
+                  <span>{t("noLink")}</span>
+                  <button type="button" className="font-medium text-signal-ink underline-offset-4 hover:underline disabled:text-faint disabled:no-underline" disabled={resendIn > 0 || busy} onClick={() => sendLink()}>
+                    {resendIn > 0 ? t("resendIn", { s: resendIn }) : t("resend")}
+                  </button>
                 </div>
               </div>
-              <p className="text-xs text-muted">{t("linkNote")}</p>
-              {errorBox}
-              <div className="flex items-center justify-between text-xs text-muted">
-                <span>{t("noLink")}</span>
-                <button type="button" className="font-medium text-signal-ink underline-offset-4 hover:underline disabled:text-faint disabled:no-underline" disabled={resendIn > 0 || busy} onClick={() => sendLink()}>
-                  {resendIn > 0 ? t("resendIn", { s: resendIn }) : t("resend")}
-                </button>
-              </div>
-            </div>
-          )}
+            )}
 
-          {step === "confirm" && (
-            <form onSubmit={(e) => { e.preventDefault(); void finish(email); }} className="space-y-4">
-              <div>
-                <div className="font-display text-2xl">{t("confirmTitle")}</div>
-                <p className="mt-2 text-sm text-pretty text-ink-soft">{t("confirmBody")}</p>
-              </div>
-              <label className="sr-only" htmlFor="confirm-email">{t("emailLabel")}</label>
-              <input id="confirm-email" className="input" type="email" inputMode="email" autoComplete="email" placeholder={t("emailPlaceholder")} value={email} onChange={(e) => setEmail(e.target.value)} autoFocus required />
-              <button className="btn w-full" disabled={busy || !email.includes("@")}>{t("confirmButton")}</button>
-              {errorBox}
-            </form>
-          )}
+            {step === "confirm" && (
+              <form onSubmit={(e) => { e.preventDefault(); void finish(email); }} className="mt-6 space-y-5">
+                <div>
+                  <div className="font-display text-2xl">{t("confirmTitle")}</div>
+                  <p className="mt-2 text-sm text-pretty text-ink-soft">{t("confirmBody")}</p>
+                </div>
+                <label className="sr-only" htmlFor="confirm-email">{t("emailLabel")}</label>
+                <input id="confirm-email" className={field} type="email" inputMode="email" autoComplete="email" placeholder={t("emailPlaceholder")} value={email} onChange={(e) => setEmail(e.target.value)} autoFocus required />
+                <button className="btn w-full rounded-full" disabled={busy || !email.includes("@")}>{t("confirmButton")}</button>
+                {errorBox}
+              </form>
+            )}
 
-          {step === "finishing" && (
-            <div role="status" className="py-6 text-center text-sm text-muted">{t("finishing")}</div>
-          )}
+            {step === "finishing" && (
+              <div role="status" className="py-8 text-center text-sm text-muted">{t("finishing")}</div>
+            )}
 
-          {EMULATOR && (
-            <p className="mt-4 rounded-lg bg-sunken px-3 py-2 font-mono text-[11px] leading-relaxed text-muted">{t("devHint")}</p>
-          )}
+            {/* What signing in does and does not mean. */}
+            <ul className="mt-8 space-y-2 border-t border-dashed border-signal/30 pt-4 text-xs text-ink-soft">
+              {["p1", "p2", "p3"].map((k) => (
+                <li key={k} className="flex gap-2"><span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-attention-strong" aria-hidden />{t(`points.${k}`)}</li>
+              ))}
+            </ul>
+
+            {EMULATOR && (
+              <p className="mt-5 rounded-[12px] bg-sunken px-3 py-2 font-mono text-[11px] leading-relaxed text-muted">{t("devHint")}</p>
+            )}
+          </div>
         </motion.div>
       </main>
     </div>

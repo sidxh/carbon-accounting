@@ -78,9 +78,9 @@ def main() -> int:
         if "/setup" not in page.url:
             page.goto(f"{WEB}/setup")
         fill_setup(page, "Công ty TNHH Cơ khí Minh Phát", "Xưởng Nhơn Trạch")
-        page.get_by_role("button", name=re.compile("New request|Yêu cầu mới|新しい依頼")).first.wait_for(timeout=20000)
+        page.locator("#nr-name").wait_for(timeout=20000)
         page.wait_for_timeout(600)
-        step("02-home-empty", page, ok=page.get_by_text(re.compile("Add your first request|Thêm yêu cầu đầu tiên|最初の依頼を追加")).count() > 0)
+        step("02-home-empty", page, ok=page.get_by_text(re.compile("Who asked you for carbon data|Ai đã hỏi bạn về dữ liệu carbon|カーボンデータを求めている")).count() > 0)
         rid = new_request(page, "Aiko Corp", due="2026-01-31", share="20")
         page.wait_for_timeout(800)
         locked = locked_steps(page)
@@ -105,6 +105,7 @@ def main() -> int:
 
         # 4. Delete one uploaded bill, then upload the one we removed at staging --------------
         n_before = page.locator("li.card").count()
+        page.locator("button[aria-controls^='gl-'][aria-expanded=false]").first.click()   # bills sit in collapsed energy groups
         page.get_by_role("button", name=re.compile("^Remove$|^Xóa$|^削除$")).first.click()
         dlg = page.locator("[role=alertdialog],[role=dialog]")
         dlg.wait_for()
@@ -122,7 +123,7 @@ def main() -> int:
         print(f"    after bills, locked: {locked_steps(page)}")
 
         # 5. Reconcile ---------------------------------------------------------------------
-        page.get_by_role("link", name=re.compile("Continue to questions|Tiếp tục đến câu hỏi|確認へ進む")).click()
+        page.get_by_role("link", name=re.compile("Continue to questions|Tiếp tục đến câu hỏi|確認へ進む")).first.click()
         page.wait_for_url(re.compile(r"/reconcile"))
         page.get_by_text(re.compile("What we found|Những gì chúng tôi tìm thấy|確認結果")).wait_for(timeout=30000)
         step("08-questions-summary", page, ok=page.locator(".coverage").count() >= 2)

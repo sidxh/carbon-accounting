@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { motion, useMotionValueEvent, useReducedMotion, useScroll } from "motion/react";
 import { useState } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { Wordmark } from "@/components/shell";
@@ -22,9 +22,12 @@ const SECTIONS = [
  * sections in the middle (a green pill slides behind the one you are in), the
  * language and the way in. A hairline along its foot fills as the page is read.
  * It slides away while scrolling down through the long scenes and comes back on
- * the first scroll up; at the top of the page it always shows.
+ * the first scroll up; at the top of the page it always shows. Off the landing
+ * page (`onLanding={false}`) the sections link back to it and the button goes home.
+ * After the sections, a link to the problem page; on it (`page="problem"`) the
+ * pill sits behind that link instead.
  */
-export function SiteNav({ signedIn }: { signedIn: boolean }) {
+export function SiteNav({ signedIn, onLanding = true, page }: { signedIn: boolean; onLanding?: boolean; page?: "problem" }) {
   const t = useTranslations("landing");
   const tc = useTranslations();
   const reduce = useReducedMotion() ?? false;
@@ -40,6 +43,7 @@ export function SiteNav({ signedIn }: { signedIn: boolean }) {
     else if (prev - y > 6) setHidden(false);
 
     // The section you are in: the last whose start has passed 40% of the screen.
+    if (!onLanding) return;
     const line = window.innerHeight * 0.4;
     let current: string | null = null;
     for (const s of SECTIONS) {
@@ -68,10 +72,10 @@ export function SiteNav({ signedIn }: { signedIn: boolean }) {
         aria-label={t("navLabel")}
         className="pointer-events-auto relative flex w-full max-w-5xl items-center justify-between gap-3 overflow-hidden rounded-full border border-signal/15 bg-raised/95 py-1.5 pl-4 pr-1.5 shadow-[var(--shadow-float)]"
       >
-        <Link href="/" className="rounded-full" aria-label="Supplier Carbon"><Wordmark /></Link>
+        <Link href="/" className="shrink-0 rounded-full" aria-label="Supplier Carbon"><Wordmark /></Link>
 
         {/* Sections, with a green pill sliding behind the current one. */}
-        <ul className="hidden items-center gap-1 md:flex">
+        <ul className="hidden items-center gap-0.5 md:flex">
           {SECTIONS.map((s) => {
             const on = active === s.id;
             return (
@@ -85,23 +89,42 @@ export function SiteNav({ signedIn }: { signedIn: boolean }) {
                   />
                 )}
                 <a
-                  href={`#${s.id}`}
-                  onClick={go(s.id)}
+                  href={onLanding ? `#${s.id}` : `/#${s.id}`}
+                  onClick={onLanding ? go(s.id) : undefined}
                   aria-current={on ? "location" : undefined}
-                  className={cn("relative block rounded-full px-4 py-2 text-sm transition-colors duration-200", on ? "font-medium text-signal-ink" : "text-ink-soft hover:text-ink")}
+                  className={cn("relative block whitespace-nowrap rounded-full px-3.5 py-2 text-sm transition-colors duration-200", on ? "font-medium text-signal-ink" : "text-ink-soft hover:text-ink")}
                 >
                   {t(`footer.${s.key}`)}
                 </a>
               </li>
             );
           })}
+          <li className="relative">
+            {page === "problem" && (
+              <motion.span layoutId="nav-current" className="absolute inset-0 rounded-full bg-signal-bg" transition={{ duration: 0.4, ease: EASE }} aria-hidden />
+            )}
+            <Link
+              href="/problem"
+              aria-current={page === "problem" ? "page" : undefined}
+              className={cn("relative block whitespace-nowrap rounded-full px-3.5 py-2 text-sm transition-colors duration-200", page === "problem" ? "font-medium text-signal-ink" : "text-ink-soft hover:text-ink")}
+            >
+              {t("problem")}
+            </Link>
+          </li>
         </ul>
 
         <div className="flex items-center gap-1.5">
-          <LanguageSwitcher className="hidden sm:inline-flex [&_select]:border-transparent [&_select]:bg-transparent" />
-          <Link href={signedIn ? "/home" : "/sign-in"} className="btn btn-sm rounded-full">
-            {signedIn ? t("dashboard") : tc("app.signIn")}<ArrowRight className="size-4" aria-hidden />
-          </Link>
+          {/* In the bar from lg up (with four links it would crowd a tablet); it is always in the footer. */}
+          <LanguageSwitcher className="hidden lg:inline-flex [&_select]:border-transparent [&_select]:bg-transparent" />
+          {onLanding ? (
+            <Link href={signedIn ? "/home" : "/sign-in"} className="btn btn-sm rounded-full">
+              {signedIn ? t("dashboard") : tc("app.signIn")}<ArrowRight className="size-4" aria-hidden />
+            </Link>
+          ) : (
+            <Link href="/" className="btn btn-sm btn-secondary rounded-full">
+              <ArrowLeft className="size-4" aria-hidden />{t("home")}
+            </Link>
+          )}
         </div>
 
         {/* Reading progress along the bar's foot. */}
