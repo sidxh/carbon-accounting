@@ -23,8 +23,8 @@ const QUESTIONS = ["qCompany", "qYear", "qSites", "qExtras"] as const;
 const EASE = [0.23, 1, 0.32, 1] as const;
 
 // Underline fields, as on the sign-in page.
-const field = "w-full rounded-none border-0 border-b border-dashed border-signal/40 bg-transparent px-0 py-2.5 text-base text-ink placeholder:text-faint focus:border-solid focus:border-signal focus-visible:outline-none";
-const fieldLabel = "text-xs font-medium text-signal-ink";
+const field = "w-full rounded-none border-0 border-b border-dashed border-signal/40 bg-transparent px-3 py-2.5 text-base text-ink placeholder:text-faint focus:border-solid focus:border-signal focus-visible:outline-none";
+const fieldLabel = "px-3 text-xs font-medium text-signal-ink";
 const chip = "min-h-9 rounded-full border px-4 text-sm transition-colors duration-150";
 
 /**
@@ -222,7 +222,7 @@ function Form({ profile, uid }: { profile: SupplierProfile | null; uid: string }
                     <select id="country" className={cn(field, "cursor-pointer")} aria-describedby="country-hint" value={f.country} onChange={(e) => setF({ ...f, country: e.target.value })}>
                       {COUNTRIES.map((c) => <option key={c} value={c}>{countryName.of(c) ?? c}</option>)}
                     </select>
-                    <p id="country-hint" className="mt-2 text-xs text-muted">{t("countryHint")}</p>
+                    <p id="country-hint" className="mt-2 px-3 text-xs text-muted">{t("countryHint")}</p>
                   </div>
                 </>
               )}
@@ -306,12 +306,12 @@ function Form({ profile, uid }: { profile: SupplierProfile | null; uid: string }
                     <div>
                       <label className={fieldLabel} htmlFor="headcount">{t("headcount")}</label>
                       <input id="headcount" className={cn(field, "tabular")} inputMode="numeric" aria-describedby="headcount-hint" value={f.headcount} onChange={(e) => setF({ ...f, headcount: e.target.value.replace(/[^0-9]/g, "") })} />
-                      <p id="headcount-hint" className="mt-2 text-xs text-muted">{t("headcountHint")}</p>
+                      <p id="headcount-hint" className="mt-2 px-3 text-xs text-muted">{t("headcountHint")}</p>
                     </div>
                     <div>
                       <label className={fieldLabel} htmlFor="nace">{t("nace")}</label>
                       <input id="nace" className={field} placeholder="C.13.20" aria-describedby="nace-hint" value={f.nace_code} onChange={(e) => setF({ ...f, nace_code: e.target.value })} />
-                      <p id="nace-hint" className="mt-2 text-xs text-muted">{t("naceHint")}</p>
+                      <p id="nace-hint" className="mt-2 px-3 text-xs text-muted">{t("naceHint")}</p>
                     </div>
                   </div>
                 </div>

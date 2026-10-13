@@ -67,20 +67,17 @@ def fill_setup(page, name: str, site: str, country: str = "VN") -> None:
 
 
 def new_request(page, customer: str, *, due: str | None = None, share: str | None = None, new_year: tuple[str, str] | None = None) -> str:
-    """Walk Home's request flow (inline when there are no requests, else opened with New request), then open the new request from its ringed card and return its id."""
-    cont = re.compile("^Continue|^Tiếp tục|^次へ")
+    """Fill Home's one-form request (inline when there are no requests, else in the New request dialog), then open the new request from its ringed card and return its id."""
     page.goto(f"{WEB}/home")
     page.locator("main h1").first.wait_for(timeout=20000)  # Home has loaded (skeleton gone)
     if not page.locator("#nr-name").count():
         page.get_by_role("button", name=re.compile("New request|Yêu cầu mới|新しい依頼")).first.click()
+        page.get_by_role("dialog").wait_for()
     page.locator("#nr-name").fill(customer)
-    page.get_by_role("button", name=cont).click()
     if new_year:
         page.locator("#nr-period-new").click()
         page.locator("#nr-start").fill(new_year[0])
         page.locator("#nr-end").fill(new_year[1])
-    page.get_by_role("button", name=cont).click()
-    page.locator("#nr-due").wait_for()
     if due:
         page.locator("#nr-due").fill(due)
     if share:

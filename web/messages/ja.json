@@ -667,15 +667,9 @@
       "creating": "作成中…",
       "cancel": "キャンセル",
       "created": "{name} の依頼を作成しました。",
-      "stepWho": "取引先",
-      "stepYear": "年度",
-      "stepDetails": "詳細",
       "qWho": "カーボンデータを求めているのはどの取引先ですか？",
-      "qYear": "どの年度について尋ねられていますか？",
-      "qDetails": "ほかに受け取ったものは？（任意）",
-      "next": "次へ",
-      "back": "戻る",
-      "yearOrder": "終了日は開始日より後にしてください。"
+      "yearOrder": "終了日は開始日より後にしてください。",
+      "optional": "任意"
     },
     "firstTitle": "最初の取引先に回答しましょう。",
     "nextLabel": "次：{step}",
