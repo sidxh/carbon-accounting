@@ -667,15 +667,9 @@
       "creating": "Creating…",
       "cancel": "Cancel",
       "created": "Request for {name} created.",
-      "stepWho": "Customer",
-      "stepYear": "Year",
-      "stepDetails": "Details",
       "qWho": "Who asked you for carbon data?",
-      "qYear": "Which year are they asking about?",
-      "qDetails": "Anything else they sent? (optional)",
-      "next": "Continue",
-      "back": "Back",
-      "yearOrder": "The year must end after it starts."
+      "yearOrder": "The year must end after it starts.",
+      "optional": "Optional"
     },
     "firstTitle": "Let's answer your first customer.",
     "nextLabel": "Next: {step}",

@@ -138,12 +138,18 @@ async function build(host: HTMLDivElement): Promise<Stage> {
     renderer.render(scene, camera);
   };
 
+  // Fit the cage to the frame's narrower side. The camera's angle is vertical, so a
+  // tall phone screen would otherwise crop the ball at the sides: there it backs off
+  // until the ball takes about 3/4 of the width; wide screens keep the usual framing.
+  const halfFov = Math.tan(((camera.fov / 2) * Math.PI) / 180);
   const resize = () => {
     const w = host.clientWidth, h = host.clientHeight;
     if (!w || !h) return;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    const small = w < 768;
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, small ? 1.5 : 2)); // lighter on phones
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
+    camera.position.z = Math.max(5.4 * R, (R * 1.1) / (0.74 * halfFov * camera.aspect));
     camera.updateProjectionMatrix();
   };
   resize();

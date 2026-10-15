@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { AnimatePresence, motion } from "motion/react";
-import { ArrowRight, BookOpenCheck, CalendarDays, Link2, Plus, ShieldCheck, Trash2, type LucideIcon } from "lucide-react";
+import { motion } from "motion/react";
+import { ArrowRight, BookOpenCheck, CalendarDays, Link2, Plus, ShieldCheck, Trash2, X, type LucideIcon } from "lucide-react";
+import { Dialog as BaseDialog } from "@base-ui/react";
 import { cn } from "@/lib/cn";
 import { RequireAuth } from "@/components/require-auth";
 import { Shell, nextStep } from "@/components/shell";
@@ -184,6 +185,7 @@ const TRUST: { icon: LucideIcon; key: string }[] = [
 function Home({ profile, uid }: { profile: SupplierProfile | null; uid: string }) {
   const t = useTranslations("home");
   const tl = useTranslations("landing.trust");
+  const tn = useTranslations("home.new");
   const toast = useToast();
   const [data, setData] = useState<HomeView | null>(null);
   const [error, setError] = useState("");
@@ -242,8 +244,8 @@ function Home({ profile, uid }: { profile: SupplierProfile | null; uid: string }
 
   const none = data.requests.length === 0;
   const label = "font-mono text-xs text-signal-ink";
-  const flow = (onCancel?: () => void) => (
-    <RequestFlow uid={uid} periods={periods} profile={profile} onCancel={onCancel} onCreated={(v) => { setCreating(false); setHighlightId(v.request.id); load(); }} />
+  const flow = (variant: "card" | "plain", onCancel?: () => void) => (
+    <RequestFlow uid={uid} periods={periods} profile={profile} variant={variant} onCancel={onCancel} onCreated={(v) => { setCreating(false); setHighlightId(v.request.id); load(); }} />
   );
 
   const years = (
@@ -274,7 +276,7 @@ function Home({ profile, uid }: { profile: SupplierProfile | null; uid: string }
           <h1 className="font-display mt-4 text-[clamp(2.4rem,5vw,3.5rem)] leading-[1.02] text-balance text-ink">{none ? t("firstTitle") : t("greeting", { n: data.requests.length })}</h1>
           <p className="mt-3 text-[15px] leading-relaxed text-pretty text-ink-soft">{none ? t("ledeNone") : t("ledeSome")}</p>
         </div>
-        {!none && !creating && (
+        {!none && (
           <button className="btn gap-1.5 rounded-full" onClick={() => setCreating(true)}><Plus className="size-4" aria-hidden />{t("newRequest")}</button>
         )}
       </header>
@@ -283,7 +285,7 @@ function Home({ profile, uid }: { profile: SupplierProfile | null; uid: string }
         /* No requests yet: the first one is asked for right here, then the years. */
         <div className="mx-auto max-w-3xl space-y-10">
           <section aria-label={t("emptyTitle")} className="space-y-4">
-            {flow()}
+            {flow("card")}
             <ul className="grid gap-3 sm:grid-cols-3">
               {TRUST.map(({ icon: Icon, key }) => (
                 <li key={key} className="flex gap-3 rounded-[20px] border border-signal/15 bg-raised p-4">
@@ -299,18 +301,6 @@ function Home({ profile, uid }: { profile: SupplierProfile | null; uid: string }
         /* Customers on the left, most urgent first; their reporting years beside them, held in view. */
         <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:gap-8">
           <div className="space-y-4">
-            <AnimatePresence initial={false}>
-              {creating && (
-                <motion.div
-                  initial={{ opacity: 0, transform: "translateY(-8px)" }}
-                  animate={{ opacity: 1, transform: "translateY(0px)" }}
-                  exit={{ opacity: 0, transform: "translateY(-8px)" }}
-                  transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-                >
-                  {flow(() => setCreating(false))}
-                </motion.div>
-              )}
-            </AnimatePresence>
             <section aria-labelledby="req-h" className="space-y-4">
               <h2 id="req-h" className={label}>↳ {t("customers")}</h2>
               <ul className="grid gap-4">
@@ -321,6 +311,22 @@ function Home({ profile, uid }: { profile: SupplierProfile | null; uid: string }
           <div className="lg:sticky lg:top-6">{years}</div>
         </div>
       )}
+
+      {/* New request: one form in a dialog over the page, which blurs behind it. */}
+      <BaseDialog.Root open={creating} onOpenChange={setCreating}>
+        <BaseDialog.Portal>
+          <BaseDialog.Backdrop className="fixed inset-0 z-dialog bg-ink/25 backdrop-blur-md transition-opacity duration-[var(--dur-enter)] ease-[var(--ease-out)] data-[starting-style]:opacity-0 data-[ending-style]:opacity-0" />
+          <BaseDialog.Popup className="fixed left-1/2 top-1/2 z-dialog max-h-[92dvh] w-[calc(100%-1.5rem)] max-w-xl -translate-x-1/2 -translate-y-1/2 overflow-y-auto overscroll-contain rounded-[28px] border border-signal/15 bg-[linear-gradient(155deg,var(--raised)_0%,var(--raised)_45%,var(--signal-bg)_100%)] p-6 shadow-[var(--shadow-float)] outline-none transition-[scale,opacity] duration-[var(--dur-enter)] ease-[var(--ease-out)] data-[starting-style]:scale-95 data-[starting-style]:opacity-0 data-[ending-style]:scale-[0.98] data-[ending-style]:opacity-0 sm:p-8">
+            <div className="mb-7 flex items-start justify-between gap-4">
+              <BaseDialog.Title id="nr-title" className="font-display text-[clamp(1.75rem,3.4vw,2.25rem)] leading-[1.05] text-balance text-ink">{tn("qWho")}</BaseDialog.Title>
+              <BaseDialog.Close className="-mr-2 -mt-1 grid size-9 shrink-0 place-items-center rounded-full border hairline text-muted transition-colors hover:bg-sunken hover:text-ink" aria-label={tn("cancel")}>
+                <X className="size-4" aria-hidden />
+              </BaseDialog.Close>
+            </div>
+            {creating && flow("plain", () => setCreating(false))}
+          </BaseDialog.Popup>
+        </BaseDialog.Portal>
+      </BaseDialog.Root>
 
       <Dialog
         open={confirmDelete !== null}

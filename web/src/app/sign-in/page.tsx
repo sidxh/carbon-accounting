@@ -42,8 +42,8 @@ function errorKey(code: string | undefined): "invalidEmail" | "linkExpired" | "t
 }
 
 // Underline fields, as in the landing's light editorial style.
-const field = "w-full rounded-none border-0 border-b border-dashed border-signal/40 bg-transparent px-0 py-2.5 font-mono text-base text-ink placeholder:text-faint focus:border-solid focus:border-signal focus-visible:outline-none";
-const fieldLabel = "text-xs font-medium text-signal-ink";
+const field = "w-full rounded-none border-0 border-b border-dashed border-signal/40 bg-transparent px-3 py-2.5 font-mono text-base text-ink placeholder:text-faint focus:border-solid focus:border-signal focus-visible:outline-none";
+const fieldLabel = "px-3 text-xs font-medium text-signal-ink";
 
 export default function SignInPage() {
   const t = useTranslations("signIn");

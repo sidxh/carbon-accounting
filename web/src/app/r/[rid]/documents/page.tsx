@@ -126,6 +126,16 @@ function Documents() {
   const pick = useRef<HTMLInputElement>(null);
   const cam = useRef<HTMLInputElement>(null);
   const siteId = profile.sites[0]?.id;
+  // One Continue in view at a time: the header's is the main one; the closing card's
+  // button shows only once the header's has scrolled out of view.
+  const [headerContinue, setHeaderContinue] = useState<HTMLDivElement | null>(null);
+  const [headerContinueVisible, setHeaderContinueVisible] = useState(true);
+  useEffect(() => {
+    if (!headerContinue) return;
+    const io = new IntersectionObserver(([e]) => setHeaderContinueVisible(e.isIntersecting), { threshold: 0 });
+    io.observe(headerContinue);
+    return () => io.disconnect();
+  }, [headerContinue]);
 
   const refresh = useCallback(() => api.listDocuments(uid, pid).then((r) => setDocs(r.documents.sort((a, b) => b.created_at.localeCompare(a.created_at)))), [uid, pid]);
   useEffect(() => { refresh(); }, [refresh]);
@@ -235,7 +245,7 @@ function Documents() {
           <h1 className="font-display text-[2rem] leading-[1.05] text-balance text-ink sm:text-[2.5rem]">{t("title")}</h1>
           <p className="mt-2 text-[15px] leading-relaxed text-pretty text-muted">{t("lede")}</p>
         </div>
-        <div className="flex w-full flex-col items-stretch gap-1.5 sm:w-auto sm:items-end">{continueButton}{extracted === 0 && <span className="text-xs text-muted">{t("needMore")}</span>}</div>
+        <div ref={setHeaderContinue} className="flex w-full flex-col items-stretch gap-1.5 sm:w-auto sm:items-end">{continueButton}{extracted === 0 && <span className="text-xs text-muted">{t("needMore")}</span>}</div>
       </header>
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
@@ -353,11 +363,15 @@ function Documents() {
                   </section>
                 );
               })}
-              {/* Where the eye ends after checking: what is still missing, and the way on. */}
+              {/* Where the eye ends after checking: what is still missing, and (when the header's Continue has scrolled away) the way on. */}
               {extracted > 0 && (
                 <div className="flex flex-wrap items-center justify-between gap-4 rounded-[20px] border border-dashed border-signal/30 bg-signal-bg/50 px-5 py-4">
                   <p className="min-w-[12rem] flex-1 text-sm text-ink-soft">{missingTotal ? t("stillMissing", { n: missingTotal }) : t("allCovered")}</p>
-                  {continueButton}
+                  <AnimatePresence initial={false}>
+                    {!headerContinueVisible && (
+                      <motion.span key="continue" className="inline-flex shrink-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>{continueButton}</motion.span>
+                    )}
+                  </AnimatePresence>
                 </div>
               )}
             </>

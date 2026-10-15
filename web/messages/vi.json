@@ -667,15 +667,9 @@
       "creating": "Đang tạo…",
       "cancel": "Hủy",
       "created": "Đã tạo yêu cầu cho {name}.",
-      "stepWho": "Khách hàng",
-      "stepYear": "Năm",
-      "stepDetails": "Chi tiết",
       "qWho": "Ai đã hỏi bạn về dữ liệu carbon?",
-      "qYear": "Họ hỏi về năm nào?",
-      "qDetails": "Họ có gửi gì thêm không? (tùy chọn)",
-      "next": "Tiếp tục",
-      "back": "Quay lại",
-      "yearOrder": "Ngày kết thúc phải sau ngày bắt đầu."
+      "yearOrder": "Ngày kết thúc phải sau ngày bắt đầu.",
+      "optional": "Không bắt buộc"
     },
     "firstTitle": "Cùng trả lời khách hàng đầu tiên của bạn.",
     "nextLabel": "Tiếp theo: {step}",

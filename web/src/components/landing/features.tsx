@@ -139,9 +139,9 @@ export function Features() {
   const headScale = useTransform(p, (v) => 0.9 + 0.1 * ramp(v, 0.42, 0.7));
 
   return (
-    // Pulled up a quarter screen so the molecule starts arriving as the steps
-    // finish, instead of after half a screen of empty page.
-    <section id="features" aria-labelledby="features-h" className="relative -mt-[25dvh]">
+    // Pulled up a quarter screen (a tenth on phones, where the steps' card would
+    // otherwise sit over the molecule) so it starts arriving as the steps finish.
+    <section id="features" aria-labelledby="features-h" className="relative -mt-[10dvh] md:-mt-[25dvh]">
       {/* Pinned: molecule, burst, headline, and the features under it. */}
       <div ref={track} className="relative h-[200dvh]">
         <div className="sticky top-0 flex h-dvh flex-col items-center justify-center gap-10 overflow-hidden pt-16 lg:gap-14">
