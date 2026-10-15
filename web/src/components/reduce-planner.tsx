@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { motion, useReducedMotion } from "motion/react";
-import { Calculator, CircleAlert, ExternalLink, MapPin, Sun } from "lucide-react";
+import { Calculator, CircleAlert, ExternalLink, FileText, MapPin, Sun } from "lucide-react";
 import { cn as clsx } from "@/lib/cn";
 import { AddressSearch } from "@/components/address-search";
 import { useRequest } from "@/components/request-context";
@@ -38,6 +38,16 @@ function Comparison({ before, after, labels }: { before: number; after: number; 
         </div>
       ))}
     </div>
+  );
+}
+
+/** A source's name, as a link when it has a published page. */
+function SourceLink({ name, url }: { name: string; url?: string }) {
+  if (!url) return <span className="text-ink-soft">{name}</span>;
+  return (
+    <a href={url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-0.5 text-signal-ink underline-offset-2 hover:underline">
+      {name}<ExternalLink className="size-3" aria-hidden />
+    </a>
   );
 }
 
@@ -84,6 +94,16 @@ function SolarCard({ view, onRoof, busy, box }: { view: AdvisorView; onRoof: (m2
             <dd className="tabular">{t("marketValue", { t: tco2(s.avoided_market_kg, 0) })}</dd>
           </dl>
           {s.notes.length > 0 && <ul className="mt-3 space-y-1 text-xs text-muted">{s.notes.map((n) => <li key={n}>{n}</li>)}</ul>}
+          {/* Where each figure comes from, with a link where the source is published, as the other levers do. */}
+          <div className="mt-4 border-t border-dashed border-line pt-3">
+            <h3 className="font-mono text-xs text-signal-ink">↳ {t("sourcesTitle")}</h3>
+            <dl className="mt-2 grid gap-x-6 gap-y-1.5 text-xs sm:grid-cols-[170px_1fr]">
+              {s.source_name && (<><dt className="text-muted">{t("srcData")}</dt><dd><SourceLink name={s.source_name} url={s.source_url} /></dd></>)}
+              {s.capex_source && (<><dt className="text-muted">{t("srcCost")}</dt><dd><SourceLink name={s.capex_source} /></dd></>)}
+              {s.tariff != null && s.tariff_source && (<><dt className="text-muted">{t("srcTariff")}</dt><dd><SourceLink name={s.tariff_source} /></dd></>)}
+              {view.advice.grid_factor_source_name && (<><dt className="text-muted">{t("srcGrid")}</dt><dd><SourceLink name={view.advice.grid_factor_source_name} url={view.advice.grid_factor_source_url} /></dd></>)}
+            </dl>
+          </div>
           {s.precision === "pvgis_estimate" && roofForm}
         </>
       ) : s.needs_roof_area ? (
@@ -153,6 +173,7 @@ export function ReducePlanner({ variant = "page" }: { variant?: "page" | "dialog
   const [busy, setBusy] = useState(false);
   const [address, setAddress] = useState("");
   const [picked, setPicked] = useState<Set<string>>(new Set(["solar"]));
+  const [pdfBusy, setPdfBusy] = useState(false);
 
   const load = useCallback(async (sid?: string) => {
     try {
@@ -176,6 +197,19 @@ export function ReducePlanner({ variant = "page" }: { variant?: "page" | "dialog
   const countryName = useMemo(() => {
     try { return new Intl.DisplayNames([locale], { type: "region" }).of(siteCountry.toUpperCase()) ?? siteCountry; } catch { return siteCountry; }
   }, [locale, siteCountry]);
+
+  /** Save the plan as it stands on screen: this site, with the options ticked. */
+  async function downloadPdf() {
+    setPdfBusy(true);
+    try {
+      const r = await api.recommendations(uid, period.id, activeSite?.id, [...picked]);
+      await api.download(r.download, "recommendations.pdf");
+    } catch (e) {
+      toast(e instanceof Error ? e.message : String(e), "danger");
+    } finally {
+      setPdfBusy(false);
+    }
+  }
 
   async function locate(body: { address?: string; roof_area_m2?: number; place_id?: string; session?: string }) {
     if (!activeSite) return;
@@ -285,7 +319,12 @@ export function ReducePlanner({ variant = "page" }: { variant?: "page" | "dialog
         {scenario.recKg > 0 && <p className="mt-1 text-xs text-muted">{t("scenario.market", { t: tco2(scenario.recKg, 0) })}</p>}
       </section>
 
-      <p className="text-xs text-pretty text-muted">{t("disclaimer")}</p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="min-w-[14rem] flex-1 text-xs text-pretty text-muted">{t("disclaimer")}</p>
+        <button className="btn btn-secondary" onClick={downloadPdf} disabled={pdfBusy}>
+          <FileText className="size-4" aria-hidden />{pdfBusy ? t("pdfBusy") : t("pdf")}
+        </button>
+      </div>
     </div>
   );
 }

@@ -28,6 +28,7 @@ from .agents.filler import LOCKED_FIELDS, Answer, fill_workbook, write_answers
 from .auth import Caller, current_caller, require_supplier
 from .checks import confirm_failed_checks
 from .exporters.methodology import build_pdf
+from .exporters.recommendations import build_pdf as build_recommendations_pdf
 from .facts import FactContext, previous_year_of
 from .models import ReportingPeriod, Request, Site, SupplierProfile
 from .packs import PACK_BANKS, build_pack, to_pdf, to_xlsx
@@ -640,6 +641,30 @@ def advisor(supplier_id: str, pid: str, site_id: str | None = None, caller: Call
         return build_advice(get_repo(), profile, pid, site_id or default_site_id(profile))
     except LookupError:
         raise HTTPException(status.HTTP_409_CONFLICT, "Compute the inventory before looking at reductions.")
+
+
+@app.get("/suppliers/{supplier_id}/periods/{pid}/advisor/pdf")
+def advisor_pdf(supplier_id: str, pid: str, site_id: str | None = None, levers: str | None = None, caller: Caller = Depends(require_supplier)):
+    """The reduction plan as a PDF. `levers` is the comma-separated options the supplier ticked (default: solar only,
+    as on screen), so the before and after in the file match what they saw. No model call: it only formats the advice."""
+    profile = _profile_or_404(supplier_id)
+    _period_or_404(supplier_id, pid)
+    if site_id is not None and not any(s.id == site_id for s in profile.sites):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Site not found.")
+    sid = site_id or default_site_id(profile)
+    try:
+        view = build_advice(get_repo(), profile, pid, sid)
+    except LookupError:
+        raise HTTPException(status.HTTP_409_CONFLICT, "Compute the inventory before looking at reductions.")
+    picked = {"solar"} if levers is None else {x.strip() for x in levers.split(",") if x.strip()}
+    pdf = build_recommendations_pdf(profile, view["site"], view["advice"], picked)
+    get_storage().put(f"{period_prefix(supplier_id, pid)}outputs/recommendations.pdf", pdf, "application/pdf")
+    return {"download": f"/suppliers/{supplier_id}/periods/{pid}/advisor/pdf/file", "bytes": len(pdf)}
+
+
+@app.get("/suppliers/{supplier_id}/periods/{pid}/advisor/pdf/file")
+def advisor_pdf_file(supplier_id: str, pid: str, caller: Caller = Depends(require_supplier)):
+    return _file_response(f"{period_prefix(supplier_id, pid)}outputs/recommendations.pdf", "recommendations.pdf")
 
 
 @app.patch("/suppliers/{supplier_id}/periods/{pid}/activity-lines/{line_id}")

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowRight, Camera, ChevronDown, FileText, ImagePlus, RotateCcw, Trash2, UploadCloud, X } from "lucide-react";
+import { ArrowRight, Camera, ChevronDown, Download, FileText, ImagePlus, RotateCcw, Trash2, UploadCloud, X } from "lucide-react";
 import { cn as clsx } from "@/lib/cn";
 import { useRequest } from "@/components/request-context";
 import { SharedNotice } from "@/components/shared-notice";
@@ -274,6 +274,13 @@ function Documents() {
                 <button className={clsx("btn rounded-full", staged.length > 0 && "btn-secondary btn-sm")} onClick={() => pick.current?.click()} disabled={uploading}><ImagePlus className="size-4" aria-hidden />{staged.length ? t("addMore") : t("pick")}</button>
                 <button className="btn btn-secondary rounded-full sm:hidden" onClick={() => cam.current?.click()} disabled={uploading}><Camera className="size-4" aria-hidden />{t("camera")}</button>
               </div>
+              {/* Nothing to try with? A zip of the sample Vietnamese bills (public/), shown only on the empty drop zone. */}
+              {!staged.length && (
+                <div className="flex flex-col items-center gap-1.5">
+                  <a href="/sample-bills-vietnam.zip" download className="btn btn-secondary rounded-full"><Download className="size-4" aria-hidden />{t("sampleDownload")}</a>
+                  <p className="text-xs text-muted">{t("sampleHint")}</p>
+                </div>
+              )}
             </div>
 
             {/* Chosen files: a short scrolling list, with Upload always in reach. */}

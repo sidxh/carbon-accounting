@@ -45,6 +45,26 @@ def test_solar_api_picks_the_largest_layout_that_does_not_exceed_use():
     assert s.imagery_quality == "HIGH" and s.imagery_date.year == 2023
 
 
+def test_solar_carries_the_source_of_its_sunshine_data_for_both_precisions():
+    api = size_solar(annual_kwh=20_000, grid_factor=0.5, market_factor=0.5, country="JP", building=kariya(), pvgis_kwh_per_kwp=1430,
+                     roof_area_m2=None, tariff=None)
+    assert "Google Solar API" in api.source_name and api.source_url.startswith("https://developers.google.com/maps/documentation/solar")
+    est = size_solar(annual_kwh=600_000, grid_factor=0.6592, market_factor=0.68, country="VN", building=None, pvgis_kwh_per_kwp=1453,
+                     roof_area_m2=1000, tariff=None)
+    assert "PVGIS" in est.source_name and est.source_url.startswith("https://joint-research-centre.ec.europa.eu")
+    ask = size_solar(annual_kwh=600_000, grid_factor=0.6592, market_factor=0.68, country="VN", building=None, pvgis_kwh_per_kwp=1453,
+                     roof_area_m2=None, tariff=None)
+    assert "PVGIS" in ask.source_name                                    # still says where the irradiance will come from
+    assert size_solar(annual_kwh=0, grid_factor=None, market_factor=None, country="VN", building=None, pvgis_kwh_per_kwp=None,
+                      roof_area_m2=None, tariff=None).source_url == ""
+
+
+def test_advice_names_the_grid_factor_the_inventory_used():
+    cited = [VN[0].model_copy(update={"factor_source_name": "EVN grid 2024", "factor_source_url": "https://example.org/evn"}), *VN[1:]]
+    a = advise(inventory=cited, activity=[], country="VN", site_id="main", single_site=True, building=None, pvgis_kwh_per_kwp=1453, roof_area_m2=800)
+    assert a.grid_factor_source_name == "EVN grid 2024" and a.grid_factor_source_url == "https://example.org/evn"
+
+
 def test_roof_limited_site_uses_the_biggest_layout_and_says_so():
     s = size_solar(annual_kwh=500_000, grid_factor=0.5, market_factor=None, country="JP", building=kariya(), pvgis_kwh_per_kwp=None,
                    roof_area_m2=None, tariff=None)
@@ -135,3 +155,28 @@ def test_advise_reads_the_site_out_of_the_inventory():
 
     other = advise(inventory=VN, activity=[], country="VN", site_id="annex", single_site=False, building=None, pvgis_kwh_per_kwp=1453, roof_area_m2=800)
     assert other.annual_electricity_kwh == 0 and not other.solar.available
+
+
+def test_scenario_sums_the_ticked_options_and_caps_electricity_at_scope_2():
+    from app.advisor import scenario
+
+    a = advise(inventory=VN, activity=[], country="VN", site_id="main", single_site=True, building=None, pvgis_kwh_per_kwp=1453, roof_area_m2=800)
+    s2, s1 = a.scope2_location_kg, a.scope1_kg
+    by = {l.id: l for l in a.levers}
+
+    none = scenario(a, set())
+    assert none.base_kg == pytest.approx(s1 + s2, abs=0.2) and none.saved_kg == 0 and none.after_kg == none.base_kg
+
+    solar_only = scenario(a, {"solar"})
+    assert solar_only.saved_kg == pytest.approx(a.solar.avoided_location_kg, abs=0.2)
+
+    # Electricity-side options add up, but never past Scope 2 itself.
+    big = a.model_copy(update={"solar": a.solar.model_copy(update={"avoided_location_kg": s2})})
+    assert scenario(big, {"solar", "led", "compressed_air"}).saved_kg == pytest.approx(s2, abs=0.2)
+
+    # A Scope 1 option is not capped by Scope 2; a not-beneficial one and the market-only certificate add nothing.
+    refr = scenario(a, {"refrigerant_leaks"})
+    assert refr.saved_kg == pytest.approx(by["refrigerant_leaks"].saved_mid_kg, abs=0.2)
+    assert scenario(a, {"lpg_to_electric"}).saved_kg == 0                 # worse on this grid, so skipped
+    rec = scenario(a, {"rec"})
+    assert rec.saved_kg == 0 and rec.rec_kg == pytest.approx(by["rec"].saved_mid_kg, abs=0.2)

@@ -8,7 +8,7 @@ import { RequestHeader, Shell, Stepper } from "@/components/shell";
 function Frame({ children }: { children: React.ReactNode }) {
   const { request, period, progress, view } = useRequest();
   const path = usePathname();
-  const wide = path.endsWith("/inventory") || path.endsWith("/documents");
+  const wide = path.endsWith("/inventory") || path.endsWith("/documents") || path.endsWith("/questionnaire");
   return (
     <Shell
       wide={wide}

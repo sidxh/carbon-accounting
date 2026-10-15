@@ -62,6 +62,9 @@ def main() -> int:
 
         # Questionnaire -> several bills
         page.goto(f"{WEB}/r/{rid}/questionnaire")
+        expand = page.get_by_role("button", name=re.compile("Expand all"))
+        expand.wait_for(timeout=30000)
+        expand.click()
         btn = page.get_by_role("button", name=re.compile("Show the bills behind this")).first
         btn.wait_for(timeout=30000)
         btn.click()

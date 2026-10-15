@@ -111,6 +111,8 @@
     "needMore": "Thêm ít nhất một hóa đơn để tiếp tục.",
     "dropTitle": "Kéo hóa đơn vào đây",
     "dropBody": "Ảnh hoặc PDF. Bạn có thể xem lại danh sách trước khi tải lên.",
+    "sampleDownload": "Tải hóa đơn mẫu để thử",
+    "sampleHint": "34 hóa đơn Việt Nam, năm 2025. Giải nén rồi chọn cả thư mục.",
     "onlyImagesPdf": "Chỉ đọc được ảnh và PDF. Các tệp khác đã bị bỏ qua.",
     "readyToUpload": "{n} tệp sẵn sàng",
     "clearAll": "Xóa danh sách",
@@ -356,6 +358,10 @@
     "savedToast": "Đã lưu {ref}.",
     "fromData": "Từ dữ liệu của bạn",
     "legend": "Ô xanh lá lấy từ hóa đơn và máy tính. Ô xanh dương do bạn nhập. Ô vàng dành cho bạn hoàn thành; lý do ghi bên cạnh.",
+    "answersTitle": "Câu trả lời",
+    "reviewCount": "{n} cần xem lại",
+    "expandAll": "Mở tất cả",
+    "collapseAll": "Thu gọn tất cả",
     "emptyTitle": "Chưa điền bảng câu hỏi nào",
     "emptyBody": "Tải lên file Excel khách hàng gửi. data/templates/cdp_sme_questionnaire.xlsx là mẫu bố cục giống bảng CDP ngoại tuyến mà người mua thường lưu hành.",
     "ring": {
@@ -746,7 +752,12 @@
       "roofHint": "Google chưa có ảnh mái nhà ở khu vực này nên chúng tôi dùng dữ liệu nắng. Hãy cho biết diện tích mái có thể dùng để chúng tôi ước tính.",
       "roofLabel": "Diện tích mái (m2)",
       "roofSave": "Ước tính",
-      "unavailable": "Chưa có ước tính điện mái nhà cho địa điểm này."
+      "unavailable": "Chưa có ước tính điện mái nhà cho địa điểm này.",
+      "sourcesTitle": "Các con số này lấy từ đâu",
+      "srcData": "Dữ liệu nắng và mái nhà",
+      "srcCost": "Chi phí lắp đặt",
+      "srcTariff": "Giá mỗi kWh",
+      "srcGrid": "Hệ số phát thải lưới điện"
     },
     "levers": {
       "title": "Những cách giảm khác",
@@ -769,6 +780,8 @@
       "market": "Chứng chỉ sẽ giảm thêm khoảng {t} tCO2e Phạm vi 2 theo thị trường."
     },
     "disclaimer": "Đây là ước tính để hỗ trợ quyết định, không phải cam kết. Hãy xin báo giá trước khi đầu tư.",
+    "pdf": "Tải đề xuất giảm phát thải",
+    "pdfBusy": "Đang tạo PDF…",
     "card": {
       "title": "Bạn có thể giảm phát thải ở đâu",
       "body": "Điện mặt trời áp mái theo mức dùng thực tế, cùng những thay đổi tác động nhiều nhất.",

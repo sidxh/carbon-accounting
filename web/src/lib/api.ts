@@ -380,6 +380,9 @@ export interface SolarOption {
   imagery_date: string | null;
   capex: number | null;
   currency: string | null;
+  capex_source: string;
+  source_name: string;
+  source_url: string;
   tariff: number | null;
   tariff_source: string;
   annual_saving: number | null;
@@ -411,6 +414,8 @@ export interface Advice {
   scope2_location_kg: number;
   scope2_market_kg: number;
   grid_factor: number | null;
+  grid_factor_source_name: string;
+  grid_factor_source_url: string;
   market_factor: number | null;
   solar: SolarOption;
   levers: LeverResult[];
@@ -502,6 +507,11 @@ export const api = {
     json<SupplierProfile>(`/suppliers/${uid}/sites/${siteId}/locate`, "POST", body),
   suggestPlaces: (q: string, session: string, country?: string, signal?: AbortSignal) =>
     request<{ suggestions: PlaceSuggestion[] }>(`/places/suggest?${new URLSearchParams({ q, session, ...(country ? { country } : {}) })}`, { signal }),
+  /** The reduction plan as a PDF; `levers` are the options ticked on screen so the file matches. */
+  recommendations: (uid: string, pid: string, siteId: string | undefined, levers: string[]) =>
+    request<{ download: string; bytes: number }>(
+      `${P(uid, pid)}/advisor/pdf?${new URLSearchParams({ ...(siteId ? { site_id: siteId } : {}), levers: levers.join(",") })}`,
+    ),
   methodology: (uid: string, pid: string) => request<{ download: string; bytes: number }>(`${P(uid, pid)}/methodology`),
 
   // questionnaire (request)

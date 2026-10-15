@@ -1,0 +1,87 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @font-face { font-family: "Body"; src: url("{{ font_path }}"); }
+  @page { size: A4; margin: 18mm 16mm 18mm 16mm; }
+  body { font-family: "Body", "Noto Sans", "Helvetica", sans-serif; font-size: 10.5pt; color: #1b1b1b; line-height: 1.45; }
+  h1 { font-size: 17pt; margin: 0 0 2pt 0; }
+  h2 { font-size: 12pt; margin: 14pt 0 4pt 0; border-bottom: 1px solid #999; padding-bottom: 2pt; }
+  .sub { color: #555; font-size: 9.5pt; margin-bottom: 10pt; }
+  table { width: 100%; border-collapse: collapse; font-size: 9.5pt; margin: 4pt 0 8pt 0; }
+  th, td { border-bottom: 1px solid #ddd; padding: 3pt 5pt; text-align: left; vertical-align: top; }
+  th { background: #f0f0ee; }
+  td.num, th.num { text-align: right; }
+  .headline td { font-size: 11pt; }
+  .headline td.num { font-weight: bold; }
+  .muted { color: #666; font-size: 9pt; }
+  .box { border: 1px solid #ccc; padding: 6pt 8pt; margin: 6pt 0; background: #fafaf8; }
+  .tick { font-weight: bold; }
+  .url { color: #666; font-size: 7.5pt; word-break: break-all; overflow-wrap: anywhere; }
+  p { margin: 4pt 0 6pt 0; }
+</style>
+</head>
+<body>
+<h1>Where you could cut emissions</h1>
+<div class="sub">
+  {{ profile.name }}{% if site %} · {{ site.name }}{% endif %} · generated {{ generated }}
+  {% if site and site.formatted_address %}<br>{{ site.formatted_address }}{% endif %}
+</div>
+
+<h2>1. If you did these</h2>
+<table class="headline">
+  <tr><td>Scope 1 + 2 today (location-based)</td><td class="num">{{ t(sc.base_kg, 1) }} tCO2e</td></tr>
+  <tr><td>After the options marked below</td><td class="num">{{ t(sc.after_kg, 1) }} tCO2e</td></tr>
+  <tr><td>Saving per year</td><td class="num">{{ t(sc.saved_kg, 1) }} tCO2e ({{ pct }}%)</td></tr>
+</table>
+{% if sc.rec_kg > 0 %}<p class="muted">Certificates would lower market-based Scope 2 by about {{ t(sc.rec_kg, 1) }} tCO2e more.</p>{% endif %}
+
+{% if solar.available %}
+<h2>2. Rooftop solar{% if solar_picked %} <span class="tick">(included above)</span>{% endif %}</h2>
+<p>Solar could cover about {{ (solar.share_of_electricity * 100)|round|int }}% of your electricity and avoid about {{ t(solar.avoided_location_kg, 0) }} tCO2e a year{% if solar.payback_years is not none %}. It would pay back in about {{ '%.1f' % solar.payback_years }} years{% endif %}.</p>
+<p class="muted">
+  {% if solar.precision == 'solar_api' %}Measured from Google roof imagery{% if solar.imagery_quality %} ({{ solar.imagery_quality }}{% if solar.imagery_date %}, {{ solar.imagery_date.year }}{% endif %}){% endif %}.
+  {% else %}Estimate from sunshine data and the roof area you gave.{% endif %}
+</p>
+<table>
+  <tr><td>Size</td><td>{{ '%.1f' % solar.kwp }} kWp, {{ '{:,.0f}'.format(solar.annual_kwh) }} kWh a year{% if solar.panels %} · {{ solar.panels }} panels{% endif %}</td></tr>
+  {% if solar.capex is not none %}<tr><td>Installed cost</td><td>about {{ '{:,.0f}'.format(solar.capex) }} {{ solar.currency }}</td></tr>{% endif %}
+  {% if solar.tariff is not none and solar.annual_saving is not none %}<tr><td>Yearly saving</td><td>about {{ '{:,.0f}'.format(solar.annual_saving) }} {{ solar.currency }} at {{ '%.2f' % solar.tariff }} {{ solar.currency }}/kWh, from {{ solar.tariff_source }}</td></tr>{% endif %}
+  <tr><td>Market-based Scope 2</td><td>about {{ t(solar.avoided_market_kg, 0) }} tCO2e avoided</td></tr>
+</table>
+{% for n in solar.notes %}<p class="muted">{{ n }}</p>{% endfor %}
+{% endif %}
+
+<h2>{% if solar.available %}3{% else %}2{% endif %}. Other ways to cut</h2>
+{% if levers %}
+<table>
+  <tr><th width="4%"></th><th width="46%">Option</th><th class="num" width="16%">tCO2e a year</th><th width="9%">Cost</th><th width="25%">Source</th></tr>
+  {% for l in levers %}
+  <tr>
+    <td class="tick" width="4%">{% if l.picked %}&#10003;{% endif %}</td>
+    <td>{{ l.name }}{% if l.market %} <span class="muted">(market-based only)</span>{% endif %}
+      <div class="muted">{{ l.note }}</div>
+      {% if l.cost_note %}<div class="muted">{{ l.cost_note }}</div>{% endif %}</td>
+    <td class="num">{% if l.worse %}adds about {{ l.worse_by }}{% else %}about {{ l.range }}{% endif %}</td>
+    <td>{{ l.cost }}</td>
+    <td>{{ l.source_name }}{% if l.source_url %}<div class="url">{{ l.source_url }}</div>{% endif %}</td>
+  </tr>
+  {% endfor %}
+</table>
+<p class="muted">A tick means the option is included in the saving above. Electricity-side options draw on the same kWh, so together they cannot cut more than your Scope 2.</p>
+{% else %}
+<p>No other options apply to the figures recorded for this site.</p>
+{% endif %}
+
+<h2>{% if solar.available %}4{% else %}3{% endif %}. Where these numbers come from</h2>
+<table>
+  {% if solar.available and solar.source_name %}<tr><td>Sunshine and roof data</td><td>{{ solar.source_name }}<div class="url">{{ solar.source_url }}</div></td></tr>{% endif %}
+  {% if solar.available and solar.capex_source %}<tr><td>Installed cost</td><td>{{ solar.capex_source }}</td></tr>{% endif %}
+  {% if solar.available and solar.tariff is not none %}<tr><td>Price per kWh</td><td>{{ solar.tariff_source }}</td></tr>{% endif %}
+  {% if advice.grid_factor_source_name %}<tr><td>Grid emission factor{% if advice.grid_factor %} ({{ '%.4f' % advice.grid_factor }} kgCO2e/kWh){% endif %}</td><td>{{ advice.grid_factor_source_name }}{% if advice.grid_factor_source_url %}<div class="url">{{ advice.grid_factor_source_url }}</div>{% endif %}</td></tr>{% endif %}
+</table>
+
+<p class="muted">{{ disclaimer }}</p>
+</body>
+</html>

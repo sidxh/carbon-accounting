@@ -157,3 +157,27 @@ def test_locate_refuses_a_country_level_match_and_keeps_the_old_pin(client, comp
 
     monkeypatch.setattr(solar, "geocode", lambda a, c=None, **k: Place(10.6, 106.6, "Long An, Vietnam", False, ("administrative_area_level_1",)))
     assert client.post(f"{URL}/sites/main/locate", json={"address": "Long An"}, headers=_auth()).status_code == 422
+
+
+def test_recommendations_pdf_needs_an_inventory_and_the_owner_then_downloads(client, computed):
+    pid = _setup(client)
+    assert client.get(f"{URL}/periods/{pid}/advisor/pdf", headers=_auth("sup-2")).status_code == 403
+    r = client.get(f"{URL}/periods/{computed}/advisor/pdf?levers=led,rec", headers=_auth())
+    assert r.status_code == 200 and r.json()["bytes"] > 1000
+    f = client.get(r.json()["download"], headers=_auth())
+    assert f.status_code == 200 and f.content[:4] == b"%PDF"
+    assert client.get(f"{URL}/periods/{computed}/advisor/pdf/file", headers=_auth("sup-2")).status_code == 403
+    assert client.get(f"{URL}/periods/{computed}/advisor/pdf?site_id=nope", headers=_auth()).status_code == 404
+
+
+def test_recommendations_html_carries_the_scenario_the_sources_and_the_ticks():
+    from app.advisor import advise
+    from app.exporters.recommendations import render_html
+    from app.models import SupplierProfile
+    from tests.test_advisor import VN
+
+    a = advise(inventory=VN, activity=[], country="VN", site_id="main", single_site=True, building=None, pvgis_kwh_per_kwp=1453, roof_area_m2=800)
+    html = render_html(SupplierProfile(**{**PROFILE, "id": "sup-1", "name": "Minh Phat"}), None, a, {"solar", "led"})
+    assert "Minh Phat" in html and "(included above)" in html and "PVGIS" in html and "Get a quote before you invest" in html
+    assert html.count("&#10003;") == 1                                    # only the ticked, beneficial lever gets a tick
+    assert "joint-research-centre.ec.europa.eu" in html

@@ -111,6 +111,8 @@
     "needMore": "続けるには請求書を1件以上追加してください。",
     "dropTitle": "ここに請求書をドロップ",
     "dropBody": "写真またはPDF。アップロード前に一覧を確認できます。",
+    "sampleDownload": "試すためのサンプル請求書をダウンロード",
+    "sampleHint": "ベトナムの請求書34件（2025年）。解凍してフォルダごと選択してください。",
     "onlyImagesPdf": "読み取れるのは画像とPDFのみです。他のファイルはスキップしました。",
     "readyToUpload": "{n}件の準備完了",
     "clearAll": "一覧を消去",
@@ -356,6 +358,10 @@
     "savedToast": "{ref} を保存しました。",
     "fromData": "データから",
     "legend": "緑のセルは請求書と計算機から。青はご自身の入力。黄はご自身で記入する項目で、理由を横に記載。",
+    "answersTitle": "回答",
+    "reviewCount": "{n}件を確認",
+    "expandAll": "すべて開く",
+    "collapseAll": "すべて閉じる",
     "emptyTitle": "まだ質問票を記入していません",
     "emptyBody": "取引先から届いたExcelをアップロード。data/templates/cdp_sme_questionnaire.xlsx は、買い手が配布するオフライン版CDPシートと同じ構成のサンプルです。",
     "ring": {
@@ -746,7 +752,12 @@
       "roofHint": "この場所はGoogleの屋根画像がないため、日照データを使います。使える屋根面積を教えてください。",
       "roofLabel": "屋根面積（m2）",
       "roofSave": "推定する",
-      "unavailable": "この拠点の屋根置き太陽光の推定はまだありません。"
+      "unavailable": "この拠点の屋根置き太陽光の推定はまだありません。",
+      "sourcesTitle": "これらの数値の出典",
+      "srcData": "日照・屋根のデータ",
+      "srcCost": "設置費用",
+      "srcTariff": "1kWhあたりの料金",
+      "srcGrid": "系統電力の排出係数"
     },
     "levers": {
       "title": "ほかの削減策",
@@ -769,6 +780,8 @@
       "market": "証書でマーケット基準のスコープ2がさらに約{t} tCO2e減ります。"
     },
     "disclaimer": "判断の参考となる試算であり、約束ではありません。投資の前に見積もりを取ってください。",
+    "pdf": "提案をダウンロード",
+    "pdfBusy": "PDFを作成しています…",
     "card": {
       "title": "排出量を減らせる場所",
       "body": "使用量に合わせた屋根置き太陽光と、数値への影響が大きい対策。",

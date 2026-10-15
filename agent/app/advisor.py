@@ -33,6 +33,13 @@ AC_DERATE = 0.85          # Solar API's DC yield to usable AC (the API's own def
 USABLE_ROOF_SHARE = 0.60  # fallback: share of the roof area that can carry panels
 KWP_PER_M2 = 0.20         # fallback: panel density, ~400 W per 2 m2
 
+# Where the sunshine and roof figure comes from, by precision: shown as a link next to the solar numbers,
+# as every other lever shows its source.
+SOLAR_SOURCES = {
+    "solar_api": ("Google Solar API (building insights)", "https://developers.google.com/maps/documentation/solar/overview"),
+    "pvgis_estimate": ("EU Joint Research Centre PVGIS", "https://joint-research-centre.ec.europa.eu/photovoltaic-geographical-information-system-pvgis_en"),
+}
+
 
 # --- data tables ------------------------------------------------------------------------
 
@@ -97,6 +104,8 @@ class SolarOption(BaseModel):
     capex: float | None = None
     currency: str | None = None
     capex_source: str = ""
+    source_name: str = ""     # the sunshine / roof data behind kwp and annual_kwh
+    source_url: str = ""
     tariff: float | None = None
     tariff_source: str = ""
     annual_saving: float | None = None
@@ -128,6 +137,8 @@ class Advice(BaseModel):
     scope2_location_kg: float
     scope2_market_kg: float
     grid_factor: float | None
+    grid_factor_source_name: str = ""    # the published factor the inventory used for Scope 2 (location)
+    grid_factor_source_url: str = ""
     market_factor: float | None
     solar: SolarOption
     levers: list[LeverResult]
@@ -231,6 +242,7 @@ def size_solar(
         yield_per_kwp = pvgis_kwh_per_kwp
         if not roof_area_m2 or roof_area_m2 <= 0:
             return SolarOption(available=False, precision="pvgis_estimate", needs_roof_area=True, yield_kwh_per_kwp=yield_per_kwp,
+                               source_name=SOLAR_SOURCES["pvgis_estimate"][0], source_url=SOLAR_SOURCES["pvgis_estimate"][1],
                                notes=["Google has no roof imagery for this site. Tell us the roof area to get an estimate."])
         kwp_roof = roof_area_m2 * USABLE_ROOF_SHARE * KWP_PER_M2
         kwp_need = annual_kwh / yield_per_kwp
@@ -245,6 +257,7 @@ def size_solar(
         avoided_market_kg=round(kwh * (market_factor if market_factor is not None else (grid_factor or 0.0)), 1),
         roof_area_m2=round(area, 1) if area else None, yield_kwh_per_kwp=round(yield_per_kwp, 1) if yield_per_kwp else None,
         imagery_quality=quality, imagery_date=date_, notes=notes,
+        source_name=SOLAR_SOURCES[precision][0], source_url=SOLAR_SOURCES[precision][1],
     )
     cost = solar_costs().get((country or "").upper())
     if cost:
@@ -302,6 +315,38 @@ def rank_levers(*, lines: list[InventoryLine], grid_factor: float | None) -> lis
     return out
 
 
+# --- "if you did these" --------------------------------------------------------------------
+
+# Electricity-side options draw on the same kWh, so together they cannot cut more than Scope 2 itself.
+# The same rule as the browser's reduction planner, so the PDF and the screen agree.
+ELECTRIC_LEVERS = frozenset({"solar", "led", "compressed_air"})
+
+
+class Scenario(BaseModel):
+    base_kg: float          # Scope 1 + Scope 2 (location-based) today
+    saved_kg: float
+    after_kg: float
+    rec_kg: float = 0.0     # market-based Scope 2 that certificates would remove on top, not part of the saving
+
+
+def scenario(advice: Advice, picked: set[str]) -> Scenario:
+    base = advice.scope1_kg + advice.scope2_location_kg
+    electric = other = 0.0
+    if advice.solar.available and "solar" in picked:
+        electric += advice.solar.avoided_location_kg
+    for l in advice.levers:
+        if l.id not in picked or not l.beneficial or l.basis == "market":
+            continue
+        if l.id in ELECTRIC_LEVERS:
+            electric += l.saved_mid_kg
+        else:
+            other += l.saved_mid_kg
+    electric = min(electric, advice.scope2_location_kg)
+    rec = next((l.saved_mid_kg for l in advice.levers if l.id == "rec" and "rec" in picked), 0.0)
+    saved = electric + other
+    return Scenario(base_kg=round(base, 1), saved_kg=round(saved, 1), after_kg=round(max(0.0, base - saved), 1), rec_kg=round(rec, 1))
+
+
 # --- the whole thing -----------------------------------------------------------------------
 
 def advise(
@@ -323,6 +368,8 @@ def advise(
         scope2_location_kg=round(sum(l.kg_co2e for l in lines if l.scope == 2 and l.basis == "location"), 1),
         scope2_market_kg=round(sum(l.kg_co2e for l in lines if l.scope == 2 and l.basis == "market"), 1),
         grid_factor=round(grid, 4) if grid else None, market_factor=round(mkt, 4) if mkt else None,
+        grid_factor_source_name=next((l.factor_source_name for l in elec_loc if l.factor_source_name), ""),
+        grid_factor_source_url=next((l.factor_source_url for l in elec_loc if l.factor_source_url), ""),
         solar=size_solar(annual_kwh=kwh, grid_factor=grid, market_factor=mkt, country=country, building=building,
                          pvgis_kwh_per_kwp=pvgis_kwh_per_kwp, roof_area_m2=roof_area_m2, tariff=tariff),
         levers=rank_levers(lines=lines, grid_factor=grid),

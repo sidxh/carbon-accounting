@@ -98,6 +98,8 @@
     "camera": "Take a photo",
     "dropTitle": "Drop bills here",
     "dropBody": "Photos or PDFs. You can review the list before anything is uploaded.",
+    "sampleDownload": "Download sample bills to upload",
+    "sampleHint": "34 Vietnamese bills, year 2025. Unzip, then choose the whole folder.",
     "onlyImagesPdf": "Only images and PDFs can be read. Other files were skipped.",
     "readyToUpload": "{n} file(s) ready",
     "clearAll": "Clear list",
@@ -356,6 +358,10 @@
     "savedToast": "{ref} saved.",
     "fromData": "From your data",
     "legend": "Green cells come from your bills and the calculator. Blue cells you typed. Yellow cells are for you to complete; the reason is written beside them.",
+    "answersTitle": "Answers",
+    "reviewCount": "{n} to review",
+    "expandAll": "Expand all",
+    "collapseAll": "Collapse all",
     "emptyTitle": "No questionnaire filled yet",
     "emptyBody": "Upload the Excel your customer sent. data/templates/cdp_sme_questionnaire.xlsx is a sample laid out like the offline CDP sheet that buyers circulate.",
     "ring": {
@@ -746,7 +752,12 @@
       "roofHint": "Google has no roof imagery for this location, so we use sunshine data. Tell us the roof area you could use and we will estimate.",
       "roofLabel": "Roof area (m2)",
       "roofSave": "Estimate",
-      "unavailable": "No rooftop estimate for this site yet."
+      "unavailable": "No rooftop estimate for this site yet.",
+      "sourcesTitle": "Where these numbers come from",
+      "srcData": "Sunshine and roof data",
+      "srcCost": "Installed cost",
+      "srcTariff": "Price per kWh",
+      "srcGrid": "Grid emission factor"
     },
     "levers": {
       "title": "Other ways to cut",
@@ -769,6 +780,8 @@
       "market": "Certificates would lower market-based Scope 2 by about {t} tCO2e more."
     },
     "disclaimer": "These are estimates to help you decide, not commitments. Get a quote before you invest.",
+    "pdf": "Download recommendations",
+    "pdfBusy": "Preparing the PDF…",
     "card": {
       "title": "Where you could cut emissions",
       "body": "Rooftop solar sized to your own use, plus the changes that would move your numbers most.",

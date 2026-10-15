@@ -50,6 +50,15 @@ Bills and questionnaires can be in any language, and language never changes a nu
 Files referenced live in `data/golden/rendered/`. Ground truth for every file
 is in `data/golden/labels.json`.
 
+The Bills page offers the Vietnamese files as a download ("Download sample bills to upload"):
+`web/public/sample-bills-vietnam.zip`, which unzips to a folder of all 34 `vn_*` files. The rendered images
+are gitignored, so the zip is committed. Rebuild it after regenerating the bills, from `supplier-carbon/`:
+
+```bash
+rm -rf /tmp/pack && mkdir -p /tmp/pack/sample-bills-vietnam && cp data/golden/rendered/vn_* /tmp/pack/sample-bills-vietnam/ \
+  && (cd /tmp/pack && zip -qr -X sample-bills-vietnam.zip sample-bills-vietnam) && mv /tmp/pack/sample-bills-vietnam.zip web/public/
+```
+
 ### Repeating a scenario
 
 Your email address is your supplier: the Firebase uid is the Firestore
