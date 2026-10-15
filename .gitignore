@@ -3,6 +3,7 @@
 .env.*
 !.env.example
 *-service-account*.json
+agent/.test_users.json
 firebase-debug.log
 firestore-debug.log
 ui-debug.log

@@ -11,11 +11,6 @@ const config = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || undefined,
 };
 
-/** Where the sign-in email comes from, shown on the sign-in page so people can find it in spam. Set
- * NEXT_PUBLIC_AUTH_EMAIL_SENDER once the sender domain is customised in Authentication > Templates. */
-export const AUTH_EMAIL_SENDER =
-  process.env.NEXT_PUBLIC_AUTH_EMAIL_SENDER || `noreply@${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ?? "firebaseapp"}.firebaseapp.com`;
-
 let authInstance: Auth | null = null;
 
 /** Lazily initialised so nothing runs during server rendering. */

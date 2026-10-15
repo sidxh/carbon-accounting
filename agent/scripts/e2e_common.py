@@ -6,41 +6,47 @@ import json
 import os
 import re
 import time
+import urllib.error
 import urllib.request
+from urllib.parse import urlparse
 
-# Local by default. E2E_WEB_URL / E2E_AGENT_URL point the scripts at another stack. The sign-in link
-# is read from the Auth emulator, so a deployed stack (real email) cannot be signed in unattended: it is
-# checked by a manual run plus the Cloud Run logs (see TESTING.md).
+# Local by default. E2E_WEB_URL / E2E_AGENT_URL point the scripts at another stack. Locally the script
+# creates its user in the Auth emulator; against a deployed stack it signs in with an existing evaluator
+# account, so pass --email (where the script has it) or set E2E_EMAIL, and set E2E_PASSWORD.
 WEB = os.environ.get("E2E_WEB_URL", "http://localhost:3000").rstrip("/")
 AGENT_URL = os.environ.get("E2E_AGENT_URL", "http://localhost:8000").rstrip("/")
 AUTH_EMU = "http://127.0.0.1:9099"
 PROJECT = "fir-testing-f96b1"
+PASSWORD = os.environ.get("E2E_PASSWORD", "e2e-password-1")
+LOCAL = (urlparse(WEB).hostname or "") in ("localhost", "127.0.0.1")
 
 
 def fresh_email() -> str:
-    """A new local supplier: the emulator accepts any address."""
+    """The supplier the script signs in as: a new local one, or E2E_EMAIL on a deployed stack."""
+    if os.environ.get("E2E_EMAIL"):
+        return os.environ["E2E_EMAIL"]
     return f"e2e{int(time.time())}@example.com"
 
 
-def emulator_link(email: str) -> str:
-    """The newest sign-in link the Auth emulator generated for this address."""
-    url = f"{AUTH_EMU}/emulator/v1/projects/{PROJECT}/oobCodes"
-    for _ in range(20):
-        data = json.loads(urllib.request.urlopen(url).read())
-        links = [c["oobLink"] for c in data.get("oobCodes", []) if c.get("email") == email and c.get("requestType") == "EMAIL_SIGNIN"]
-        if links:
-            return links[-1]
-        time.sleep(0.5)
-    raise RuntimeError(f"no sign-in link for {email}")
+def create_user(email: str, password: str = PASSWORD) -> None:
+    """Create the user in the Auth emulator. Safe to repeat: an existing address is left alone."""
+    url = f"{AUTH_EMU}/identitytoolkit.googleapis.com/v1/accounts:signUp?key=fake-key"
+    body = json.dumps({"email": email, "password": password, "returnSecureToken": False}).encode()
+    req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"})
+    try:
+        urllib.request.urlopen(req).read()
+    except urllib.error.HTTPError as err:
+        if b"EMAIL_EXISTS" not in err.read():
+            raise
 
 
-def sign_in(page, email: str) -> None:
+def sign_in(page, email: str, password: str = PASSWORD) -> None:
+    if LOCAL:
+        create_user(email, password)
     page.goto(f"{WEB}/sign-in")
-    page.get_by_label(re.compile("Work email|Email công việc|仕事用メールアドレス")).fill(email)
-    page.get_by_role("button", name=re.compile("Email me a link|Gửi liên kết cho tôi|リンクをメールで送る")).click()
-    # The link exists once the emulator has accepted the request, which is when the inbox step shows.
-    page.get_by_text(re.compile("Check your inbox|Kiểm tra hộp thư|受信トレイを確認")).wait_for(timeout=15000)
-    page.goto(emulator_link(email))   # same browser: the page finds the saved address and signs in
+    page.get_by_label(re.compile("^Email$|^Email công việc$|^メールアドレス$")).fill(email)
+    page.get_by_label(re.compile("^Password$|^Mật khẩu$|^パスワード$")).fill(password)
+    page.get_by_role("button", name=re.compile(r"^Sign in$|^Đăng nhập$|^サインイン$")).click()
     page.wait_for_url(re.compile(r"/(setup|home)"), timeout=30000)
     # A fresh user is bounced from /home to /setup once the profile 404s.
     try:
