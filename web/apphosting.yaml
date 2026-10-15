@@ -19,10 +19,6 @@ env:
   - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
     value: fir-testing-f96b1.firebaseapp.com
     availability: [BUILD, RUNTIME]
-  # Shown on the sign-in page so people can find the email in spam. Matches Authentication > Templates > From.
-  - variable: NEXT_PUBLIC_AUTH_EMAIL_SENDER
-    value: noreply@siddhantxh.com
-    availability: [BUILD, RUNTIME]
   - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
     value: fir-testing-f96b1.firebasestorage.app
     availability: [BUILD, RUNTIME]

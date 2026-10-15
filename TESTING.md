@@ -8,7 +8,7 @@ agent on your laptop, Gemini through an AI Studio key.
 ```mermaid
 flowchart LR
     Browser["Browser :3000 Next.js"] -->|"Bearer ID token on every call"| Agent["FastAPI agent :8000"]
-    Browser -->|"email link"| AuthEmu["Auth emulator :9099"]
+    Browser -->|"email + password"| AuthEmu["Auth emulator :9099"]
     Agent -->|"verify token"| AuthEmu
     Agent -->|"Admin SDK, anonymous creds"| FsEmu["Firestore emulator :8080"]
     Agent -->|"files"| Disk["agent/.local_storage/"]
@@ -98,14 +98,16 @@ of their runs. Either *Start over* on it or pick any other number.
 
 ### A. Sign-in (Auth emulator)
 
-- Steps: `/sign-in`. Type any email and press "Email me a link": the card
-  changes to "Check your inbox" with a resend countdown (30 s) and "Use a
-  different email". In the emulator no mail is sent: get the link from Emulator
-  UI > Authentication, or
-  `curl 127.0.0.1:9099/emulator/v1/projects/fir-testing-f96b1/oobCodes` (the `oobLink`),
-  and open it in the same browser: a fresh user lands on `/setup`. Opening the
-  link in another browser asks you to confirm the address first; reopening a
-  used link says it has expired. No reCAPTCHA badge appears anywhere.
+- Steps: the sign-in page is identical locally and in production: it only signs in; there is no sign-up.
+  The emulator has its own user list, separate from Firebase, so create the same five evaluator accounts
+  there once: from `agent/` run `.venv/bin/python -m scripts.seed_test_users --init --domain siddhantxh.com`
+  (writes the gitignored `agent/.test_users.json`; edit the passwords in it if you like), then, with the
+  emulators running, `scripts/dev.sh seed`. The emulator exports on exit, so they survive restarts, but
+  `scripts/dev.sh reset` wipes them. Run `python -m scripts.seed_test_users` without `--emulator` to create
+  the same accounts in the real project. Then open `/sign-in`, enter the
+  email and password and press "Sign in": a fresh user lands on `/setup`, a returning one on `/home`. A wrong
+  password, or an address that does not exist, shows the same "email or password is not right" message. The
+  eye icon shows or hides the password. No reCAPTCHA badge appears anywhere.
 - Background: the browser talks to the Auth emulator directly
 (`web/src/lib/firebase.ts`). Every API
 request carries the ID token; `agent/app/auth.py` verifies it and uses the
@@ -534,8 +536,8 @@ outside them. Firestore over a hosted Postgres because it is in the same
 Firebase project as Auth (one SDK, one credential), it is free at this
 scale with no connection pooling or migrations, and the submission is
 judged as a Google Cloud build.
-- Firebase Auth is the real lock-in, not Firestore. Email-link sign-in is the
-sign-in, and the Auth emulator is the only way to run it with no card.
+- Firebase Auth is the real lock-in, not Firestore. Email and password sign-in is the
+  sign-in, and the Auth emulator is the only way to run it with no card.
 
 The friction is the emulator, not Firestore: the Java dependency, and the
 stack failing opaquely when the emulator is not up. Ways to reduce it without
@@ -556,12 +558,12 @@ and always stop the emulators with Ctrl-C so the export runs.
 
 Target: the existing Firebase project `fir-testing-f96b1`. The agent runs on Cloud
 Run, the web app on Firebase App Hosting, with Firestore, a Cloud Storage bucket,
-Secret Manager and email-link Auth around them. Region `asia-southeast1`.
+Secret Manager and email and password Auth around them. Region `asia-southeast1`.
 
 ```mermaid
 flowchart LR
     Browser["Browser"] --> Web["App Hosting: Next.js"]
-    Browser -->|"email link"| Auth["Firebase Auth"]
+    Browser -->|"email + password"| Auth["Firebase Auth"]
     Browser -->|"Bearer ID token"| Agent["Cloud Run: agent"]
     Agent --> Fs["Firestore"]
     Agent --> Gcs["Cloud Storage bucket"]
@@ -585,10 +587,12 @@ flowchart LR
    Solar API and Places API (New), with no application restriction (the agent runs on Cloud Run with no
    fixed address and the key never reaches a browser). In APIs & Services > Places API (New) > Quotas,
    set a daily cap on Autocomplete requests (about 500) so a bug cannot spend more than the free tier.
-5. Firebase console, Authentication > Sign-in method: enable Email/Password and tick "Email
-   link (passwordless sign-in)". Under Settings > Authorized domains add your App Hosting
-   and custom domains. Under Project settings, set the public-facing name to "Supplier
-   Carbon": it is the name in the sign-in email.
+5. Firebase console, Authentication > Sign-in method: enable Email/Password and leave "Email
+   link (passwordless sign-in)" off; switch Phone off. Under Users > Add user create the five
+   evaluator accounts (or run `python -m scripts.seed_test_users` against the real project, which needs
+   `gcloud auth application-default login`). Then Settings > User actions: untick "Enable create
+   (sign-up)" so nobody else can register. Under Settings > Authorized domains list your App Hosting
+   and custom domains (password sign-in works without it, but keep both listed).
 6. Set a budget alert (Billing, Budgets and alerts), for example 2,000 INR, so the
    trial credit cannot be spent unnoticed.
 
@@ -627,12 +631,12 @@ dependencies allowed to run install scripts; without it the App Hosting build st
 
 ### Checking the deployed stack
 
-The browser scripts cannot sign in to the deployed stack unattended: the sign-in link arrives by real
-email, while the scripts read it from the Auth emulator. So production is verified by hand, then
-confirmed from the logs:
+Sign-in is email and password, so the browser scripts can sign in to the deployed stack with an evaluator
+account: set `E2E_WEB_URL`, `E2E_AGENT_URL`, `E2E_EMAIL` and `E2E_PASSWORD` (locally the script creates its own
+emulator user). Those scripts create real data and spend Gemini quota, so for production the usual check is
+a manual walk, then the logs:
 
-1. Sign in on the deployed site with your own email (the link arrives within a minute; check spam the
-   first time) and walk the whole flow: setup, upload bills, reconcile, inventory, questionnaire, reduce.
+1. Sign in on the deployed site with one of the evaluator accounts and walk the whole flow: setup, upload bills, reconcile, inventory, questionnaire, reduce.
 2. Open a bill from the inventory ("show me where") and download the filled workbook. These go through
    signed Cloud Storage links, the part most likely to differ from local.
 3. Read the agent's request log. Every call should be 2xx apart from the 404 a brand-new user gets on
@@ -644,7 +648,6 @@ gcloud logging read 'resource.type="cloud_run_revision" AND resource.labels.serv
   --format='value(timestamp,severity,httpRequest.status,httpRequest.requestUrl,textPayload)'
 ```
 
-The scripts still accept `E2E_WEB_URL` and `E2E_AGENT_URL`, but only the emulator hands them a sign-in link.
 Differences from local to expect: real Gemini calls (the
 response cache is empty on a fresh instance, so the first run spends free-tier quota and is paced at 15
 requests a minute), and signed download URLs for bill images and exports.
@@ -709,16 +712,10 @@ The site is reachable at `https://carbon.siddhantxh.com` as well as the App Host
 - **Authentication > Settings > Authorized domains** must list `carbon.siddhantxh.com`.
 - **The agent must allow the origin.** CORS is a list, set in one call (it replaces the previous list):
   `infra/deploy.sh cors https://supplier-carbon-web--fir-testing-f96b1.asia-southeast1.hosted.app https://carbon.siddhantxh.com`
-- **Sign-in email sender.** The From address is set in Authentication > Templates (`noreply@siddhantxh.com`,
-  domain verified with DKIM CNAMEs at `firebase1/firebase2._domainkey`). The same address is in
-  `NEXT_PUBLIC_AUTH_EMAIL_SENDER` in `web/apphosting.yaml`, which the sign-in page shows so people can find the
-  mail in spam. Deliverability needs exactly **one** SPF record on `siddhantxh.com`: Cloudflare Email Routing
-  and Firebase each add one, and two make SPF fail. Keep a single merged
-  `v=spf1 include:_spf.firebasemail.com include:_spf.mx.cloudflare.net ~all`, and add a `_dmarc` TXT record
-  (`v=DMARC1; p=none;`). Check with `dig TXT siddhantxh.com +short @8.8.8.8`.
-- **Sign-in email.** Firebase sends it from its own address with a subject and body it controls. The
-  name shown is the project's public-facing name ("Supplier Carbon"); the link points at the site the user
-  asked from, so it works on both addresses.
+- **No sign-in email any more.** Sign-in is email and password, so the sender address, DKIM and SPF
+  records for `siddhantxh.com` are no longer needed for the app. They can stay as they are. Both
+  addresses sign in the same way: the browser talks to Firebase Auth directly, and the agent's CORS list
+  above covers both origins.
 
 ## 7. Languages, countries and sites
 

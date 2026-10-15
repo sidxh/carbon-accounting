@@ -6,7 +6,7 @@ Prereqs (three terminals): scripts/dev.sh emulators, scripts/dev.sh agent, scrip
     .venv/bin/python -m scripts.e2e_local --headed      # watch it
     .venv/bin/python -m scripts.e2e_local --email you@example.com
 
-Signs in with an email link through the Auth emulator, sets up the Minh Phát
+Creates the user in the Auth emulator and signs in with email and password, sets up the Minh Phát
 profile, stages the golden Vietnamese bills (removing one before upload),
 uploads them, deletes one and re-uploads it, answers the reconciler, checks the
 inventory and lineage, corrects one quantity, fills the CDP template and

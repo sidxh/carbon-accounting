@@ -58,9 +58,9 @@ def main() -> int:
         ctx = b.new_context(viewport={"width": 430, "height": 900})
         page = ctx.new_page()
 
-        # 1. Email link signs a fresh supplier in and lands on setup -----------------
+        # 1. Email and password sign a fresh supplier in and lands on setup -----------------
         sign_in(page, EMAIL2)
-        ok("email-link-sign-in", "/setup" in page.url, page)
+        ok("password-sign-in", "/setup" in page.url, page)
 
         # 2. Second supplier, LPG Jan–Jun only -> gap Jul–Dec -----------------------
         fill_setup(page, "Xí nghiệp Gas Thử Nghiệm", "Xưởng 2")
