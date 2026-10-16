@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import json
 import mimetypes
+import time
 from datetime import date
 from pathlib import Path
 
@@ -91,14 +92,26 @@ def score_doc(label: dict, got) -> dict:
     return res
 
 
+def extract_patiently(data: bytes, mime: str, tries: int = 4):
+    """`extract`, waiting out the free tier's "high demand" 503s so one busy minute does not end a long run."""
+    for i in range(tries):
+        try:
+            return extract(data, mime)
+        except Exception as exc:  # noqa: BLE001 - only transient service errors are retried
+            if i == tries - 1 or "503" not in str(exc) and "429" not in str(exc):
+                raise
+            time.sleep(25 * (i + 1))
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int)
     ap.add_argument("--pdf", action="store_true")
     ap.add_argument("--filter", help="substring on document name")
+    ap.add_argument("--pack", action="store_true", help="score the Japanese sample pack (labels_pack.json) instead of the golden set")
     args = ap.parse_args()
 
-    labels = json.loads((GOLDEN / "labels.json").read_text(encoding="utf-8"))
+    labels = json.loads((GOLDEN / ("labels_pack.json" if args.pack else "labels.json")).read_text(encoding="utf-8"))
     if args.filter:
         labels = [l for l in labels if args.filter in l["name"]]
     if args.limit:
@@ -112,7 +125,7 @@ def main() -> int:
         for kind, fname in variants:
             path = GOLDEN / "rendered" / fname
             mime = mimetypes.guess_type(path.name)[0] or "image/png"
-            got = extract(path.read_bytes(), mime)
+            got = extract_patiently(path.read_bytes(), mime)
             s = score_doc(label, got) | score_box(label, got, kind) | score_checks(label, got)
             rows.append({"name": label["name"], "kind": kind, "lang": label["lang"], **s,
                          "got": got.model_dump(), "expected": label["lines"][0]})

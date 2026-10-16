@@ -1,0 +1,46 @@
+{% extends "_base.html" %}
+{% block body %}
+{# A pre-printed carbon-copy slip (red rules, printed labels) filled in by hand: a fuel shop, a delivery driver or an
+   air-conditioning technician. Handwriting is the Yomogi font (SIL OFL) embedded as base64 so every render is the same. #}
+<style>
+  @font-face { font-family: "HandJP"; src: url(data:font/ttf;base64,{{ hand_font_b64 }}) format("truetype"); }
+  .sheet { background: {{ paper | default('#fbf7e6') }}; }
+  .slip { --rule: {{ form_color | default('#b3261e') }}; color: var(--rule); }
+  .slip h1 { color: var(--rule); letter-spacing: .5em; text-align: center; margin: 6px 0 14px; font-size: 24px; }
+  .slip table { border: 2px solid var(--rule); border-collapse: collapse; width: 100%; margin: 0; }
+  .slip th, .slip td { border: 1px solid var(--rule); padding: 0 10px; height: 46px; background: transparent; color: var(--rule); font-size: 12.5px; }
+  .slip th { width: 118px; font-weight: 500; text-align: center; }
+  .slip .w { font-family: "HandJP", cursive; color: {{ ink | default('#14308a') }}; font-size: 24px; line-height: 1.15; display: inline-block; }
+  .slip .w.big { font-size: 34px; }
+  .slip .w.s { font-size: 19px; }
+  .slip .r1 { transform: rotate(-1.4deg); } .slip .r2 { transform: rotate(1.1deg) translateY(2px); } .slip .r3 { transform: rotate(-.6deg) translateY(-1px); }
+  .seal { display:inline-grid; place-items:center; width: 54px; height: 54px; border: 2.5px solid #c1272d; border-radius: 50%; color:#c1272d; font-weight: 800; font-size: 20px; transform: rotate(-9deg); opacity:.82; font-family: serif; }
+  .slip .top { display:flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+  .slip .small { color: var(--rule); opacity: .85; }
+</style>
+<div class="slip">
+  <div class="top">
+    <div><div style="font-weight:800;font-size:17px">{{ vendor }}</div><div class="small">{{ vendor_sub }}</div></div>
+    <div style="text-align:right;font-size:12px">No. <span class="mono" style="font-size:15px">{{ form_no }}</span><div class="small">{{ form_note | default('') }}</div></div>
+  </div>
+  <h1>{{ title }}</h1>
+  <table>
+    <tr><th>日　付</th><td colspan="3"><span class="w r1">{{ date_text|wobble }}</span></td></tr>
+    <tr><th>お客様名</th><td colspan="3"><span class="w r2">{{ customer_hand|wobble }}</span> <span style="font-size:15px">様</span></td></tr>
+    <tr><th>品　名</th><td colspan="3"><span class="w r3">{{ item_hand|wobble }}</span></td></tr>
+    <tr>
+      <th>数　量</th>
+      <td style="width:230px"><span class="w big r2" data-gt="quantity">{{ qty_hand|wobble }}</span> <span style="font-size:17px">{{ unit_printed }}</span></td>
+      <th style="width:90px">単　価</th>
+      <td><span class="w s r1">{{ price_hand|wobble }}</span> 円</td>
+    </tr>
+    <tr><th>金　額</th><td colspan="3"><span style="font-size:15px">¥</span> <span class="w r3">{{ amount_hand|wobble }}</span> <span style="font-size:13px">（税込）</span></td></tr>
+    <tr><th>備　考</th><td colspan="3" style="height:64px"><span class="w s r2">{{ note_hand|wobble }}</span></td></tr>
+  </table>
+  <div style="display:flex;justify-content:flex-end;align-items:center;gap:18px;margin-top:16px;font-size:12px">
+    <div>{{ sign_label | default('受領者') }}：<span class="w s r1">{{ sign_hand|wobble }}</span></div>
+    <div class="seal">{{ seal }}</div>
+  </div>
+  <div class="small" style="margin-top:22px;border-top:1px dashed var(--rule);padding-top:6px;font-size:10.5px">{{ footer }}</div>
+</div>
+{% endblock %}

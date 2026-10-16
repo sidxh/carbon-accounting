@@ -12,9 +12,10 @@ import { SkeletonList } from "@/components/ui/bits";
 import { Dialog } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/toast";
 import { api, type DocumentRecord } from "@/lib/api";
+import { expandBillFiles, filesFromDrop } from "@/lib/bill-files";
 import { coverage, ENERGY_ORDER, energyLabel, fyMonths, PERIODIC, shortMonth } from "@/lib/coverage";
 
-const ACCEPT = "image/*,application/pdf";
+const ACCEPT = "image/*,application/pdf,.zip,application/zip";
 
 function Thumb({ uid, pid, doc }: { uid: string; pid: string; doc: DocumentRecord }) {
   const [src, setSrc] = useState<string | null>(null);
@@ -140,10 +141,11 @@ function Documents() {
   const refresh = useCallback(() => api.listDocuments(uid, pid).then((r) => setDocs(r.documents.sort((a, b) => b.created_at.localeCompare(a.created_at)))), [uid, pid]);
   useEffect(() => { refresh(); }, [refresh]);
 
-  function stage(list: FileList | File[] | null) {
-    if (!list) return;
-    const files = Array.from(list).filter((f) => f.type.startsWith("image/") || f.type === "application/pdf");
-    if (files.length !== Array.from(list).length) toast(t("onlyImagesPdf"), "attention");
+  /** Add what was chosen or dropped to the list: bills as they are, zips opened, anything else skipped. */
+  async function stage(list: FileList | File[] | null) {
+    if (!list || !Array.from(list).length) return;
+    const { files, skipped } = await expandBillFiles(Array.from(list));
+    if (skipped) toast(files.length ? t("onlyImagesPdf") : t("noBillsFound"), "attention");
     setStaged((s) => {
       const seen = new Set(s.map((f) => f.name + f.size));
       return [...s, ...files.filter((f) => !seen.has(f.name + f.size))];
@@ -152,30 +154,41 @@ function Documents() {
     if (cam.current) cam.current.value = "";
   }
 
+  async function onDrop(dt: DataTransfer) {
+    await stage(await filesFromDrop(dt));
+  }
+
+  /** How many bills are read at once. Each is its own request, so one bad photo never fails the rest. */
+  const PARALLEL = 4;
+
   async function uploadAll() {
     if (!staged.length) return;
     setUploading(true);
-    const keys = staged.map((f) => f.name + f.size);
+    const batch = staged;
+    const keys = batch.map((f) => f.name + f.size);
     setProgress(Object.fromEntries(keys.map((k) => [k, "queued" as const])));
     let ok = 0;
-    for (const f of staged) {
-      const k = f.name + f.size;
-      setProgress((p) => ({ ...p, [k]: "uploading" }));
-      try {
-        // One request per file so a single bad photo does not fail the batch,
-        // and the list fills in as each is read.
-        await api.uploadDocuments(uid, pid, [f], siteId);
-        ok += 1;
-        setProgress((p) => ({ ...p, [k]: "done" }));
-        await refresh();
-      } catch {
-        setProgress((p) => ({ ...p, [k]: "failed" }));
+    let next = 0;
+    async function worker() {
+      while (next < batch.length) {
+        const f = batch[next++];
+        const k = f.name + f.size;
+        setProgress((p) => ({ ...p, [k]: "uploading" }));
+        try {
+          await api.uploadDocuments(uid, pid, [f], siteId);
+          ok += 1;
+          setProgress((p) => ({ ...p, [k]: "done" }));
+          await refresh();
+        } catch {
+          setProgress((p) => ({ ...p, [k]: "failed" }));
+        }
       }
     }
+    await Promise.all(Array.from({ length: Math.min(PARALLEL, batch.length) }, worker));
     setUploading(false);
     setStaged([]);
     setProgress({});
-    toast(t("uploadedToast", { n: ok }), ok === staged.length ? "ok" : "attention");
+    toast(t("uploadedToast", { n: ok }), ok === batch.length ? "ok" : "attention");
     await reload();
   }
 
@@ -261,7 +274,7 @@ function Documents() {
               )}
               onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
               onDragLeave={() => setDragging(false)}
-              onDrop={(e) => { e.preventDefault(); setDragging(false); stage(e.dataTransfer.files); }}
+              onDrop={(e) => { e.preventDefault(); setDragging(false); void onDrop(e.dataTransfer); }}
             >
               <input ref={pick} type="file" accept={ACCEPT} multiple hidden onChange={(e) => stage(e.target.files)} />
               <input ref={cam} type="file" accept="image/*" capture="environment" hidden onChange={(e) => stage(e.target.files)} />
@@ -274,10 +287,10 @@ function Documents() {
                 <button className={clsx("btn rounded-full", staged.length > 0 && "btn-secondary btn-sm")} onClick={() => pick.current?.click()} disabled={uploading}><ImagePlus className="size-4" aria-hidden />{staged.length ? t("addMore") : t("pick")}</button>
                 <button className="btn btn-secondary rounded-full sm:hidden" onClick={() => cam.current?.click()} disabled={uploading}><Camera className="size-4" aria-hidden />{t("camera")}</button>
               </div>
-              {/* Nothing to try with? A zip of the sample Vietnamese bills (public/), shown only on the empty drop zone. */}
+              {/* Nothing to try with? A zip of the sample Japanese bills (public/), shown only on the empty drop zone. */}
               {!staged.length && (
                 <div className="flex flex-col items-center gap-1.5">
-                  <a href="/sample-bills-vietnam.zip" download className="btn btn-secondary rounded-full"><Download className="size-4" aria-hidden />{t("sampleDownload")}</a>
+                  <a href="/sample-bills-japan.zip" download className="btn btn-secondary rounded-full"><Download className="size-4" aria-hidden />{t("sampleDownload")}</a>
                   <p className="text-xs text-muted">{t("sampleHint")}</p>
                 </div>
               )}

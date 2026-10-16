@@ -92,8 +92,14 @@ Rules that matter for accounting:
   tháng M/YYYY), use the first and last day of that month.
 - Units: use exactly one of kWh, MWh, L, kg, t, m3, GJ, h. LPG sold by cylinder count: report the
   total kg printed, not the number of cylinders. Generator runtime in hours is "h".
-- energy_type: electricity for grid bills; diesel for dầu DO / 軽油 / diesel; lpg for gas LPG /
-  LPガス / プロパン; natural_gas for city gas / piped gas; refrigerant for service slips charging gas.
+- energy_type: electricity for grid bills; diesel for dầu DO / 軽油 / diesel; petrol for ガソリン;
+  kerosene for 灯油; lpg for gas LPG / LPガス / プロパン; natural_gas for city gas / piped gas / 都市ガス
+  (in m3, not kWh); refrigerant for service slips charging gas (フロン類充塡証明書, 冷媒補充).
+- Hand-written slips: read the quantity written in the quantity cell (数量). If the unit printed there
+  is litres or kg, that is the quantity; do not multiply cans or bags yourself, and do not take the
+  amount of money. Report a low confidence when the handwriting is ambiguous.
+- Scanned or photographed pages may be rotated or low resolution: read them in their natural
+  orientation and say so in warnings only if a figure is uncertain.
 - Meter readings: when the bill prints meter indexes (chỉ số cũ / chỉ số mới, 前回指示数 / 今回指示数,
   previous / current reading), list every register in `registers` exactly as printed. Never compute them.
 - Boxes: `quantity_box` is [ymin, xmin, ymax, xmax] on a 0-1000 scale of the page image (0,0 top-left),

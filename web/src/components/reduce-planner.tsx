@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { motion, useReducedMotion } from "motion/react";
 import { Calculator, CircleAlert, ExternalLink, FileText, MapPin, Sun } from "lucide-react";
@@ -174,13 +174,17 @@ export function ReducePlanner({ variant = "page" }: { variant?: "page" | "dialog
   const [address, setAddress] = useState("");
   const [picked, setPicked] = useState<Set<string>>(new Set(["solar"]));
   const [pdfBusy, setPdfBusy] = useState(false);
+  const filledFor = useRef<string | null>(null);
 
   const load = useCallback(async (sid?: string) => {
     try {
       const v = await api.advisor(uid, period.id, sid);
       setView(v);
       setMissing(false);
-      setAddress((a) => a || v.site?.address || "");
+      // Fill the box from the saved address once per site; after that it belongs to the user, so
+      // emptying it or removing the location is not undone by the next reload.
+      const siteKey = v.site?.id ?? "";
+      if (filledFor.current !== siteKey) { filledFor.current = siteKey; setAddress(v.site?.address ?? ""); }
     } catch (e) {
       if (e instanceof ApiError && e.status === 409) setMissing(true);
       else toast(e instanceof Error ? e.message : String(e), "danger");
@@ -189,7 +193,7 @@ export function ReducePlanner({ variant = "page" }: { variant?: "page" | "dialog
 
   useEffect(() => { load(siteId); }, [load, siteId]);
   // A different site starts from its own address, not the previous one's.
-  useEffect(() => { setAddress(""); }, [siteId]);
+  useEffect(() => { filledFor.current = null; setAddress(""); }, [siteId]);
 
   const activeSite = view?.site ?? null;
   // Suggestions are limited to the site's country, so say which one by name, in the app language.
@@ -208,6 +212,21 @@ export function ReducePlanner({ variant = "page" }: { variant?: "page" | "dialog
       toast(e instanceof Error ? e.message : String(e), "danger");
     } finally {
       setPdfBusy(false);
+    }
+  }
+
+  /** Forget this site's pin, address and roof area, so the next request starts from nothing. */
+  async function removeLocation() {
+    if (!activeSite) return;
+    setBusy(true);
+    try {
+      await api.unlocateSite(uid, activeSite.id);
+      setAddress("");
+      await load(activeSite.id);
+    } catch (e) {
+      toast(e instanceof Error ? e.message : String(e), "danger");
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -285,6 +304,7 @@ export function ReducePlanner({ variant = "page" }: { variant?: "page" | "dialog
               {activeSite.lat != null && activeSite.lng != null && (
                 <> · <a className="font-medium text-signal-ink underline-offset-4 hover:underline" href={`https://www.google.com/maps?q=${activeSite.lat},${activeSite.lng}`} target="_blank" rel="noreferrer">{t("locate.check")}<ExternalLink className="ml-1 inline size-3" aria-hidden /></a></>
               )}
+              {" · "}<button type="button" className="font-medium text-muted underline-offset-4 hover:text-danger hover:underline disabled:opacity-60" onClick={removeLocation} disabled={busy}>{t("locate.remove")}</button>
             </p>
             {activeSite.location_precision === "approximate" && (
               <p role="status" className="rounded-lg bg-attention-bg px-3 py-2 text-attention">{t("locate.approximate")}</p>

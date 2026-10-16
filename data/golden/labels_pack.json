@@ -1,0 +1,1058 @@
+[
+  {
+    "name": "jpx_elec_2025-04",
+    "files": {
+      "png": "jpx_elec_2025-04.png"
+    },
+    "template": "ja_electricity.html",
+    "lang": "ja",
+    "doc_type": "electricity_bill",
+    "vendor": "中部電力ミライズ株式会社",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "electricity",
+        "quantity": 66787,
+        "unit": "kWh",
+        "period_start": "2025-04-01",
+        "period_end": "2025-04-30",
+        "gas": null,
+        "box": [
+          379,
+          774,
+          393,
+          874
+        ]
+      }
+    ],
+    "amount": 1701356,
+    "currency": "JPY",
+    "note": "printed bill, two meter registers (day and night); the reading check passes",
+    "ship": "png",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "jpx_elec_2025-05",
+    "files": {
+      "png": "jpx_elec_2025-05.png"
+    },
+    "template": "ja_electricity.html",
+    "lang": "ja",
+    "doc_type": "electricity_bill",
+    "vendor": "中部電力ミライズ株式会社",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "electricity",
+        "quantity": 73836,
+        "unit": "kWh",
+        "period_start": "2025-05-01",
+        "period_end": "2025-05-31",
+        "gas": null,
+        "box": [
+          379,
+          774,
+          393,
+          874
+        ]
+      }
+    ],
+    "amount": 1837375,
+    "currency": "JPY",
+    "note": "printed bill, two meter registers (day and night); the reading check passes",
+    "ship": "png",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "jpx_elec_2025-06",
+    "files": {
+      "png": "jpx_elec_2025-06.png"
+    },
+    "template": "ja_electricity.html",
+    "lang": "ja",
+    "doc_type": "electricity_bill",
+    "vendor": "中部電力ミライズ株式会社",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "electricity",
+        "quantity": 63826,
+        "unit": "kWh",
+        "period_start": "2025-06-01",
+        "period_end": "2025-06-30",
+        "gas": null,
+        "box": [
+          379,
+          774,
+          393,
+          874
+        ]
+      }
+    ],
+    "amount": 1617085,
+    "currency": "JPY",
+    "note": "printed bill, two meter registers (day and night); the reading check passes",
+    "ship": "png",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "jpx_elec_2025-06_photo_dup",
+    "files": {
+      "png": "jpx_elec_2025-06_photo_dup.jpg"
+    },
+    "template": "ja_electricity.html",
+    "lang": "ja",
+    "doc_type": "electricity_bill",
+    "vendor": "中部電力ミライズ株式会社",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "electricity",
+        "quantity": 63826,
+        "unit": "kWh",
+        "period_start": "2025-06-01",
+        "period_end": "2025-06-30",
+        "gas": null,
+        "box": [
+          374,
+          774,
+          389,
+          874
+        ]
+      }
+    ],
+    "amount": 1617085,
+    "currency": "JPY",
+    "note": "the same June bill photographed again: found as a duplicate and counted once",
+    "ship": "png",
+    "duplicate_of": "jpx_elec_2025-06",
+    "photo": true
+  },
+  {
+    "name": "jpx_elec_2025-07",
+    "files": {
+      "png": "jpx_elec_2025-07.png",
+      "pdf": "jpx_elec_2025-07.pdf"
+    },
+    "template": "ja_electricity.html",
+    "lang": "ja",
+    "doc_type": "electricity_bill",
+    "vendor": "中部電力ミライズ株式会社",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "electricity",
+        "quantity": 57757,
+        "unit": "kWh",
+        "period_start": "2025-07-01",
+        "period_end": "2025-07-31",
+        "gas": null,
+        "box": [
+          379,
+          774,
+          393,
+          874
+        ]
+      }
+    ],
+    "amount": 1502265,
+    "currency": "JPY",
+    "note": "PDF, not an image; read the same way",
+    "ship": "pdf",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "jpx_elec_2025-08",
+    "files": {
+      "png": "jpx_elec_2025-08.png"
+    },
+    "template": "ja_electricity.html",
+    "lang": "ja",
+    "doc_type": "electricity_bill",
+    "vendor": "中部電力ミライズ株式会社",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "electricity",
+        "quantity": 62731,
+        "unit": "kWh",
+        "period_start": "2025-08-01",
+        "period_end": "2025-08-31",
+        "gas": null,
+        "box": [
+          379,
+          774,
+          393,
+          874
+        ]
+      }
+    ],
+    "amount": 1589957,
+    "currency": "JPY",
+    "note": "printed bill, two meter registers (day and night); the reading check passes",
+    "ship": "png",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "jpx_elec_2025-09",
+    "files": {
+      "png": "jpx_elec_2025-09.jpg"
+    },
+    "template": "ja_electricity.html",
+    "lang": "ja",
+    "doc_type": "electricity_bill",
+    "vendor": "中部電力ミライズ株式会社",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "electricity",
+        "quantity": 70201,
+        "unit": "kWh",
+        "period_start": "2025-09-01",
+        "period_end": "2025-09-30",
+        "gas": null,
+        "box": [
+          375,
+          773,
+          390,
+          873
+        ]
+      }
+    ],
+    "amount": 1761671,
+    "currency": "JPY",
+    "note": "phone photo taken at an angle, JPEG, slightly soft",
+    "ship": "png",
+    "duplicate_of": null,
+    "photo": true
+  },
+  {
+    "name": "jpx_elec_2025-10",
+    "files": {
+      "png": "jpx_elec_2025-10.png"
+    },
+    "template": "ja_electricity.html",
+    "lang": "ja",
+    "doc_type": "electricity_bill",
+    "vendor": "中部電力ミライズ株式会社",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "electricity",
+        "quantity": 61533,
+        "unit": "kWh",
+        "period_start": "2025-10-01",
+        "period_end": "2025-10-31",
+        "gas": null,
+        "box": [
+          379,
+          774,
+          393,
+          874
+        ]
+      }
+    ],
+    "amount": 1588234,
+    "currency": "JPY",
+    "note": "printed bill, two meter registers (day and night); the reading check passes",
+    "ship": "png",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "jpx_elec_2025-11_misprint",
+    "files": {
+      "png": "jpx_elec_2025-11_misprint.png"
+    },
+    "template": "ja_electricity.html",
+    "lang": "ja",
+    "doc_type": "electricity_bill",
+    "vendor": "中部電力ミライズ株式会社",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "electricity",
+        "quantity": 684650,
+        "unit": "kWh",
+        "period_start": "2025-11-01",
+        "period_end": "2025-11-30",
+        "gas": null,
+        "box": [
+          379,
+          764,
+          393,
+          874
+        ]
+      }
+    ],
+    "amount": 1737991,
+    "currency": "JPY",
+    "expect_checks": {
+      "index": "fail",
+      "price": "fail"
+    },
+    "note": "misprinted total (a stray digit): the meter readings and the amount disagree, so the check flags it for review",
+    "ship": "png",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "jpx_elec_2025-12",
+    "files": {
+      "png": "jpx_elec_2025-12.png"
+    },
+    "template": "ja_electricity.html",
+    "lang": "ja",
+    "doc_type": "electricity_bill",
+    "vendor": "中部電力ミライズ株式会社",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "electricity",
+        "quantity": 60147,
+        "unit": "kWh",
+        "period_start": "2025-12-01",
+        "period_end": "2025-12-31",
+        "gas": null,
+        "box": [
+          379,
+          774,
+          393,
+          874
+        ]
+      }
+    ],
+    "amount": 1545315,
+    "currency": "JPY",
+    "note": "printed bill, two meter registers (day and night); the reading check passes",
+    "ship": "png",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "jpx_elec_2026-02",
+    "files": {
+      "png": "jpx_elec_2026-02.png"
+    },
+    "template": "ja_electricity.html",
+    "lang": "ja",
+    "doc_type": "electricity_bill",
+    "vendor": "中部電力ミライズ株式会社",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "electricity",
+        "quantity": 62646,
+        "unit": "kWh",
+        "period_start": "2026-02-01",
+        "period_end": "2026-02-28",
+        "gas": null,
+        "box": [
+          379,
+          774,
+          393,
+          874
+        ]
+      }
+    ],
+    "amount": 1596936,
+    "currency": "JPY",
+    "note": "printed bill that follows the missing January: the reconciler asks about the gap",
+    "ship": "png",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "jpx_elec_2026-03",
+    "files": {
+      "png": "jpx_elec_2026-03.png"
+    },
+    "template": "ja_electricity.html",
+    "lang": "ja",
+    "doc_type": "electricity_bill",
+    "vendor": "中部電力ミライズ株式会社",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "electricity",
+        "quantity": 59910,
+        "unit": "kWh",
+        "period_start": "2026-03-01",
+        "period_end": "2026-03-31",
+        "gas": null,
+        "box": [
+          379,
+          774,
+          393,
+          874
+        ]
+      }
+    ],
+    "amount": 1528845,
+    "currency": "JPY",
+    "note": "printed bill, two meter registers (day and night); the reading check passes",
+    "ship": "png",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "jpx_citygas_2025-04_05",
+    "files": {
+      "png": "jpx_citygas_2025-04_05.png"
+    },
+    "template": "ja_citygas.html",
+    "lang": "ja",
+    "doc_type": "gas_bill",
+    "vendor": "東邦ガス株式会社",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "natural_gas",
+        "quantity": 2675,
+        "unit": "m3",
+        "period_start": "2025-04-01",
+        "period_end": "2025-05-31",
+        "gas": null,
+        "box": [
+          325,
+          794,
+          339,
+          874
+        ]
+      }
+    ],
+    "amount": 383975,
+    "currency": "JPY",
+    "note": "city gas in m3 (not kWh), covering two months",
+    "ship": "png",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "jpx_citygas_2025-06_07",
+    "files": {
+      "png": "jpx_citygas_2025-06_07.png"
+    },
+    "template": "ja_citygas.html",
+    "lang": "ja",
+    "doc_type": "gas_bill",
+    "vendor": "東邦ガス株式会社",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "natural_gas",
+        "quantity": 1043,
+        "unit": "m3",
+        "period_start": "2025-06-01",
+        "period_end": "2025-07-31",
+        "gas": null,
+        "box": [
+          325,
+          794,
+          339,
+          874
+        ]
+      }
+    ],
+    "amount": 175551,
+    "currency": "JPY",
+    "note": "city gas in m3 (not kWh), covering two months",
+    "ship": "png",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "jpx_citygas_2025-08_09",
+    "files": {
+      "png": "jpx_citygas_2025-08_09.png"
+    },
+    "template": "ja_citygas.html",
+    "lang": "ja",
+    "doc_type": "gas_bill",
+    "vendor": "東邦ガス株式会社",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "natural_gas",
+        "quantity": 752,
+        "unit": "m3",
+        "period_start": "2025-08-01",
+        "period_end": "2025-09-30",
+        "gas": null,
+        "box": [
+          325,
+          814,
+          339,
+          874
+        ]
+      }
+    ],
+    "amount": 138388,
+    "currency": "JPY",
+    "note": "city gas in m3 (not kWh), covering two months",
+    "ship": "png",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "jpx_citygas_2025-10_11",
+    "files": {
+      "png": "jpx_citygas_2025-10_11.png",
+      "pdf": "jpx_citygas_2025-10_11.pdf"
+    },
+    "template": "ja_citygas.html",
+    "lang": "ja",
+    "doc_type": "gas_bill",
+    "vendor": "東邦ガス株式会社",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "natural_gas",
+        "quantity": 1994,
+        "unit": "m3",
+        "period_start": "2025-10-01",
+        "period_end": "2025-11-30",
+        "gas": null,
+        "box": [
+          325,
+          794,
+          339,
+          874
+        ]
+      }
+    ],
+    "amount": 297003,
+    "currency": "JPY",
+    "note": "PDF, two-month city gas bill",
+    "ship": "pdf",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "jpx_citygas_2025-12_01",
+    "files": {
+      "png": "jpx_citygas_2025-12_01.png"
+    },
+    "template": "ja_citygas.html",
+    "lang": "ja",
+    "doc_type": "gas_bill",
+    "vendor": "東邦ガス株式会社",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "natural_gas",
+        "quantity": 2585,
+        "unit": "m3",
+        "period_start": "2025-12-01",
+        "period_end": "2026-01-31",
+        "gas": null,
+        "box": [
+          325,
+          794,
+          339,
+          874
+        ]
+      }
+    ],
+    "amount": 372480,
+    "currency": "JPY",
+    "note": "city gas in m3 (not kWh), covering two months",
+    "ship": "png",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "jpx_citygas_2026-02_03",
+    "files": {
+      "png": "jpx_citygas_2026-02_03.png"
+    },
+    "template": "ja_citygas.html",
+    "lang": "ja",
+    "doc_type": "gas_bill",
+    "vendor": "東邦ガス株式会社",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "natural_gas",
+        "quantity": 1899,
+        "unit": "m3",
+        "period_start": "2026-02-01",
+        "period_end": "2026-03-31",
+        "gas": null,
+        "box": [
+          325,
+          794,
+          339,
+          874
+        ]
+      }
+    ],
+    "amount": 284871,
+    "currency": "JPY",
+    "note": "city gas in m3 (not kWh), covering two months",
+    "ship": "png",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "jpx_diesel_2025-05",
+    "files": {
+      "png": "jpx_diesel_2025-05.png"
+    },
+    "template": "ja_diesel_delivery.html",
+    "lang": "ja",
+    "doc_type": "fuel_invoice",
+    "vendor": "東海石油販売株式会社",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "diesel",
+        "quantity": 1500,
+        "unit": "L",
+        "period_start": "2025-05-14",
+        "period_end": "2025-05-14",
+        "gas": null,
+        "box": [
+          252,
+          555,
+          264,
+          597
+        ]
+      }
+    ],
+    "amount": 249150,
+    "currency": "JPY",
+    "note": "printed delivery note",
+    "ship": "png",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "jpx_diesel_2025-07",
+    "files": {
+      "png": "jpx_diesel_2025-07.png"
+    },
+    "template": "ja_diesel_delivery.html",
+    "lang": "ja",
+    "doc_type": "fuel_invoice",
+    "vendor": "東海石油販売株式会社",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "diesel",
+        "quantity": 1800,
+        "unit": "L",
+        "period_start": "2025-07-09",
+        "period_end": "2025-07-09",
+        "gas": null,
+        "box": [
+          252,
+          555,
+          264,
+          597
+        ]
+      }
+    ],
+    "amount": 289080,
+    "currency": "JPY",
+    "note": "printed delivery note",
+    "ship": "png",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "jpx_diesel_2025-08_handwritten",
+    "files": {
+      "png": "jpx_diesel_2025-08_handwritten.png"
+    },
+    "template": "ja_handwritten_slip.html",
+    "lang": "ja",
+    "doc_type": "fuel_invoice",
+    "vendor": "東海石油販売",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "diesel",
+        "quantity": 2400,
+        "unit": "L",
+        "period_start": "2025-08-21",
+        "period_end": "2025-08-21",
+        "gas": null,
+        "box": [
+          251,
+          258,
+          295,
+          355
+        ]
+      }
+    ],
+    "amount": 357000,
+    "currency": "JPY",
+    "note": "hand-written delivery slip on a pre-printed form, Gregorian date",
+    "ship": "png",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "jpx_diesel_2025-11_scan_rotated",
+    "files": {
+      "png": "jpx_diesel_2025-11_scan_rotated.png"
+    },
+    "template": "ja_diesel_delivery.html",
+    "lang": "ja",
+    "doc_type": "fuel_invoice",
+    "vendor": "東海石油販売株式会社",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "diesel",
+        "quantity": 1700,
+        "unit": "L",
+        "period_start": "2025-11-18",
+        "period_end": "2025-11-18",
+        "gas": null,
+        "box": null
+      }
+    ],
+    "amount": 273020,
+    "currency": "JPY",
+    "note": "a flatbed scan fed in sideways: the page is rotated 90 degrees and grey",
+    "ship": "png",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "jpx_diesel_2026-02_handwritten_photo",
+    "files": {
+      "png": "jpx_diesel_2026-02_handwritten_photo.jpg"
+    },
+    "template": "ja_handwritten_slip.html",
+    "lang": "ja",
+    "doc_type": "fuel_invoice",
+    "vendor": "東海石油販売",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "diesel",
+        "quantity": 1800,
+        "unit": "L",
+        "period_start": "2026-02-12",
+        "period_end": "2026-02-12",
+        "gas": null,
+        "box": [
+          251,
+          258,
+          297,
+          356
+        ]
+      }
+    ],
+    "amount": 273000,
+    "currency": "JPY",
+    "note": "hand-written slip with a Reiwa-era date (令和8年), then photographed",
+    "ship": "png",
+    "duplicate_of": null,
+    "photo": true
+  },
+  {
+    "name": "jpx_petrol_2025-09_handwritten",
+    "files": {
+      "png": "jpx_petrol_2025-09_handwritten.png"
+    },
+    "template": "ja_handwritten_slip.html",
+    "lang": "ja",
+    "doc_type": "fuel_invoice",
+    "vendor": "刈谷南給油所",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "petrol",
+        "quantity": 410,
+        "unit": "L",
+        "period_start": "2025-09-26",
+        "period_end": "2025-09-26",
+        "gas": null,
+        "box": [
+          250,
+          258,
+          293,
+          319
+        ]
+      }
+    ],
+    "amount": 68470,
+    "currency": "JPY",
+    "note": "company-car petrol, hand-written account slip",
+    "ship": "png",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "jpx_lpg_2025-06",
+    "files": {
+      "png": "jpx_lpg_2025-06.png"
+    },
+    "template": "ja_lpg_invoice.html",
+    "lang": "ja",
+    "doc_type": "fuel_invoice",
+    "vendor": "愛知プロパン株式会社",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "lpg",
+        "quantity": 496,
+        "unit": "kg",
+        "period_start": "2025-06-01",
+        "period_end": "2025-06-30",
+        "gas": null,
+        "box": [
+          286,
+          493,
+          297,
+          543
+        ]
+      }
+    ],
+    "amount": 194427,
+    "currency": "JPY",
+    "note": "printed LPG invoice, cylinders reported as kg",
+    "ship": "png",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "jpx_lpg_2025-10",
+    "files": {
+      "png": "jpx_lpg_2025-10.png"
+    },
+    "template": "ja_lpg_invoice.html",
+    "lang": "ja",
+    "doc_type": "fuel_invoice",
+    "vendor": "愛知プロパン株式会社",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "lpg",
+        "quantity": 612,
+        "unit": "kg",
+        "period_start": "2025-10-01",
+        "period_end": "2025-10-31",
+        "gas": null,
+        "box": [
+          286,
+          493,
+          297,
+          543
+        ]
+      }
+    ],
+    "amount": 234238,
+    "currency": "JPY",
+    "note": "received by fax: black and white, low resolution, with streaks",
+    "ship": "png",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "jpx_lpg_2026-01",
+    "files": {
+      "png": "jpx_lpg_2026-01.png",
+      "pdf": "jpx_lpg_2026-01.pdf"
+    },
+    "template": "ja_lpg_invoice.html",
+    "lang": "ja",
+    "doc_type": "fuel_invoice",
+    "vendor": "愛知プロパン株式会社",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "lpg",
+        "quantity": 656,
+        "unit": "kg",
+        "period_start": "2026-01-01",
+        "period_end": "2026-01-31",
+        "gas": null,
+        "box": [
+          286,
+          493,
+          297,
+          543
+        ]
+      }
+    ],
+    "amount": 249339,
+    "currency": "JPY",
+    "note": "PDF LPG invoice",
+    "ship": "pdf",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "jpx_kerosene_2025-12_handwritten",
+    "files": {
+      "png": "jpx_kerosene_2025-12_handwritten.png"
+    },
+    "template": "ja_handwritten_slip.html",
+    "lang": "ja",
+    "doc_type": "fuel_invoice",
+    "vendor": "鈴木燃料店",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "kerosene",
+        "quantity": 360,
+        "unit": "L",
+        "period_start": "2025-12-08",
+        "period_end": "2025-12-08",
+        "gas": null,
+        "box": [
+          251,
+          259,
+          294,
+          318
+        ]
+      }
+    ],
+    "amount": 41400,
+    "currency": "JPY",
+    "note": "hand-written kerosene slip: the quantity is cans, the litres are in the note",
+    "ship": "png",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "jpx_kerosene_2026-02_handwritten_photo",
+    "files": {
+      "png": "jpx_kerosene_2026-02_handwritten_photo.jpg"
+    },
+    "template": "ja_handwritten_slip.html",
+    "lang": "ja",
+    "doc_type": "fuel_invoice",
+    "vendor": "鈴木燃料店",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "kerosene",
+        "quantity": 540,
+        "unit": "L",
+        "period_start": "2026-02-03",
+        "period_end": "2026-02-03",
+        "gas": null,
+        "box": [
+          249,
+          262,
+          292,
+          320
+        ]
+      }
+    ],
+    "amount": 62100,
+    "currency": "JPY",
+    "note": "hand-written kerosene slip photographed on a desk",
+    "ship": "png",
+    "duplicate_of": null,
+    "photo": true
+  },
+  {
+    "name": "jpx_refrigerant_2025-07",
+    "files": {
+      "png": "jpx_refrigerant_2025-07.png"
+    },
+    "template": "ja_refrigerant.html",
+    "lang": "ja",
+    "doc_type": "refrigerant_service",
+    "vendor": "アイシー冷熱サービス株式会社",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "refrigerant",
+        "quantity": 4.2,
+        "unit": "kg",
+        "period_start": "2025-07-17",
+        "period_end": "2025-07-17",
+        "gas": "R-410A",
+        "box": [
+          398,
+          613,
+          412,
+          673
+        ]
+      }
+    ],
+    "amount": 58300,
+    "currency": "JPY",
+    "note": "refrigerant fill certificate (フロン類充塡証明書): the kg charged and the blend, R-410A",
+    "ship": "png",
+    "duplicate_of": null,
+    "photo": false
+  },
+  {
+    "name": "jpx_refrigerant_2026-01_handwritten",
+    "files": {
+      "png": "jpx_refrigerant_2026-01_handwritten.png"
+    },
+    "template": "ja_handwritten_slip.html",
+    "lang": "ja",
+    "doc_type": "refrigerant_service",
+    "vendor": "山田冷機サービス",
+    "customer": "株式会社 高橋精密",
+    "site_hint": "刈谷",
+    "lines": [
+      {
+        "energy_type": "refrigerant",
+        "quantity": 3.5,
+        "unit": "kg",
+        "period_start": "2026-01-22",
+        "period_end": "2026-01-22",
+        "gas": "R-32",
+        "box": [
+          254,
+          260,
+          297,
+          318
+        ]
+      }
+    ],
+    "amount": 33600,
+    "currency": "JPY",
+    "note": "hand-written work slip: refrigerant R-32, 3.5 kg, Reiwa-era date",
+    "ship": "png",
+    "duplicate_of": null,
+    "photo": false
+  }
+]

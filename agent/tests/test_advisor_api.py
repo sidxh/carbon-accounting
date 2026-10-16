@@ -181,3 +181,19 @@ def test_recommendations_html_carries_the_scenario_the_sources_and_the_ticks():
     assert "Minh Phat" in html and "(included above)" in html and "PVGIS" in html and "Get a quote before you invest" in html
     assert html.count("&#10003;") == 1                                    # only the ticked, beneficial lever gets a tick
     assert "joint-research-centre.ec.europa.eu" in html
+
+
+def test_removing_a_location_forgets_the_pin_the_address_and_the_roof_and_needs_the_owner(client, computed):
+    assert client.post(f"{URL}/sites/main/locate", json={"lat": 34.9886, "lng": 137.0022}, headers=_auth()).status_code == 200
+    assert client.post(f"{URL}/sites/main/locate", json={"roof_area_m2": 800}, headers=_auth()).status_code == 200
+    assert client.get(f"{URL}/periods/{computed}/advisor", headers=_auth()).json()["located"] is True
+
+    assert client.delete(f"{URL}/sites/main/location", headers=_auth("sup-2")).status_code == 403
+    assert client.delete(f"{URL}/sites/nope/location", headers=_auth()).status_code == 404
+
+    r = client.delete(f"{URL}/sites/main/location", headers=_auth())
+    assert r.status_code == 200
+    site = r.json()["sites"][0]
+    assert site["lat"] is None and site["address"] is None and site["roof_area_m2"] is None and site["formatted_address"] is None
+    again = client.get(f"{URL}/periods/{computed}/advisor", headers=_auth()).json()
+    assert again["located"] is False and again["coverage"] == "none"

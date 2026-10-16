@@ -50,13 +50,19 @@ Bills and questionnaires can be in any language, and language never changes a nu
 Files referenced live in `data/golden/rendered/`. Ground truth for every file
 is in `data/golden/labels.json`.
 
-The Bills page offers the Vietnamese files as a download ("Download sample bills to upload"):
-`web/public/sample-bills-vietnam.zip`, which unzips to a folder of all 34 `vn_*` files. The rendered images
-are gitignored, so the zip is committed. Rebuild it after regenerating the bills, from `supplier-carbon/`:
+The Bills page offers a Japanese sample pack as a download ("Download sample bills to upload"):
+`web/public/sample-bills-japan.zip`, one folder of 31 bills for Takahashi Seimitsu (Kariya, Aichi), April 2025 to
+March 2026, with a README listing what each file is there to show: printed bills, PDFs, phone photos, a scan lying
+on its side, a fax, hand-written slips (some with Reiwa-era dates), a misprinted total, a missing January and a
+duplicate. The Bills page also accepts the zip dropped as it is. The pack is drawn by `data/golden/render.py`
+(`--only pack`) with its own ground truth in `data/golden/labels_pack.json`, kept apart from the golden set so the 90%
+accuracy gate is not held to the hard cases. The rendered images are gitignored, so the zip is committed. Rebuild it from
+`supplier-carbon/`:
 
 ```bash
-rm -rf /tmp/pack && mkdir -p /tmp/pack/sample-bills-vietnam && cp data/golden/rendered/vn_* /tmp/pack/sample-bills-vietnam/ \
-  && (cd /tmp/pack && zip -qr -X sample-bills-vietnam.zip sample-bills-vietnam) && mv /tmp/pack/sample-bills-vietnam.zip web/public/
+cd agent && PLAYWRIGHT_BROWSERS_PATH=$PWD/.playwright .venv/bin/python ../data/golden/render.py --only pack && cd ..
+agent/.venv/bin/python data/golden/build_pack.py          # writes web/public/sample-bills-japan.zip
+(cd agent && PYTHONPATH=. .venv/bin/python -m scripts.eval_extraction --pack)   # how the reader does on it
 ```
 
 ### Repeating a scenario

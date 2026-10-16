@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 # Deploy the agent to Cloud Run on the existing Firebase project. Idempotent: every step can be re-run.
+# The agent reads bills with Gemini on Vertex AI (the Cloud Run service account, no key). GOOGLE_API_KEY stays
+# attached only as a fallback if GOOGLE_GENAI_USE_VERTEXAI is turned off.
 #
 #   infra/deploy.sh setup     # billing check, APIs, Firestore, bucket, service account, rules
 #   infra/deploy.sh secrets   # copy GOOGLE_API_KEY / GOOGLE_MAPS_API_KEY from .env into Secret Manager (run it yourself)
@@ -33,7 +35,7 @@ cmd_setup() {
   say "APIs"
   gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com \
     secretmanager.googleapis.com firestore.googleapis.com storage.googleapis.com iamcredentials.googleapis.com \
-    identitytoolkit.googleapis.com firebaserules.googleapis.com firebaseapphosting.googleapis.com
+    identitytoolkit.googleapis.com firebaserules.googleapis.com firebaseapphosting.googleapis.com aiplatform.googleapis.com
   # The server Maps key ("Carbon Count API") lives in this project, restricted to exactly these three APIs:
   # Geocoding and Solar (roof lookup) and Places API (New) (address suggestions). They must be enabled where
   # the key was created; set MAPS_PROJECT if it ever moves to another project.
@@ -51,7 +53,8 @@ cmd_setup() {
   say "service account $SA"
   gcloud iam service-accounts describe "$SA" >/dev/null 2>&1 \
     || gcloud iam service-accounts create "$SA_NAME" --display-name="Supplier Carbon agent"
-  for role in roles/datastore.user roles/storage.objectAdmin roles/secretmanager.secretAccessor; do
+  # roles/aiplatform.user lets the agent call Gemini on Vertex AI with its own identity: no API key, no free-tier cap.
+  for role in roles/datastore.user roles/storage.objectAdmin roles/secretmanager.secretAccessor roles/aiplatform.user; do
     gcloud projects add-iam-policy-binding "$PROJECT" --member="serviceAccount:$SA" --role="$role" --condition=None >/dev/null
   done
   # Lets the agent sign download URLs for bill images without a key file.
@@ -81,7 +84,7 @@ cmd_agent() {
   say "deploy $SERVICE"
   gcloud run deploy "$SERVICE" --image "$IMAGE" --region "$REGION" --service-account "$SA" \
     --allow-unauthenticated --min-instances 0 --max-instances 2 --memory 1Gi --cpu 1 --timeout 300 \
-    --set-env-vars "FIREBASE_PROJECT_ID=$PROJECT,STORAGE_BUCKET=$BUCKET,CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000}" \
+    --set-env-vars "FIREBASE_PROJECT_ID=$PROJECT,STORAGE_BUCKET=$BUCKET,CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000},GOOGLE_GENAI_USE_VERTEXAI=true,GOOGLE_CLOUD_PROJECT=$PROJECT,GOOGLE_CLOUD_LOCATION=${VERTEX_LOCATION:-global},GEMINI_RPM=${GEMINI_RPM:-120},GEMINI_RPD=${GEMINI_RPD:-5000}" \
     --set-secrets "GOOGLE_API_KEY=google-api-key:latest,GOOGLE_MAPS_API_KEY=google-maps-api-key:latest"
   gcloud run services describe "$SERVICE" --region "$REGION" --format='value(status.url)'
 }

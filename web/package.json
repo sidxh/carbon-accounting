@@ -12,6 +12,7 @@
     "@base-ui/react": "^1.8.0",
     "@number-flow/react": "^0.6.2",
     "clsx": "^2.1.1",
+    "fflate": "^0.8.3",
     "firebase": "^12.19.0",
     "lucide-react": "^1.48.0",
     "motion": "^13.4.3",

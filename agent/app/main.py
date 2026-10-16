@@ -630,6 +630,19 @@ def locate_site(supplier_id: str, site_id: str, body: LocateIn, caller: Caller =
     return profile
 
 
+@app.delete("/suppliers/{supplier_id}/sites/{site_id}/location", response_model=SupplierProfile)
+def unlocate_site(supplier_id: str, site_id: str, caller: Caller = Depends(require_supplier)):
+    """Forget where a site is: the pin, the matched address and the roof area. The advisor then asks again."""
+    profile = _profile_or_404(supplier_id)
+    if not any(s.id == site_id for s in profile.sites):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Site not found.")
+    cleared = dict(address=None, lat=None, lng=None, formatted_address=None, location_precision=None, roof_area_m2=None)
+    sites = [s.model_copy(update=cleared) if s.id == site_id else s for s in profile.sites]
+    profile = profile.model_copy(update={"sites": sites})
+    get_repo().put_supplier(profile)
+    return profile
+
+
 @app.get("/suppliers/{supplier_id}/periods/{pid}/advisor")
 def advisor(supplier_id: str, pid: str, site_id: str | None = None, caller: Caller = Depends(require_supplier)):
     """Where this site could cut emissions: rooftop solar sized to its own use, plus ranked levers."""

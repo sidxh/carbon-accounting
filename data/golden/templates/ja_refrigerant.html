@@ -1,0 +1,24 @@
+{% extends "_base.html" %}
+{% block body %}
+<div class="row">
+  <div class="logo"><div class="mark" style="background:#2b7a78">冷</div><div><div style="font-weight:700">{{ vendor }}</div><div class="small">{{ vendor_address }} · 第一種フロン類充塡回収業者登録 {{ reg_no }}</div></div></div>
+  <div class="kv" style="text-align:right"><div><b>証明書番号</b> <span class="mono">{{ cert_no }}</span></div><div><b>発行日</b> {{ service_date.strftime('%Y年%m月%d日') }}</div></div>
+</div>
+<h1 style="text-align:center;margin-top:24px">フロン類充塡証明書</h1>
+<div style="text-align:center" class="small">フロン類の使用の合理化及び管理の適正化に関する法律 第39条</div>
+<h2>機器の管理者</h2>
+<div class="kv"><div><b>管理者名</b> {{ customer }}</div><div><b>設置場所</b> {{ address }}</div></div>
+<h2>充塡した機器</h2>
+<table>
+  <tr><th>機器</th><th>メーカー・型式</th><th>冷媒の種類</th></tr>
+  <tr><td>{{ equipment }}</td><td class="mono">{{ model }}</td><td class="mono" style="font-weight:700">{{ gas }}</td></tr>
+</table>
+<h2>充塡内容</h2>
+<table>
+  <tr><th>充塡年月日</th><th>冷媒の種類</th><th class="num">充塡量</th><th class="num">充塡前の圧力</th></tr>
+  <tr><td>{{ service_date.strftime('%Y年%m月%d日') }}</td><td class="mono">{{ gas }}</td><td class="num mono total" data-gt="quantity">{{ kg }} kg</td><td class="num mono">{{ pressure }} MPa</td></tr>
+</table>
+<div class="kv" style="margin-top:12px"><div><b>充塡の理由</b> {{ reason }}</div><div><b>充塡業者担当者</b> {{ tech }}</div></div>
+<div class="small" style="margin-top:18px">金額 {{ '{:,}'.format(total) }} 円（税込）</div>
+<div class="foot">本証明書は機器の管理者が3年間保存してください。</div>
+{% endblock %}

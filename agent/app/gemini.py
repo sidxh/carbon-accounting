@@ -134,14 +134,15 @@ class GeminiClient:
     # -- calls -------------------------------------------------------------
 
     def _generate(self, **kwargs: Any):
-        """One generate_content call with a single retry on the free tier's
-        transient refusals (503 high demand, 429 burst). The SDK already retries
-        internally with backoff; stacking more on top turns an outage into
-        minutes of spinner, and each attempt costs a request against the daily
-        budget. One more try after a pause, then surface the error."""
+        """One generate_content call with a retry on transient refusals (503 high
+        demand, 429 burst). The SDK already retries internally with backoff;
+        stacking more on top turns an outage into minutes of spinner, and each
+        attempt costs a request against the daily budget. On the free tier one
+        more try after a pause, then surface the error. On Vertex AI the quota is
+        shared and bursts of 429 are short, so wait a little longer and try twice."""
         from google.genai import errors as genai_errors
 
-        delays = (4.0,)
+        delays = (3.0, 8.0) if get_settings().google_genai_use_vertexai else (4.0,)
         for attempt, delay in enumerate((*delays, None)):
             try:
                 return self.client.models.generate_content(**kwargs)

@@ -155,7 +155,7 @@ function PortalOptions({ uid, rid, periodId }: { uid: string; rid: string; perio
             <Link href={`/r/${rid}/pack/${p.id}`} className="btn btn-secondary btn-sm self-start rounded-full">{t("openPack")}<ArrowRight className="size-4" aria-hidden /></Link>
           </li>
         ))}
-        <li className="flex flex-col justify-between gap-4 rounded-[20px] border border-signal/15 bg-raised p-5 text-sm shadow-[var(--shadow-raised)] md:col-span-2">
+        <li className="flex flex-col justify-between gap-4 rounded-[20px] border border-signal/15 bg-raised p-5 text-sm shadow-[var(--shadow-raised)]">
           <div className="flex items-start gap-3">
             <span className="grid size-10 shrink-0 place-items-center rounded-full bg-signal-bg text-signal-ink"><FileSpreadsheet className="size-5" aria-hidden /></span>
             <div>

@@ -153,8 +153,8 @@ def main() -> int:
         page.locator("input#share").fill("20")
         page.locator("input[type=file]").set_input_files(str(ROOT / "data" / "templates" / "cdp_sme_questionnaire.xlsx"))
         page.get_by_role("button", name=re.compile("Download filled|Tải bảng câu hỏi|記入済み質問票")).wait_for(timeout=120000)
-        drafted = page.get_by_text(re.compile("DRAFT, please confirm")).count() > 0
-        print("[VN] questionnaire has the drafted reduction-activities answer:", drafted)
+        drafted = page.get_by_text(re.compile("reduction advisor \\(draft\\)")).count() > 0  # the sheet cell is a dropdown, so the advisor draft is the source, never a self-declared "Yes"
+        print("[VN] questionnaire reduction-activities cell is sourced from the advisor draft:", drafted)
         page.screenshot(path=str(SHOTS / "a4-vn-questionnaire.png"), full_page=True)
         ok &= drafted
         browser.close()

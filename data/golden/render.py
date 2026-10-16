@@ -19,7 +19,9 @@ Three suppliers, three languages:
 from __future__ import annotations
 
 import argparse
+import base64
 import calendar
+import hashlib
 import json
 import os
 import random
@@ -27,6 +29,7 @@ from datetime import date, timedelta
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+from markupsafe import Markup, escape
 
 HERE = Path(__file__).resolve().parent
 TEMPLATES = HERE / "templates"
@@ -37,6 +40,24 @@ os.environ.setdefault("PLAYWRIGHT_BROWSERS_PATH", str(AGENT / ".playwright"))
 
 env = Environment(loader=FileSystemLoader(str(TEMPLATES)), autoescape=select_autoescape(["html"]))
 rng = random.Random(20260924)
+
+
+def wobble(text) -> Markup:
+    """Hand-written look: every character a little off the line, tilted and a different size, the same way every run."""
+    out = []
+    for i, ch in enumerate(str(text)):
+        if ch == " ":
+            out.append(" ")
+            continue
+        h = hashlib.md5(f"{text}|{i}".encode()).digest()
+        out.append(f'<span style="display:inline-block;transform:translateY({(h[1] / 255 - .5) * 3.4:.1f}px) '
+                   f'rotate({(h[0] / 255 - .5) * 8:.1f}deg) scale({0.93 + h[2] / 255 * 0.14:.2f})">{escape(ch)}</span>')
+    return Markup("".join(out))
+
+
+env.filters["wobble"] = wobble
+# The handwriting font (Yomogi, SIL OFL) is embedded in the slips as base64 so renders need no network or file access.
+env.globals["hand_font_b64"] = base64.b64encode((TEMPLATES / "fonts" / "Yomogi-Regular.ttf").read_bytes()).decode()
 
 
 # --- helpers ----------------------------------------------------------------
@@ -84,13 +105,14 @@ def vi_words(n: int) -> str:
     return (words + " đồng chẵn").capitalize()
 
 
-def photo_style() -> dict:
+def photo_style(r: random.Random | None = None) -> dict:
+    r = r or rng
     return {
-        "rotate": round(rng.uniform(-1.6, 1.6), 2),
-        "skew": round(rng.uniform(-0.8, 0.8), 2),
-        "contrast": round(rng.uniform(0.9, 1.08), 2),
-        "brightness": round(rng.uniform(0.94, 1.04), 2),
-        "sepia": round(rng.uniform(0.05, 0.22), 2),
+        "rotate": round(r.uniform(-1.6, 1.6), 2),
+        "skew": round(r.uniform(-0.8, 0.8), 2),
+        "contrast": round(r.uniform(0.9, 1.08), 2),
+        "brightness": round(r.uniform(0.94, 1.04), 2),
+        "sepia": round(r.uniform(0.05, 0.22), 2),
     }
 
 
@@ -279,6 +301,175 @@ def jp_documents() -> list[dict]:
     return docs
 
 
+# --- sample pack: Japan, one varied fiscal year -------------------------------------
+# The set evaluators download from the Bills page. Unlike the golden set above it is built to *show range*: printed
+# bills, a PDF, phone photos, a scan lying on its side, a fax, hand-written slips, a bill with a misprinted total, a
+# month with no bill, and a duplicate. It has its own random generator so adding to it never moves the golden set,
+# and its own labels file (labels_pack.json) so the 90% accuracy gate on the golden set is not held to it.
+
+JPP = dict(customer="株式会社 高橋精密", address="愛知県刈谷市一里山町東吹戸 12-3", site_hint="刈谷")
+
+
+def reiwa(d: date) -> str:
+    return f"令和{d.year - 2018}年{d.month}月{d.day}日"
+
+
+def jdate(d: date) -> str:
+    return f"{d.year}年{d.month}月{d.day}日"
+
+
+def jp_pack_documents() -> list[dict]:
+    r = random.Random(20251016)
+    docs: list[dict] = []
+
+    def base(name, template, ctx, doc_type, vendor, lines, amount, note, **extra):
+        docs.append(dict(name=f"jpx_{name}", template=template, ctx=ctx, lang="ja", doc_type=doc_type, vendor=vendor,
+                         customer=JPP["customer"], site_hint=JPP["site_hint"], lines=lines, amount=amount, currency="JPY",
+                         pack_note=note, **extra))
+
+    def line(et, qty, unit, ps, pe, gas=None):
+        return [dict(energy_type=et, quantity=qty, unit=unit, period_start=ps.isoformat(), period_end=pe.isoformat(), gas=gas)]
+
+    # Electricity, April 2025 to March 2026. January is never issued, but its readings still happen, so
+    # February's "previous reading" is January's end: the gap is real, not a skipped counter.
+    od, on = 1_204_110, 388_020
+    months = [(2025, m) for m in range(4, 13)] + [(2026, m) for m in (1, 2, 3)]
+    for y, m in months:
+        ps, pe = date(y, m, 1), month_end(date(y, m, 1))
+        kd, kn = r.randint(41_000, 56_000), r.randint(13_000, 19_000)
+        energy = round(kd * 17.8 + kn * 12.4)
+        basic, fuel_adj, levy = 286_000, round((kd + kn) * -1.2), round((kd + kn) * 3.49)
+        total = round((basic + energy + fuel_adj + levy) * 1.10)
+        ctx = dict(
+            lang="ja", vendor="中部電力ミライズ株式会社", vendor_address="名古屋市東区東新町1番地", vendor_phone="0120-985-232",
+            customer_code="23-4417-0852", issue_date=pe + timedelta(days=3), period_start=ps, period_end=pe,
+            days=(pe - ps).days + 1, customer=JPP["customer"], address=JPP["address"], old_day=od, new_day=od + kd, kwh_day=kd,
+            old_night=on, new_night=on + kn, kwh_night=kn, kwh_total=kd + kn, basic=basic, energy_charge=energy,
+            fuel_adj=fuel_adj, renewable_levy=levy, total=total, due_date=pe + timedelta(days=30),
+        )
+        od, on = od + kd, on + kn
+        if (y, m) == (2026, 1):
+            continue
+        tag = f"{y}-{m:02d}"
+        kw = dict(pdf=False)
+        note = "printed bill, two meter registers (day and night); the reading check passes"
+        if tag == "2025-07":
+            kw, note = dict(pdf=True, ship="pdf"), "PDF, not an image; read the same way"
+        elif tag == "2025-09":
+            kw, note = dict(pdf=False, photo=photo_style(r), post="phone"), "phone photo taken at an angle, JPEG, slightly soft"
+        elif tag == "2025-11":
+            bad = int(f"{kd + kn}0")
+            ctx = {**ctx, "kwh_total": bad}
+            kw, note = dict(pdf=False, expect_checks={"index": "fail", "price": "fail"}), \
+                "misprinted total (a stray digit): the meter readings and the amount disagree, so the check flags it for review"
+            docs_total = bad
+            base(f"elec_{tag}_misprint", "ja_electricity.html", ctx, "electricity_bill", ctx["vendor"], line("electricity", docs_total, "kWh", ps, pe), total, note, **kw)
+            continue
+        elif tag == "2026-02":
+            note = "printed bill that follows the missing January: the reconciler asks about the gap"
+        base(f"elec_{tag}", "ja_electricity.html", ctx, "electricity_bill", ctx["vendor"], line("electricity", kd + kn, "kWh", ps, pe), total, note, **kw)
+        if tag == "2025-06":
+            base(f"elec_{tag}_photo_dup", "ja_electricity.html", ctx, "electricity_bill", ctx["vendor"], line("electricity", kd + kn, "kWh", ps, pe), total,
+                 "the same June bill photographed again: found as a duplicate and counted once",
+                 pdf=False, photo=photo_style(r), post="phone", duplicate_of="jpx_elec_2025-06")
+
+    # City gas, every two months, in cubic metres.
+    idx = 48_210
+    for i, (ps, pe) in enumerate(((date(2025, 4, 1), date(2025, 5, 31)), (date(2025, 6, 1), date(2025, 7, 31)), (date(2025, 8, 1), date(2025, 9, 30)),
+                                  (date(2025, 10, 1), date(2025, 11, 30)), (date(2025, 12, 1), date(2026, 1, 31)), (date(2026, 2, 1), date(2026, 3, 31)))):
+        m3 = r.randint(700, 1_300) if 1 <= i <= 2 else r.randint(1_500, 2_700)
+        unit_price, basic = 118, 38_500
+        energy = m3 * unit_price
+        adj = round(m3 * -1.9)
+        vat = round((basic + energy + adj) * 0.10)
+        ctx = dict(vendor="東邦ガス株式会社", vendor_address="名古屋市熱田区桜田町19-18", vendor_phone="0120-0-14133", customer_code="710-33-2951",
+                   issue_date=pe + timedelta(days=4), period_start=ps, period_end=pe, days=(pe - ps).days + 1, customer=JPP["customer"],
+                   address=JPP["address"], old_idx=idx, new_idx=idx + m3, m3=m3, basic=basic, unit_price=unit_price, energy_charge=energy,
+                   adj=adj, vat=vat, total=basic + energy + adj + vat, due_date=pe + timedelta(days=30))
+        idx += m3
+        note = "city gas in m3 (not kWh), covering two months"
+        kw = dict(pdf=False)
+        if i == 3:
+            kw, note = dict(pdf=True, ship="pdf"), "PDF, two-month city gas bill"
+        base(f"citygas_{ps.year}-{ps.month:02d}_{pe.month:02d}", "ja_citygas.html", ctx, "gas_bill", ctx["vendor"], line("natural_gas", m3, "m3", ps, pe),
+             ctx["total"], note, **kw)
+
+    def diesel_printed(tag, dd, **kw):
+        litres = r.randrange(1_500, 3_000, 100)
+        price = r.choice((148.5, 151.0, 146.0))
+        sub = int(litres * price)
+        vat = round(sub * 0.10)
+        ctx = dict(lang="ja", vendor="東海石油販売株式会社", vendor_address="愛知県豊田市若宮町 4-1", vendor_tax=f"T{r.randint(10**12, 10**13 - 1)}",
+                   invoice_no=f"N25-{r.randint(10000, 99999)}", delivery_date=dd, customer=JPP["customer"], address=JPP["address"], litres=litres,
+                   price=price, subtotal=sub, vat=vat, total=sub + vat, tank_before=r.randint(400, 900), tank_after=r.randint(2_400, 3_800),
+                   buyer_sign="高橋", seller_sign="佐藤")
+        return ctx, litres, sub + vat
+
+    def hand(name, et, unit, dd, qty, qty_text, amount, vendor, vendor_sub, title, item, price_hand, note_hand, sign, seal, era, note, *,
+             color="#b3261e", ink="#14308a", paper="#fbf7e6", gas=None, doc_type="fuel_invoice", **kw):
+        ctx = dict(vendor=vendor, vendor_sub=vendor_sub, form_no=f"{r.randint(1000, 9999)}", form_note="控（お客様用）", title=title,
+                   date_text=reiwa(dd) if era else jdate(dd), customer_hand="高橋精密(株)", item_hand=item, qty_hand=qty_text, unit_printed=unit,
+                   price_hand=price_hand, amount_hand=f"{amount:,}", note_hand=note_hand, sign_hand=sign, seal=seal, footer="ご利用ありがとうございました。",
+                   form_color=color, ink=ink, paper=paper)
+        base(name, "ja_handwritten_slip.html", ctx, doc_type, vendor, line(et, qty, unit, dd, dd, gas), amount, note, pdf=False, **kw)
+
+    # Diesel: printed, hand-written, a scan lying on its side, a hand-written slip photographed.
+    ctx, litres, amount = diesel_printed("", date(2025, 5, 14))
+    base("diesel_2025-05", "ja_diesel_delivery.html", ctx, "fuel_invoice", ctx["vendor"], line("diesel", litres, "L", date(2025, 5, 14), date(2025, 5, 14)), amount,
+         "printed delivery note", pdf=False)
+    ctx, litres, amount = diesel_printed("", date(2025, 7, 9))
+    base("diesel_2025-07", "ja_diesel_delivery.html", ctx, "fuel_invoice", ctx["vendor"], line("diesel", litres, "L", date(2025, 7, 9), date(2025, 7, 9)), amount,
+         "printed delivery note", pdf=False)
+    hand("diesel_2025-08_handwritten", "diesel", "L", date(2025, 8, 21), 2400, "2,400", 357_000, "東海石油販売", "愛知県豊田市若宮町 4-1 · 0565-31-0218",
+         "軽 油 納 品 書", "軽油 (ローリー)", "148.5", "タンク満タン", "佐藤", "東海", False,
+         "hand-written delivery slip on a pre-printed form, Gregorian date")
+    ctx, litres, amount = diesel_printed("", date(2025, 11, 18))
+    base("diesel_2025-11_scan_rotated", "ja_diesel_delivery.html", ctx, "fuel_invoice", ctx["vendor"], line("diesel", litres, "L", date(2025, 11, 18), date(2025, 11, 18)), amount,
+         "a flatbed scan fed in sideways: the page is rotated 90 degrees and grey", pdf=False, post="scan90", no_box=True)
+    hand("diesel_2026-02_handwritten_photo", "diesel", "L", date(2026, 2, 12), 1800, "1,800", 273_000, "東海石油販売", "愛知県豊田市若宮町 4-1 · 0565-31-0218",
+         "軽 油 納 品 書", "軽油 (ローリー)", "151", "寒冷地 添加済", "佐藤", "東海", True,
+         "hand-written slip with a Reiwa-era date (令和8年), then photographed", photo=photo_style(r), post="phone", ink="#222831")
+
+    # Petrol for the company cars, hand-written.
+    hand("petrol_2025-09_handwritten", "petrol", "L", date(2025, 9, 26), 410, "410", 68_470, "刈谷南給油所", "刈谷市小山町 3-7 · 0566-21-4410",
+         "給 油 伝 票", "レギュラーガソリン (社用車)", "167", "月末まとめ", "高橋", "給油", False,
+         "company-car petrol, hand-written account slip", color="#1a6b3a", ink="#1b1b1b", paper="#f4f8ee")
+
+    # LPG: printed, a fax, a PDF.
+    for tag, (ps, pe), kw, note in (
+        ("2025-06", (date(2025, 6, 1), date(2025, 6, 30)), dict(pdf=False), "printed LPG invoice, cylinders reported as kg"),
+        ("2025-10", (date(2025, 10, 1), date(2025, 10, 31)), dict(pdf=False, post="fax"), "received by fax: black and white, low resolution, with streaks"),
+        ("2026-01", (date(2026, 1, 1), date(2026, 1, 31)), dict(pdf=True, ship="pdf"), "PDF LPG invoice"),
+    ):
+        kg = r.randint(380, 720)
+        price, basic = 312, 22_000
+        vat = round((kg * price + basic) * 0.10)
+        ctx = dict(lang="ja", vendor="愛知プロパン株式会社", vendor_address="愛知県安城市三河安城町 2-8", invoice_no=f"LP-{r.randint(100000, 999999)}",
+                   issue_date=pe + timedelta(days=5), period_start=ps, period_end=pe, customer=JPP["customer"], address=JPP["address"], cyl_kg=50, kg=kg,
+                   price=price, basic=basic, vat=vat, total=kg * price + basic + vat)
+        base(f"lpg_{tag}", "ja_lpg_invoice.html", ctx, "fuel_invoice", ctx["vendor"], line("lpg", kg, "kg", ps, pe), ctx["total"], note, **kw)
+
+    # Kerosene for the boiler, from a local shop: two hand-written sales slips, the second photographed.
+    hand("kerosene_2025-12_handwritten", "kerosene", "L", date(2025, 12, 8), 360, "360", 41_400, "鈴木燃料店", "刈谷市天王町 1-22 · 0566-23-0190",
+         "灯 油 売 上 票", "灯油 (18L缶配達)", "115", "18L × 20缶", "鈴木", "鈴木", False,
+         "hand-written kerosene slip: the quantity is cans, the litres are in the note", color="#2b5aa8", ink="#7a1f1f", paper="#f6f3ea")
+    hand("kerosene_2026-02_handwritten_photo", "kerosene", "L", date(2026, 2, 3), 540, "540", 62_100, "鈴木燃料店", "刈谷市天王町 1-22 · 0566-23-0190",
+         "灯 油 売 上 票", "灯油 (18L缶配達)", "115", "18L × 30缶", "鈴木", "鈴木", True,
+         "hand-written kerosene slip photographed on a desk", color="#2b5aa8", ink="#7a1f1f", paper="#f6f3ea", photo=photo_style(r), post="phone")
+
+    # Refrigerant top-ups: a printed certificate, and a hand-written work slip.
+    sd = date(2025, 7, 17)
+    ctx = dict(vendor="アイシー冷熱サービス株式会社", vendor_address="愛知県刈谷市桜町 2-15", reg_no="愛知県 第 1-0482 号", cert_no=f"RC-{r.randint(10000, 99999)}",
+               service_date=sd, customer=JPP["customer"], address=JPP["address"], equipment="業務用パッケージエアコン（天吊形）", model="PKZ-P140KLR",
+               gas="R-410A", kg=4.2, pressure="0.62", reason="経年による微小漏えい、補充", tech="森田", total=58_300)
+    base("refrigerant_2025-07", "ja_refrigerant.html", ctx, "refrigerant_service", ctx["vendor"], line("refrigerant", 4.2, "kg", sd, sd, "R-410A"), 58_300,
+         "refrigerant fill certificate (フロン類充塡証明書): the kg charged and the blend, R-410A", pdf=False)
+    hand("refrigerant_2026-01_handwritten", "refrigerant", "kg", date(2026, 1, 22), 3.5, "3.5", 33_600, "山田冷機サービス", "刈谷市御幸町 4-6 · 0566-25-8812",
+         "冷 媒 補 充 作 業 票", "R-32 業務用エアコン 補充", "4,800", "フレア部 締直し", "山田", "山田", True,
+         "hand-written work slip: refrigerant R-32, 3.5 kg, Reiwa-era date", color="#1a6b3a", ink="#14308a", gas="R-32", doc_type="refrigerant_service")
+    return docs
+
+
 # --- scenario: Australia ---------------------------------------------------------
 
 AU = dict(customer="Riverside Fabrication Pty Ltd", address="14 Cormack Rd, Wingfield SA 5013", site_hint="Wingfield")
@@ -372,6 +563,38 @@ def quantity_box(page) -> list[int] | None:
             round(r["y1"] / r["h"] * 1000), round(r["x1"] / r["w"] * 1000)]
 
 
+def post_process(png: Path, kind: str) -> Path:
+    """Make a clean render look like how the file really arrives. Returns the file the pack should use."""
+    from PIL import Image, ImageFilter, ImageOps
+
+    im = Image.open(png)
+    if kind == "scan90":
+        im = ImageOps.autocontrast(im.convert("L")).rotate(90, expand=True)
+        noise = Image.effect_noise(im.size, 14).point(lambda v: v)
+        im = Image.blend(im, noise, 0.06)
+        im.save(png)
+        return png
+    if kind == "fax":
+        im = ImageOps.autocontrast(im.convert("L"))
+        w, h = im.size
+        im = im.resize((int(w * 0.8), int(h * 0.8)), Image.BILINEAR).point(lambda v: 255 if v > 165 else 0).convert("L")
+        px = im.load()
+        for y in range(0, im.size[1], 97):          # the dark streaks a fax line leaves
+            for x in range(im.size[0]):
+                px[x, y] = min(px[x, y], 90)
+        im.save(png)
+        return png
+    if kind == "phone":
+        rgb = im.convert("RGB").rotate(-1.6, expand=True, fillcolor=(70, 66, 60)).filter(ImageFilter.GaussianBlur(0.8))
+        vignette = Image.radial_gradient("L").resize(rgb.size).point(lambda v: 255 - int(v * 0.35))
+        rgb = Image.composite(rgb, Image.new("RGB", rgb.size, (30, 28, 26)), vignette)
+        jpg = png.with_suffix(".jpg")
+        rgb.save(jpg, quality=68)
+        png.unlink()
+        return jpg
+    return png
+
+
 def render(docs: list[dict], limit: int | None) -> list[dict]:
     from playwright.sync_api import sync_playwright
 
@@ -383,9 +606,13 @@ def render(docs: list[dict], limit: int | None) -> list[dict]:
         for d in docs[:limit] if limit else docs:
             html = env.get_template(d["template"]).render(**d["ctx"], photo=d.get("photo"))
             page.set_content(html, wait_until="load")
+            page.evaluate("document.fonts.ready")
             png = OUT / f"{d['name']}.png"
             page.screenshot(path=str(png), full_page=True)
-            box = quantity_box(page)
+            box = None if d.get("no_box") else quantity_box(page)
+            if d.get("post"):
+                png = post_process(png, d["post"])
+            # "png" is the key the evals read for the image, whatever its format (a phone photo is a .jpg).
             files = {"png": png.name}
             if d.get("pdf"):
                 pdf = OUT / f"{d['name']}.pdf"
@@ -396,7 +623,8 @@ def render(docs: list[dict], limit: int | None) -> list[dict]:
                 "doc_type": d["doc_type"], "vendor": d["vendor"], "customer": d["customer"], "site_hint": d["site_hint"],
                 "lines": [{**d["lines"][0], "box": box}, *d["lines"][1:]], "amount": d["amount"], "currency": d["currency"],
                 **({"expect_checks": d["expect_checks"]} if d.get("expect_checks") else {}),
-                "duplicate_of": d.get("duplicate_of"), "photo": bool(d.get("photo")),
+                **({"note": d["pack_note"], "ship": d.get("ship", "png")} if d.get("pack_note") else {}),
+                "duplicate_of": d.get("duplicate_of"), "photo": bool(d.get("photo")) or d.get("post") == "phone",
             })
             print(f"rendered {d['name']}")
         browser.close()
@@ -406,12 +634,17 @@ def render(docs: list[dict], limit: int | None) -> list[dict]:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int, default=None)
+    ap.add_argument("--only", choices=("golden", "pack"), default=None, help="render just the golden set or just the Japanese sample pack")
     args = ap.parse_args()
-    vn = vn_documents()
-    docs = vn + jp_documents() + au_documents() + chk_documents(vn)
-    labels = render(docs, args.limit)
-    (HERE / "labels.json").write_text(json.dumps(labels, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"\n{len(labels)} documents → {OUT.relative_to(HERE.parents[1])}, labels.json written")
+    if args.only != "pack":
+        vn = vn_documents()
+        labels = render(vn + jp_documents() + au_documents() + chk_documents(vn), args.limit)
+        (HERE / "labels.json").write_text(json.dumps(labels, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(f"\n{len(labels)} golden documents, labels.json written")
+    if args.only != "golden":
+        labels = render(jp_pack_documents(), args.limit)
+        (HERE / "labels_pack.json").write_text(json.dumps(labels, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(f"\n{len(labels)} sample-pack documents, labels_pack.json written")
     return 0
 
 

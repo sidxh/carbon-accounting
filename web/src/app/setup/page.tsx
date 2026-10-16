@@ -50,9 +50,9 @@ function Form({ profile, uid }: { profile: SupplierProfile | null; uid: string }
   const rail = useRef<HTMLElement>(null);
   const [f, setF] = useState({
     name: profile?.name ?? "",
-    country: profile?.country ?? "VN",
-    fiscal_year_start: profile?.fiscal_year_start ?? "2025-01-01",
-    fiscal_year_end: profile?.fiscal_year_end ?? "2025-12-31",
+    country: profile?.country ?? "JP",
+    fiscal_year_start: profile?.fiscal_year_start ?? "2025-04-01",
+    fiscal_year_end: profile?.fiscal_year_end ?? "2026-03-31",
     sites: profile?.sites.map((s) => ({ name: s.name, region: s.region ?? "" })) ?? [{ name: "", region: "" }],
     sector: profile?.sector ?? "",
     revenue: profile?.revenue?.toString() ?? "",

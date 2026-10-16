@@ -1,0 +1,31 @@
+{% extends "_base.html" %}
+{% block body %}
+<div class="row">
+  <div class="logo"><div class="mark" style="background:#1f6fb2">ガ</div><div><div style="font-weight:700">{{ vendor }}</div><div class="small">{{ vendor_address }}</div></div></div>
+  <div class="kv" style="text-align:right"><div><b>お客さま番号</b> <span class="mono">{{ customer_code }}</span></div><div><b>発行日</b> {{ issue_date.strftime('%Y年%m月%d日') }}</div></div>
+</div>
+<h1 style="text-align:center;margin-top:24px">ガスご使用量のお知らせ（請求書）</h1>
+<div style="text-align:center" class="small">都市ガス 13A · 検針日 {{ period_end.strftime('%Y年%m月%d日') }}</div>
+<h2>ご契約情報</h2>
+<div class="kv">
+  <div><b>ご契約者名</b> {{ customer }}</div>
+  <div><b>ご使用場所</b> {{ address }}</div>
+  <div><b>契約種別</b> 業務用 大口</div>
+  <div><b>ご使用期間</b> {{ period_start.strftime('%Y年%m月%d日') }} 〜 {{ period_end.strftime('%Y年%m月%d日') }}（{{ days }}日間）</div>
+</div>
+<h2>ご使用量</h2>
+<table>
+  <tr><th>メーター</th><th class="num">前回指針</th><th class="num">今回指針</th><th class="num">ご使用量</th></tr>
+  <tr><td>ガスメーター（m³）</td><td class="num mono">{{ '{:,}'.format(old_idx) }}</td><td class="num mono">{{ '{:,}'.format(new_idx) }}</td><td class="num mono total" data-gt="quantity">{{ '{:,}'.format(m3) }} m³</td></tr>
+</table>
+<div class="small" style="margin-top:6px">標準状態（0℃・1気圧）換算後の熱量 {{ '{:,.1f}'.format(m3 * 45.0 / 1000) }} GJ（45.0 MJ/m³）</div>
+<h2>ご請求金額</h2>
+<table>
+  <tr><td>基本料金</td><td class="num mono">{{ '{:,}'.format(basic) }} 円</td></tr>
+  <tr><td>従量料金（{{ '{:,}'.format(m3) }} m³ × {{ unit_price }} 円）</td><td class="num mono">{{ '{:,}'.format(energy_charge) }} 円</td></tr>
+  <tr><td>原料費調整額</td><td class="num mono">{{ '{:,}'.format(adj) }} 円</td></tr>
+  <tr><td>消費税（10%）</td><td class="num mono">{{ '{:,}'.format(vat) }} 円</td></tr>
+  <tr><td class="total">ご請求金額合計</td><td class="num mono total">{{ '{:,}'.format(total) }} 円</td></tr>
+</table>
+<div class="foot">お支払期限 {{ due_date.strftime('%Y年%m月%d日') }} · お問い合わせ {{ vendor_phone }}</div>
+{% endblock %}

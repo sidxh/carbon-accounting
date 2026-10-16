@@ -505,6 +505,7 @@ export const api = {
     request<AdvisorView>(`${P(uid, pid)}/advisor${siteId ? `?site_id=${encodeURIComponent(siteId)}` : ""}`),
   locateSite: (uid: string, siteId: string, body: { address?: string; roof_area_m2?: number; place_id?: string; session?: string }) =>
     json<SupplierProfile>(`/suppliers/${uid}/sites/${siteId}/locate`, "POST", body),
+  unlocateSite: (uid: string, siteId: string) => json<SupplierProfile>(`/suppliers/${uid}/sites/${siteId}/location`, "DELETE"),
   suggestPlaces: (q: string, session: string, country?: string, signal?: AbortSignal) =>
     request<{ suggestions: PlaceSuggestion[] }>(`/places/suggest?${new URLSearchParams({ q, session, ...(country ? { country } : {}) })}`, { signal }),
   /** The reduction plan as a PDF; `levers` are the options ticked on screen so the file matches. */
