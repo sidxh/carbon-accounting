@@ -84,7 +84,7 @@ cmd_agent() {
   say "deploy $SERVICE"
   gcloud run deploy "$SERVICE" --image "$IMAGE" --region "$REGION" --service-account "$SA" \
     --allow-unauthenticated --min-instances 0 --max-instances 2 --memory 1Gi --cpu 1 --timeout 300 \
-    --set-env-vars "FIREBASE_PROJECT_ID=$PROJECT,STORAGE_BUCKET=$BUCKET,CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000},GOOGLE_GENAI_USE_VERTEXAI=true,GOOGLE_CLOUD_PROJECT=$PROJECT,GOOGLE_CLOUD_LOCATION=${VERTEX_LOCATION:-global},GEMINI_RPM=${GEMINI_RPM:-120},GEMINI_RPD=${GEMINI_RPD:-5000}" \
+    --set-env-vars "^@^FIREBASE_PROJECT_ID=$PROJECT@STORAGE_BUCKET=$BUCKET@CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000}@GOOGLE_GENAI_USE_VERTEXAI=true@GOOGLE_CLOUD_PROJECT=$PROJECT@GOOGLE_CLOUD_LOCATION=${VERTEX_LOCATION:-global}@GEMINI_RPM=${GEMINI_RPM:-120}@GEMINI_RPD=${GEMINI_RPD:-5000}" \
     --set-secrets "GOOGLE_API_KEY=google-api-key:latest,GOOGLE_MAPS_API_KEY=google-maps-api-key:latest"
   gcloud run services describe "$SERVICE" --region "$REGION" --format='value(status.url)'
 }
