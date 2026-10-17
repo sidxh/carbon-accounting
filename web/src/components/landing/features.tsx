@@ -142,9 +142,11 @@ export function Features() {
     // Pulled up a quarter screen (a tenth on phones, where the steps' card would
     // otherwise sit over the molecule) so it starts arriving as the steps finish.
     <section id="features" aria-labelledby="features-h" className="relative -mt-[10dvh] md:-mt-[25dvh]">
-      {/* Pinned: molecule, burst, headline, and the features under it. */}
-      <div ref={track} className="relative h-[200dvh]">
-        <div className="sticky top-0 flex h-dvh flex-col items-center justify-center gap-10 overflow-hidden pt-16 lg:gap-14">
+      {/* Pinned: molecule, burst, headline, and the features under it. On phones the pinned
+          frame is shorter (70% of the screen, over 1.5 screens of scroll), so the cards that
+          follow it are not a half-empty screen away from the headline. */}
+      <div ref={track} className="relative h-[150dvh] md:h-[200dvh]">
+        <div className="sticky top-0 flex h-[70dvh] flex-col items-center justify-center gap-10 overflow-hidden pt-16 md:h-dvh lg:gap-14">
           <motion.div style={{ scale: ballScale, opacity: ballOpacity }} className="pointer-events-none absolute inset-0">
             <Fullerene burst={burst} className="size-full" />
           </motion.div>
@@ -161,7 +163,7 @@ export function Features() {
       </div>
 
       {/* Phones: the features follow the headline. */}
-      <ul className="mx-auto grid max-w-6xl gap-4 px-4 pb-16 md:hidden">
+      <ul className="relative z-10 mx-auto -mt-[15dvh] grid max-w-6xl gap-4 px-4 pb-16 md:hidden">
         {FEATURES.map(({ key, icon }, i) => (
           <motion.li
             key={key}

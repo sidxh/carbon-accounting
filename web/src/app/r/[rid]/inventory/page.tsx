@@ -11,7 +11,7 @@ import { cn as clsx } from "@/lib/cn";
 import { useRequest } from "@/components/request-context";
 import { ReducePlanner } from "@/components/reduce-planner";
 import { SharedNotice } from "@/components/shared-notice";
-import { EmptyState, PageTitle, SkeletonList, TIER_PILL } from "@/components/ui/bits";
+import { EmptyState, PageTitle, SkeletonList, TIER_BAR, TIER_PILL } from "@/components/ui/bits";
 import { Dialog } from "@/components/ui/dialog";
 import { CheckPills, EvidenceViewer } from "@/components/evidence-viewer";
 import { evidenceFor } from "@/lib/evidence";
@@ -316,22 +316,30 @@ function Row({ uid, pid, line, market, activity, doc, assumptions, onChanged, op
     <>
       {/* The whole row opens it; the chevron button is the keyboard and screen-reader way in. */}
       <tr className={clsx("cursor-pointer border-t hairline transition-colors", open ? "bg-sunken/60" : "hover:bg-sunken/40")} onClick={onToggle}>
-        <td className="px-3 py-2">
+        <td className="px-2 py-2 sm:px-3">
           <button className="flex min-h-9 items-center gap-2 text-left text-xs text-muted" aria-expanded={open} aria-controls={id} onClick={(e) => { e.stopPropagation(); onToggle(); }}>
             <ChevronDown className={clsx("size-4 shrink-0 transition-transform", open && "rotate-180")} aria-hidden />
-            <span className="whitespace-nowrap">{periodLabel(line.period_start, line.period_end, locale)}</span>
+            <span className="min-w-0">
+              <span className="sm:whitespace-nowrap">{periodLabel(line.period_start, line.period_end, locale)}</span>
+              {/* Phones: the energy sits under the period, so the table needs only three columns. */}
+              <span className="block text-sm text-ink sm:hidden">{energyLabel(line.energy_type)}</span>
+            </span>
           </button>
         </td>
-        <td className="px-3 py-2 text-sm">{energyLabel(line.energy_type)}</td>
-        <td className="whitespace-nowrap px-3 py-2 text-right text-sm tabular">{num(line.quantity)} <span className="text-xs text-muted">{line.unit}</span></td>
-        <td className="hidden px-3 py-2 text-right text-xs tabular text-muted sm:table-cell">{line.factor_value.toLocaleString(undefined, { maximumFractionDigits: 4 })}</td>
-        <td className="px-3 py-2 text-right text-sm font-medium tabular">{t1(line.kg_co2e)}</td>
-        <td className="px-3 py-2 text-right"><span className={clsx("pill", TIER_PILL[line.tier])}>{t(`tier.${line.tier}`)}</span></td>
+        <td className="hidden px-2 py-2 sm:px-3 text-sm sm:table-cell">{energyLabel(line.energy_type)}</td>
+        <td className="whitespace-nowrap px-2 py-2 sm:px-3 text-right text-sm tabular">{num(line.quantity)} <span className="text-xs text-muted">{line.unit}</span></td>
+        <td className="hidden px-2 py-2 sm:px-3 text-right text-xs tabular text-muted sm:table-cell">{line.factor_value.toLocaleString(undefined, { maximumFractionDigits: 4 })}</td>
+        <td className="whitespace-nowrap px-2 py-2 sm:px-3 text-right text-sm font-medium tabular">
+          {t1(line.kg_co2e)}
+          {/* Phones: the data quality as a dot beside the tonnes instead of its own column. */}
+          <span className={clsx("ml-1.5 inline-block size-2 rounded-full align-middle sm:hidden", TIER_BAR[line.tier] ?? "bg-muted")} role="img" aria-label={t(`tier.${line.tier}`)} title={t(`tier.${line.tier}`)} />
+        </td>
+        <td className="hidden px-2 py-2 sm:px-3 text-right sm:table-cell"><span className={clsx("pill", TIER_PILL[line.tier])}>{t(`tier.${line.tier}`)}</span></td>
       </tr>
       <AnimatePresence initial={false}>
         {open && (
           <tr id={id} className="bg-sunken/60">
-            <td colSpan={6} className="px-4 pb-5 pt-1">
+            <td colSpan={6} className="px-2 pb-5 pt-1 sm:px-4">
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}>
                 <Calculation uid={uid} pid={pid} line={line} market={market} activity={activity} doc={doc} assumptions={assumptions} onChanged={onChanged} />
               </motion.div>
@@ -662,7 +670,7 @@ function Inventory() {
   const siteName = (id: string) => sites.find((s) => s.id === id)?.name ?? id;
 
   return (
-    <div className="space-y-6 pb-16">
+    <div className="space-y-6 pb-28 sm:pb-16">
       <PageTitle
         title={t("title")}
         lede={t("lede")}
@@ -756,22 +764,25 @@ function Inventory() {
           <table className="w-full text-sm">
             <thead className="text-left text-xs text-muted">
               <tr>
-                <th scope="col" className="px-3 py-2 font-medium">{t("columns.period")}</th>
-                <th scope="col" className="px-3 py-2 font-medium">{t("columns.type")}</th>
-                <th scope="col" className="px-3 py-2 text-right font-medium">{t("columns.quantity")}</th>
-                <th scope="col" className="hidden px-3 py-2 text-right font-medium sm:table-cell">{t("columns.factor")}</th>
-                <th scope="col" className="px-3 py-2 text-right font-medium">{t("columns.emissions")}</th>
-                <th scope="col" className="px-3 py-2 text-right font-medium">{t("columns.tier")}</th>
+                <th scope="col" className="px-2 py-2 sm:px-3 font-medium">{t("columns.period")}</th>
+                <th scope="col" className="hidden px-2 py-2 sm:px-3 font-medium sm:table-cell">{t("columns.type")}</th>
+                <th scope="col" className="px-2 py-2 sm:px-3 text-right font-medium">{t("columns.quantity")}</th>
+                <th scope="col" className="hidden px-2 py-2 sm:px-3 text-right font-medium sm:table-cell">{t("columns.factor")}</th>
+                <th scope="col" className="px-2 py-2 sm:px-3 text-right font-medium">{t("columns.emissions")}</th>
+                <th scope="col" className="hidden px-2 py-2 sm:px-3 text-right font-medium sm:table-cell">{t("columns.tier")}</th>
               </tr>
             </thead>
             {view.groups.map((g) => (
               <tbody key={`${g.scope}-${g.type}`}>
                 <tr className="border-t border-line-strong bg-sunken/40">
-                  <th scope="rowgroup" colSpan={4} className="px-3 py-1.5 text-left text-xs font-semibold">
+                  {/* Spans period and energy on wide screens; on phones (energy hidden) period and quantity. */}
+                  <th scope="rowgroup" colSpan={2} className="px-3 py-1.5 text-left text-xs font-semibold">
                     <span className="pill pill-muted mr-2">{t("scopeN", { n: g.scope })}</span>{energyLabel(g.type)} <span className="font-normal text-muted">· {g.lines.length}</span>
                   </th>
+                  <td className="hidden sm:table-cell" />
+                  <td className="hidden sm:table-cell" />
                   <td className="px-3 py-1.5 text-right text-xs font-semibold tabular">{t1(g.kg)}</td>
-                  <td />
+                  <td className="hidden sm:table-cell" />
                 </tr>
                 {g.lines.map((l) => (
                   <Row

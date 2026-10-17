@@ -438,7 +438,6 @@
     "finalTitle": "Your bills already hold the answer.",
     "finalBody": "Sign in with your email and upload the first one.",
     "footerNote": "Demo build. Bills shown are synthetic; emission factors are real and cited.",
-    "footerLangs": "Language",
     "dashboard": "Go to your dashboard",
     "demo": {
       "aria": "Animated product demo: bills are uploaded and read, a missing LPG quarter is filled after a question, Scope 1 and Scope 2 totals count up with a traceable calculation, and the customer questionnaire is filled for download.",
@@ -481,11 +480,26 @@
       "title": "Every tonne, traced back to a bill.",
       "lede": "NetZero is the sustainability team you don't have. We run the whole job, from the first bill to your customer's answers, and never guess: every number comes from your documents and a published factor.",
       "points": {
-        "customers": { "lead": "Every customer, one place.", "body": "Requests, deadlines and years together." },
-        "bills": { "lead": "Bills, read fast.", "body": "Any language, photo or PDF." },
-        "gaps": { "lead": "Only the real gaps.", "body": "We ask about the missing month, nothing more." },
-        "inventory": { "lead": "Open any number.", "body": "See the bill, the factor, the arithmetic." },
-        "cuts": { "lead": "Cuts and answers.", "body": "A solar plan, and your customer's form filled." }
+        "customers": {
+          "lead": "Every customer, one place.",
+          "body": "Requests, deadlines and years together."
+        },
+        "bills": {
+          "lead": "Bills, read fast.",
+          "body": "Any language, photo or PDF."
+        },
+        "gaps": {
+          "lead": "Only the real gaps.",
+          "body": "We ask about the missing month, nothing more."
+        },
+        "inventory": {
+          "lead": "Open any number.",
+          "body": "See the bill, the factor, the arithmetic."
+        },
+        "cuts": {
+          "lead": "Cuts and answers.",
+          "body": "A solar plan, and your customer's form filled."
+        }
       }
     },
     "howTitle": "Five steps, one afternoon.",
@@ -601,7 +615,8 @@
       "product": "Product",
       "how": "How it works",
       "features": "What it does",
-      "standards": "Standards we cite"
+      "standards": "Standards we cite",
+      "factors": "Emission factors"
     },
     "home": "Home",
     "problem": "The problem",
