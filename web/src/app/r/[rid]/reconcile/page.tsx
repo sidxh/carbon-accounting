@@ -186,10 +186,10 @@ function Chat() {
     }
   }
 
-  async function send(e: React.FormEvent) {
-    e.preventDefault();
-    const msg = text.trim();
-    if (!msg) return;
+  // Sends a reply: typed in the box, or one tap on a quick reply (which goes straight to the chat).
+  async function submit(raw: string) {
+    const msg = raw.trim();
+    if (!msg || busy) return;
     setText("");
     setBusy(true);
     setState((s) => s && { ...s, history: [...s.history, { role: "user", text: msg, at: new Date().toISOString() }] });
@@ -203,6 +203,11 @@ function Chat() {
     }
   }
 
+  function send(e: React.FormEvent) {
+    e.preventDefault();
+    void submit(text);
+  }
+
   if (!state) return <SkeletonList rows={3} />;
 
   const fy: [string, string] = [period.start, period.end];
@@ -210,16 +215,25 @@ function Chat() {
   const started = state.status !== "idle";
   const askable = state.issues.filter((i) => ASKABLE.has(i.kind)).length;
 
-  // A doubtful bill: offer the answers the question put to the owner. A chip only fills the box; the owner still sends it.
+  // Quick replies for the question being asked, worked out from the open issue (its kind and the figures it carries),
+  // never from the bills' contents, so any upload gets sensible ones. Each is a plain sentence that the agent reads
+  // exactly like a typed answer; the box stays for anything else.
   const pending = state.issues.find((i) => i.id === state.pending_issue_id);
   const quick: string[] = [];
-  if (state.status === "asking" && pending && CHECK_KINDS.has(pending.kind)) {
+  if (state.status === "asking" && pending) {
     const qn = (n: number) => n.toLocaleString(locale, { maximumFractionDigits: n >= 100 ? 0 : 2 });
-    const unit = pending.unit ?? "";
-    const s = pending.suggested_quantity, p = pending.printed_quantity;
-    if (s != null && p != null && Math.abs(s - p) > 0.5) quick.push(t("quickReadings", { qty: qn(s), unit }));
-    if (p != null) quick.push(t("quickPrinted", { qty: qn(p), unit }));
-    quick.push(t("quickLeaveOut"));
+    if (pending.kind === "gap") {
+      quick.push(t("quickSimilar"), t("quickDidntRun"));
+    } else if (CHECK_KINDS.has(pending.kind) || pending.kind === "low_confidence") {
+      const unit = pending.unit ?? "";
+      const s = pending.suggested_quantity, p = pending.printed_quantity;
+      if (s != null && p != null && Math.abs(s - p) > 0.5) quick.push(t("quickReadings", { qty: qn(s), unit }));
+      if (p != null) quick.push(t("quickPrinted", { qty: qn(p), unit }));
+      else quick.push(t("quickCorrect"));
+      quick.push(t("quickLeaveOut"));
+    } else if (ASKABLE.has(pending.kind)) {
+      quick.push(t("quickLeaveOut"));
+    }
   }
 
   return (
@@ -284,7 +298,7 @@ function Chat() {
                     type="button"
                     className="rounded-full border border-line bg-raised px-3 py-1.5 text-left text-xs leading-snug text-ink transition-colors hover:border-signal hover:bg-signal-bg disabled:opacity-50"
                     disabled={busy}
-                    onClick={() => { setText(q); input.current?.focus(); }}
+                    onClick={() => void submit(q)}
                   >
                     {q}
                   </button>
