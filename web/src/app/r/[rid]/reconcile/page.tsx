@@ -252,9 +252,8 @@ function Chat() {
         </div>
       ) : (
         <>
-          {/* Wide screens: the checklist stays in view on the left while the conversation takes the room on the right. */}
-          <div className={clsx("grid items-start gap-5", askable > 0 && "lg:grid-cols-[minmax(0,300px)_minmax(0,1fr)]")}>
-          <div className="lg:sticky lg:top-24 lg:max-h-[calc(100dvh-8rem)] lg:overflow-y-auto"><OpenItems state={state} /></div>
+          {/* The checklist above, the conversation below it across the full width. */}
+          <OpenItems state={state} />
 
           <section className="card overflow-hidden" aria-labelledby="chat-h">
             <div className="flex items-center justify-between gap-2 border-b hairline px-4 py-3">
@@ -322,7 +321,6 @@ function Chat() {
               </form>
             )}
           </section>
-          </div>
 
           <div className="flex flex-wrap items-center gap-2">
             {state.status === "done" && (
