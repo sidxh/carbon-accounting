@@ -45,7 +45,7 @@ here is decoration: remove any one and a feature stops.
 | **Cloud Storage** | Uploaded bills and generated files, served through signed links | [`storage.py`](agent/app/storage.py), [`infra/storage.rules`](infra/storage.rules) |
 | **Secret Manager** | API keys, read by the service account, never in code, logs or the browser | [`infra/deploy.sh`](infra/deploy.sh) |
 | **IAM, service accounts and Workload Identity Federation** | The agent runs as its own service account; GitHub Actions deploys with no key files | [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) |
-| **Cloud Logging** | The agent's request log, used to verify a live deploy | [`docs/testing-notes.md`](docs/testing-notes.md) |
+| **Cloud Logging** | The agent's request log, used to verify a live deploy | [`infra/deploy.sh`](infra/deploy.sh) |
 | **Firebase Emulator Suite** | The same Auth and Firestore locally, so development and tests need no cloud account | [`scripts/dev.sh`](scripts/dev.sh) |
 
 One data source is not Google: **PVGIS** (EU Joint Research Centre) is the solar fallback where Google's Solar API has

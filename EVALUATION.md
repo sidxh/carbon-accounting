@@ -207,4 +207,3 @@ questionnaire filler by [`scripts/eval_questionnaires.py`](agent/scripts/eval_qu
 - Price bands and solar installed costs are analyst estimates.
 - Scope 3 is out of scope. Product footprints (PACT, Catena-X) are out of scope.
 - Buyer portals (Secaro, Project Gigaton and similar) are not integrated; the answer pack carries the same numbers.
-- The long manual test plan is kept in [docs/testing-notes.md](docs/testing-notes.md).

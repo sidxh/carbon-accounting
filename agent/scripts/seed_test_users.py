@@ -5,7 +5,7 @@ a gitignored file, `agent/.test_users.json`, so no password is ever committed or
 
     [{"email": "evaluator1@example.com", "password": "..."}, ...]
 
-    .venv/bin/python -m scripts.seed_test_users --init --domain siddhantxh.com   # write the file, random passwords
+    .venv/bin/python -m scripts.seed_test_users --init --domain example.com   # write the file, random passwords
     .venv/bin/python -m scripts.seed_test_users --emulator                       # create them in the Auth emulator
     .venv/bin/python -m scripts.seed_test_users                                  # create/update them in the real project
 

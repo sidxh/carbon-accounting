@@ -104,7 +104,6 @@ agent/        FastAPI service: extraction, checks, calculator, advisor, question
 web/          Next.js app (pages under src/app, copy under messages/)
 data/         factors, price bands, levers, questionnaire banks, templates, golden set (every row cited)
 infra/        Cloud Run, Cloud Build, Firestore and Storage rules, deploy.sh
-docs/         testing-notes.md (the long manual test plan)
 ```
 
 ## Data and honesty
