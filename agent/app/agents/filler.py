@@ -282,7 +282,7 @@ def write_answers(template: bytes, answers: list[Answer], offset: int = 1) -> by
                 a_reason = f"choose from the list: {', '.join(options[:8])}"
                 target.value = None
                 target.fill = FLAG_FILL
-                target.comment = Comment(f"{a_reason}. Answer drafted: {text_value}", "supplier-carbon agent")
+                target.comment = Comment(f"{a_reason}. Answer drafted: {text_value}", "NetZero agent")
                 if note is not None:
                     note.value = a_reason
                 continue
@@ -294,14 +294,14 @@ def write_answers(template: bytes, answers: list[Answer], offset: int = 1) -> by
             if note is not None and a.flag_reason:
                 note.value = a.flag_reason
             if empty and options:
-                target.comment = Comment(f"Open: {a.flag_reason}", "supplier-carbon agent")
+                target.comment = Comment(f"Open: {a.flag_reason}", "NetZero agent")
                 continue
         else:
             target.value = text_value
             target.fill = EDITED_FILL if a.edited else OK_FILL
             if a.note and note is not None:
                 note.value = a.note
-        target.comment = Comment(f"Source: {a.source}", "supplier-carbon agent")
+        target.comment = Comment(f"Source: {a.source}", "NetZero agent")
     buf = io.BytesIO()
     wb.save(buf)
     return buf.getvalue()

@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "Supplier Carbon",
+    "name": "NetZero",
     "tagline": "Forward the email. Photograph the bills. Get back the completed questionnaire.",
     "signOut": "Sign out",
     "language": "Language",
@@ -368,7 +368,7 @@
     "expandAll": "Expand all",
     "collapseAll": "Collapse all",
     "emptyTitle": "No questionnaire filled yet",
-    "emptyBody": "Upload the Excel your customer sent. data/templates/cdp_sme_questionnaire.xlsx is a sample laid out like the offline CDP sheet that buyers circulate.",
+    "emptyBody": "Upload the Excel your customer sent, or try the sample questionnaire on the left.",
     "ring": {
       "auto": "From your data",
       "yours": "Answered by you",
@@ -396,7 +396,9 @@
       "vsmeFilled": "{n} cells filled",
       "vsmeLeft": "{n} left for you",
       "vsmeExcel": "Best opened in Excel, once, before converting: the template runs its own checks when it opens. Green cells are ours, yellow are yours to complete."
-    }
+    },
+    "sampleDownload": "Download a sample customer questionnaire",
+    "sampleHint": "A Japanese buyer's emissions survey for April 2025 to March 2026, in Japanese and English. It matches the sample bills: fill it in and open the result."
   },
   "common": {
     "loading": "Loading…",
@@ -407,9 +409,9 @@
     "navLabel": "Main",
     "continue": "Continue",
     "eyebrow": "Customer asking for your carbon emissions?",
-    "h1a": "Upload your bills.",
-    "h1b": "Get the questionnaire back, filled.",
-    "sub": "Your customer sent an emissions questionnaire. Upload your electricity, fuel and refrigerant bills; we read them, ask only what the bills cannot tell us, and hand back a Scope 1 and 2 inventory with every number traced to a document and a published factor.",
+    "h1a": "No sustainability team?",
+    "h1b": "You won't need one.",
+    "sub": "Don't worry, we'll get it done. Upload your electricity, fuel and refrigerant bills; we read them, ask only what the bills can't tell us, and hand back your Scope 1 and 2 numbers, each traced to a bill and a published factor.",
     "cta": "Start with your bills",
     "steps": {
       "bills": {
@@ -476,8 +478,8 @@
     },
     "howTitle": "Five steps, one afternoon.",
     "flow": {
-      "on": "Supplier Carbon is on.",
-      "aria": "Supplier Carbon at work: bills are uploaded and read, a bill is scanned and a missing month is asked about, the Scope 1 and 2 inventory builds, a reduction plan puts solar on the roof and ranks the cuts, and the customer's questionnaire is filled.",
+      "on": "NetZero is on.",
+      "aria": "NetZero at work: bills are uploaded and read, a bill is scanned and a missing month is asked about, the Scope 1 and 2 inventory builds, a reduction plan puts solar on the roof and ranks the cuts, and the customer's questionnaire is filled.",
       "words": {
         "bills": "Reads your bills",
         "questions": "Asks what's missing",

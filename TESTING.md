@@ -65,6 +65,17 @@ agent/.venv/bin/python data/golden/build_pack.py          # writes web/public/sa
 (cd agent && PYTHONPATH=. .venv/bin/python -m scripts.eval_extraction --pack)   # how the reader does on it
 ```
 
+The Questionnaire page offers the matching customer sheet ("Download a sample customer questionnaire"):
+`web/public/sample-questionnaire-japan.xlsx`, a blank bilingual (Japanese and English) supplier survey for the same
+year, with sections for company details, emissions, energy (kWh, m³ of city gas, kg of LPG, kL of diesel and petrol),
+intensity and allocation, targets and data quality, and dropdowns from a hidden list sheet. Upload the pack, answer the
+questions, calculate, then fill this sheet: emissions and energy fill with units converted, and the target and intensity
+questions are left flagged for the supplier. It is written by `agent/scripts/make_sample_questionnaire.py`:
+
+```bash
+cd agent && PYTHONPATH=. .venv/bin/python -m scripts.make_sample_questionnaire   # writes web/public/sample-questionnaire-japan.xlsx
+```
+
 ### Repeating a scenario
 
 Your email address is your supplier: the Firebase uid is the Firestore

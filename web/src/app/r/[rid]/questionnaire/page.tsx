@@ -349,6 +349,13 @@ function Questionnaire() {
                   <button className="btn btn-secondary rounded-full" onClick={() => fillAttached()} disabled={busy}><FileSpreadsheet className="size-4" aria-hidden />{t("fillAttached")}</button>
                 )}
               </div>
+              {/* Nothing to try with? A sample Japanese buyer's survey (public/), matching the sample bills; shown until a questionnaire is filled. */}
+              {!latest && (
+                <div className="flex flex-col items-center gap-1.5">
+                  <a href="/sample-questionnaire-japan.xlsx" download className="btn btn-secondary rounded-full"><Download className="size-4" aria-hidden />{t("sampleDownload")}</a>
+                  <p className="text-xs text-pretty text-muted">{t("sampleHint")}</p>
+                </div>
+              )}
             </div>
             <div className="space-y-4 px-5 pb-5 pt-1">
               <div>

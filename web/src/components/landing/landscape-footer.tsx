@@ -80,7 +80,7 @@ export function LandscapeFooter({ go, cta }: { go: string; cta: string }) {
           </div>
         </div>
         <div className="flex flex-col gap-2 pt-6 text-xs text-signal-on/60 sm:flex-row sm:justify-between">
-          <span>© {new Date().getFullYear()} Supplier Carbon</span>
+          <span>© {new Date().getFullYear()} NetZero</span>
           <span>{tl("footerNote")}</span>
         </div>
       </div>

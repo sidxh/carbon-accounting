@@ -1,1 +1,1 @@
-"""Supplier carbon reporting agent service."""
+"""NetZero carbon reporting agent service."""

@@ -52,7 +52,7 @@ cmd_setup() {
     || gcloud artifacts repositories create "$REPO" --repository-format=docker --location="$REGION"
   say "service account $SA"
   gcloud iam service-accounts describe "$SA" >/dev/null 2>&1 \
-    || gcloud iam service-accounts create "$SA_NAME" --display-name="Supplier Carbon agent"
+    || gcloud iam service-accounts create "$SA_NAME" --display-name="NetZero agent"
   # roles/aiplatform.user lets the agent call Gemini on Vertex AI with its own identity: no API key, no free-tier cap.
   for role in roles/datastore.user roles/storage.objectAdmin roles/secretmanager.secretAccessor roles/aiplatform.user; do
     gcloud projects add-iam-policy-binding "$PROJECT" --member="serviceAccount:$SA" --role="$role" --condition=None >/dev/null
