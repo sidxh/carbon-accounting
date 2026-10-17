@@ -384,21 +384,23 @@
     "billsBehind": "Hóa đơn của con số này",
     "noBills": "Không có hóa đơn nào cho con số này.",
     "portal": {
-      "title": "Không có file Excel? Câu trả lời cho cổng thông tin, hoặc mẫu của EU",
-      "lede": "CDP, Higg và EcoVadis được trả lời ngay trên nền tảng của họ. Chúng tôi đưa sẵn từng câu trả lời, cách tính và tài liệu cần đính kèm.",
+      "title": "Trả lời trên cổng thông tin?",
+      "lede": "Câu trả lời sẵn để sao chép cho CDP, Higg và EcoVadis, hoặc mẫu VSME của EFRAG đã điền cho bên mua EU.",
       "questions": "{n} câu hỏi",
-      "openPack": "Mở gói câu trả lời",
+      "openPack": "Mở",
       "needInventory": "Hãy tính kiểm kê của bạn trước.",
-      "vsmeTitle": "VSME của EU: mẫu số của chính EFRAG",
-      "vsmeBody": "Dành cho khách hàng EU báo cáo theo chuẩn VSME. Chúng tôi điền mẫu Excel của EFRAG, các mô-đun B1 và B3, phần còn lại giữ nguyên như EFRAG phát hành.",
-      "vsmeDownload": "Tải mẫu đã điền",
+      "vsmeTitle": "VSME của EU",
+      "vsmeBody": "Mẫu Excel của EFRAG, mô-đun B1 và B3",
+      "vsmeDownload": "Tải về",
       "vsmeBusy": "Đang điền…",
       "vsmeFilled": "Đã điền {n} ô",
       "vsmeLeft": "{n} ô dành cho bạn",
-      "vsmeExcel": "Nên mở bằng Excel một lần trước khi chuyển đổi: mẫu tự chạy các kiểm tra khi mở. Ô xanh do chúng tôi điền, ô vàng là phần bạn hoàn thiện."
+      "vsmeExcel": "Nên mở bằng Excel một lần trước khi chuyển đổi: mẫu tự chạy các kiểm tra khi mở. Ô xanh do chúng tôi điền, ô vàng là phần bạn hoàn thiện.",
+      "openPackAria": "Mở gói câu trả lời",
+      "vsmeDownloadAria": "Tải mẫu đã điền"
     },
-    "sampleDownload": "Tải bảng câu hỏi mẫu của khách hàng",
-    "sampleHint": "Phiếu khảo sát phát thải của một bên mua Nhật Bản cho tháng 4/2025 đến tháng 3/2026, bằng tiếng Nhật và tiếng Anh. Khớp với bộ hóa đơn mẫu: điền vào rồi mở kết quả."
+    "sampleDownload": "Bảng câu hỏi mẫu",
+    "sampleHint": "Bên mua Nhật Bản, năm 2025. Khớp với hóa đơn mẫu."
   },
   "common": {
     "loading": "Đang tải…",

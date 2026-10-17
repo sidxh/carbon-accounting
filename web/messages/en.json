@@ -384,21 +384,23 @@
     "billsBehind": "Bills behind this number",
     "noBills": "No bill is behind this number.",
     "portal": {
-      "title": "No spreadsheet? Answers for a portal, or the EU template",
-      "lede": "CDP, Higg and EcoVadis are answered inside their own platforms. We give you every answer, how it was computed and which documents to attach.",
+      "title": "Answering in a portal instead?",
+      "lede": "Copy-ready answers for CDP, Higg and EcoVadis, or EFRAG's VSME template filled for EU buyers.",
       "questions": "{n} questions",
-      "openPack": "Open the answer pack",
+      "openPack": "Open",
       "needInventory": "Calculate your inventory first.",
-      "vsmeTitle": "EU VSME: EFRAG's own Digital Template",
-      "vsmeBody": "For an EU customer that reports under the VSME standard. We fill EFRAG's Excel template, modules B1 and B3, and leave the rest as EFRAG shipped it.",
-      "vsmeDownload": "Download the filled template",
+      "vsmeTitle": "EU VSME",
+      "vsmeBody": "EFRAG's Excel template, modules B1 and B3",
+      "vsmeDownload": "Download",
       "vsmeBusy": "Filling…",
       "vsmeFilled": "{n} cells filled",
       "vsmeLeft": "{n} left for you",
-      "vsmeExcel": "Best opened in Excel, once, before converting: the template runs its own checks when it opens. Green cells are ours, yellow are yours to complete."
+      "vsmeExcel": "Best opened in Excel, once, before converting: the template runs its own checks when it opens. Green cells are ours, yellow are yours to complete.",
+      "openPackAria": "Open the answer pack",
+      "vsmeDownloadAria": "Download the filled template"
     },
-    "sampleDownload": "Download a sample customer questionnaire",
-    "sampleHint": "A Japanese buyer's emissions survey for April 2025 to March 2026, in Japanese and English. It matches the sample bills: fill it in and open the result."
+    "sampleDownload": "Sample questionnaire",
+    "sampleHint": "Japanese buyer, FY2025. Matches the sample bills."
   },
   "common": {
     "loading": "Loading…",

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { motion } from "motion/react";
-import { ArrowRight, Check, ChevronDown, Download, FileSpreadsheet, FileText, Globe, Lock, Pencil, ScanSearch, UploadCloud } from "lucide-react";
+import { ArrowRight, Check, ChevronDown, Download, FileSpreadsheet, FileText, Lock, Pencil, ScanSearch, UploadCloud } from "lucide-react";
 import { cn as clsx } from "@/lib/cn";
 import { useRequest } from "@/components/request-context";
 import { SkeletonList } from "@/components/ui/bits";
@@ -113,6 +113,11 @@ function sectionOf(ref: string | null | undefined, fallback: string): string {
   return m ? m[1] : fallback;
 }
 
+/** Short names for the portal packs, by bank id; anything else shows its publisher. */
+const PACK_SHORT: Record<string, string> = { cdp_sme: "CDP", higg_fem_energy: "Higg FEM", ecovadis_carbon: "EcoVadis" };
+/** Up to three capitals of a short name, for its badge: "CDP", "HF", "EV". */
+const monogram = (name: string) => (name.match(/[A-Z]/g) ?? [name[0]]).slice(0, 3).join("");
+
 /** Questionnaires with no spreadsheet to fill: portal packs, and EFRAG's own template for the EU VSME. */
 function PortalOptions({ uid, rid, periodId }: { uid: string; rid: string; periodId: string }) {
   const t = useTranslations("questionnaire.portal");
@@ -137,38 +142,46 @@ function PortalOptions({ uid, rid, periodId }: { uid: string; rid: string; perio
     }
   }
 
+  const row = "flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3.5 sm:px-5";
+  const badge = "grid size-10 shrink-0 place-items-center rounded-full bg-signal-bg text-[11px] font-semibold tracking-wide text-signal-ink";
   return (
     <section className="space-y-3" aria-labelledby="portal-h">
       <div>
-        <h2 id="portal-h" className="font-mono text-xs text-signal-ink">↳ {t("title")}</h2>
-        <p className="mt-1 text-sm text-muted">{t("lede")}</p>
+        <h2 id="portal-h" className="font-display text-xl text-ink">{t("title")}</h2>
+        <p className="mt-0.5 text-sm text-pretty text-muted">{t("lede")}</p>
       </div>
-      <ul className="grid items-start gap-3 md:grid-cols-2">
-        {packs.map((p) => (
-          <li key={p.id} className="flex flex-col justify-between gap-4 rounded-[20px] border border-signal/15 bg-raised p-5 text-sm shadow-[var(--shadow-raised)]">
-            <div className="flex items-start gap-3">
-              <span className="grid size-10 shrink-0 place-items-center rounded-full bg-signal-bg text-signal-ink"><Globe className="size-5" aria-hidden /></span>
-              <div>
-                <div className="font-display text-lg font-semibold leading-tight text-ink">{p.name}</div>
-                <div className="mt-0.5 text-xs text-muted">{p.publisher} · {t("questions", { n: p.questions })}</div>
+      {/* One card, one row per option: who it is for, a line on what it is, and the way in. */}
+      <ul className="divide-y divide-line overflow-hidden rounded-[24px] border border-signal/15 bg-raised shadow-[var(--shadow-raised)]">
+        {packs.map((p) => {
+          const short = PACK_SHORT[p.id] ?? p.publisher;
+          const detail = p.name.replace(new RegExp(`^${short.split(" ")[0]}[\\s,:]*`, "i"), "").replace(/^./, (c) => c.toUpperCase());
+          return (
+            <li key={p.id} className={clsx(row, "relative transition-colors hover:bg-sunken/50")}>
+              <span className={badge} aria-hidden>{monogram(short)}</span>
+              <div className="min-w-0 flex-1">
+                <div className="font-medium text-ink">{short}</div>
+                <div className="truncate text-xs text-muted" title={p.name}>{detail} · {t("questions", { n: p.questions })}</div>
               </div>
+              {/* The pill is the visible way in; its link covers the whole row. */}
+              <Link href={`/r/${rid}/pack/${p.id}`} aria-label={`${t("openPackAria")}: ${p.name}`} className="btn btn-secondary btn-sm shrink-0 gap-1 rounded-full after:absolute after:inset-0 after:content-['']">
+                {t("openPack")}<ArrowRight className="size-3.5" aria-hidden />
+              </Link>
+            </li>
+          );
+        })}
+        <li className="px-4 py-3.5 sm:px-5">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <span className={badge} aria-hidden>EU</span>
+            <div className="min-w-0 flex-1">
+              <div className="font-medium text-ink">{t("vsmeTitle")}</div>
+              <div className="truncate text-xs text-muted">{t("vsmeBody")}</div>
             </div>
-            <Link href={`/r/${rid}/pack/${p.id}`} className="btn btn-secondary btn-sm self-start rounded-full">{t("openPack")}<ArrowRight className="size-4" aria-hidden /></Link>
-          </li>
-        ))}
-        <li className="flex flex-col justify-between gap-4 rounded-[20px] border border-signal/15 bg-raised p-5 text-sm shadow-[var(--shadow-raised)]">
-          <div className="flex items-start gap-3">
-            <span className="grid size-10 shrink-0 place-items-center rounded-full bg-signal-bg text-signal-ink"><FileSpreadsheet className="size-5" aria-hidden /></span>
-            <div>
-              <div className="font-display text-lg font-semibold leading-tight text-ink">{t("vsmeTitle")}</div>
-              <p className="mt-0.5 text-xs text-muted">{t("vsmeBody")}</p>
-            </div>
-          </div>
-          <div>
-            <button className="btn btn-secondary btn-sm rounded-full" onClick={buildVsme} disabled={busy}><Download className="size-4" aria-hidden />{busy ? t("vsmeBusy") : t("vsmeDownload")}</button>
+            <button className="btn btn-secondary btn-sm shrink-0 gap-1 rounded-full" onClick={buildVsme} disabled={busy} aria-label={busy ? undefined : t("vsmeDownloadAria")}>
+              <Download className="size-3.5" aria-hidden />{busy ? t("vsmeBusy") : t("vsmeDownload")}
+            </button>
           </div>
           {vsme && (
-            <div className="space-y-2.5 border-t hairline pt-3 text-xs" role="status">
+            <div className="mt-3 space-y-2.5 border-t hairline pt-3 text-xs sm:ml-14" role="status">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-signal-bg px-2.5 py-1 font-medium text-signal-ink">
                   <Check className="size-3.5" aria-hidden />{t("vsmeFilled", { n: vsme.filled.length })}
@@ -207,6 +220,7 @@ function PortalOptions({ uid, rid, periodId }: { uid: string; rid: string; perio
     </section>
   );
 }
+
 
 function Questionnaire() {
   const { uid, period, request, progress, reload } = useRequest();
@@ -328,8 +342,8 @@ function Questionnaire() {
       </header>
 
       <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
-        {/* Left: everything you do, held in view. ------------------------------------------ */}
-        <div className="space-y-4 lg:sticky lg:top-24">
+        {/* Left: the customer's Excel, then the options for when there is none. --------------- */}
+        <div className="space-y-6">
           <section aria-labelledby="fill-h" className="overflow-hidden rounded-[24px] border border-signal/15 bg-raised shadow-[var(--shadow-raised)]">
             <div
               className={clsx("m-3 flex flex-col items-center gap-3 rounded-[18px] border border-dashed px-4 py-6 text-center transition-colors", dragging ? "border-signal bg-signal-bg" : "border-signal/30")}
@@ -349,13 +363,11 @@ function Questionnaire() {
                   <button className="btn btn-secondary rounded-full" onClick={() => fillAttached()} disabled={busy}><FileSpreadsheet className="size-4" aria-hidden />{t("fillAttached")}</button>
                 )}
               </div>
-              {/* Nothing to try with? A sample Japanese buyer's survey (public/), matching the sample bills; shown until a questionnaire is filled. */}
-              {!latest && (
-                <div className="flex flex-col items-center gap-1.5">
-                  <a href="/sample-questionnaire-japan.xlsx" download className="btn btn-secondary rounded-full"><Download className="size-4" aria-hidden />{t("sampleDownload")}</a>
-                  <p className="text-xs text-pretty text-muted">{t("sampleHint")}</p>
-                </div>
-              )}
+              {/* Nothing to try with? A sample Japanese buyer's survey (public/), matching the sample bills; always on offer. */}
+              <div className="flex max-w-full flex-col items-center gap-1.5">
+                <a href="/sample-questionnaire-japan.xlsx" download className="btn btn-secondary rounded-full"><Download className="size-4" aria-hidden />{t("sampleDownload")}</a>
+                <p className="max-w-full truncate whitespace-nowrap text-xs text-muted">{t("sampleHint")}</p>
+              </div>
             </div>
             <div className="space-y-4 px-5 pb-5 pt-1">
               <div>
@@ -368,27 +380,29 @@ function Questionnaire() {
             </div>
           </section>
 
-          {latest ? (
-            <section aria-label={t("answersTitle")} className="flex flex-col gap-4 rounded-[24px] border border-signal/15 bg-gradient-to-br from-signal-bg to-raised p-5 shadow-[var(--shadow-raised)]">
-              <ProgressRing auto={auto} yours={yours} open={open} />
-              <button className="btn w-full rounded-full" onClick={() => api.download(api.questionnaireFilePath(uid, latest.id), "questionnaire-filled.xlsx")}>
-                <Download className="size-4" aria-hidden />{t("download")}
-              </button>
-            </section>
-          ) : (
-            <p className="rounded-[20px] border border-dashed border-signal/30 bg-signal-bg/50 px-5 py-4 text-sm text-pretty text-ink-soft">{t("legend")}</p>
-          )}
+          {/* No spreadsheet from the customer: portal answer packs and the EU template. */}
+          {progress.inventory && <PortalOptions uid={uid} rid={rid} periodId={period.id} />}
         </div>
 
-        {/* Right: the answers, one card per section of the customer's sheet. --------------- */}
+        {/* Right: the result, then the answers, one card per section of the customer's sheet. */}
         <div className="space-y-3">
           {!latest ? (
-            <div className="rounded-[24px] border border-dashed border-signal/30 bg-raised/80 px-6 py-10 text-center">
-              <p className="font-display text-xl text-ink">{t("emptyTitle")}</p>
-              <p className="mx-auto mt-1 max-w-md text-sm text-pretty text-muted">{t("emptyBody")}</p>
-            </div>
+            <>
+              <div className="rounded-[24px] border border-dashed border-signal/30 bg-raised/80 px-6 py-10 text-center">
+                <p className="font-display text-xl text-ink">{t("emptyTitle")}</p>
+                <p className="mx-auto mt-1 max-w-md text-sm text-pretty text-muted">{t("emptyBody")}</p>
+              </div>
+              <p className="rounded-[20px] border border-dashed border-signal/30 bg-signal-bg/50 px-5 py-4 text-sm text-pretty text-ink-soft">{t("legend")}</p>
+            </>
           ) : (
             <>
+              {/* The result first: how much is filled, and the file to send back. */}
+              <section aria-label={t("download")} className="flex flex-col gap-4 rounded-[24px] border border-signal/15 bg-gradient-to-br from-signal-bg to-raised p-5 shadow-[var(--shadow-raised)] sm:flex-row sm:items-center sm:justify-between">
+                <ProgressRing auto={auto} yours={yours} open={open} />
+                <button className="btn w-full rounded-full sm:w-auto" onClick={() => api.download(api.questionnaireFilePath(uid, latest.id), "questionnaire-filled.xlsx")}>
+                  <Download className="size-4" aria-hidden />{t("download")}
+                </button>
+              </section>
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <h2 className="font-mono text-xs text-signal-ink">↳ {t("answersTitle")}<span className="text-muted"> · {latest.answers.length}</span></h2>
                 {sections.length > 1 && (
@@ -426,7 +440,6 @@ function Questionnaire() {
             </>
           )}
 
-          {progress.inventory && <div className="pt-4"><PortalOptions uid={uid} rid={rid} periodId={period.id} /></div>}
         </div>
       </div>
 
