@@ -41,18 +41,19 @@ const SPHERE = 0.667;
  * in px from the viewport centre. In A its top edge sits just under the hero copy,
  * measured live, so the two never overlap at any window height.
  */
-function useStages(copy: React.RefObject<HTMLDivElement | null>) {
-  const [v, setV] = useState({ w: 1440, h: 900, copyBottom: 420 });
+function useStages(copy: React.RefObject<HTMLDivElement | null>, story: React.RefObject<HTMLDivElement | null>) {
+  const [v, setV] = useState({ w: 1440, h: 900, copyBottom: 420, storyH: 360 });
   useEffect(() => {
-    const el = copy.current;
-    // offsetTop/offsetHeight ignore the scroll-linked transform on the copy.
-    const on = () => setV({ w: window.innerWidth, h: window.innerHeight, copyBottom: el ? el.offsetTop + el.offsetHeight : 420 });
+    const el = copy.current, st = story.current;
+    // offsetTop/offsetHeight ignore the scroll-linked transforms on the copy and the story.
+    const on = () => setV({ w: window.innerWidth, h: window.innerHeight, copyBottom: el ? el.offsetTop + el.offsetHeight : 420, storyH: st ? st.offsetHeight : 360 });
     on();
     window.addEventListener("resize", on);
-    const ro = el ? new ResizeObserver(on) : null;
-    if (el) ro?.observe(el);
-    return () => { window.removeEventListener("resize", on); ro?.disconnect(); };
-  }, [copy]);
+    const ro = new ResizeObserver(on);
+    if (el) ro.observe(el);
+    if (st) ro.observe(st);
+    return () => { window.removeEventListener("resize", on); ro.disconnect(); };
+  }, [copy, story]);
   const wide = v.w >= 768; // matches Tailwind `md`, where the story goes beside the earth
   // Box size: wide enough that the risen earth spans most of the first view.
   const S = wide ? Math.min(1500, v.w * 1.3) : Math.min(1150, Math.max(420, v.w * 1.3));
@@ -60,11 +61,16 @@ function useStages(copy: React.RefObject<HTMLDivElement | null>) {
   // A: centred, top edge a little below the copy (never above 45% of the viewport).
   const top = Math.max(v.copyBottom + (wide ? 72 : 40), 0.45 * v.h);
   const a = { x: 0, y: top - v.h / 2 + d / 2, s: 1 };
-  // B: a whole sphere beside the story on wide screens, above it on narrow ones.
-  const dB = wide ? Math.min(0.34 * v.w, 0.56 * v.h, 520) : Math.min(0.62 * v.w, 0.34 * v.h);
+  // B: a whole sphere beside the story on wide screens, above it on narrow ones. On
+  // narrow screens the story's height is measured, so the earth and its orbit ring
+  // (about 1.3 times the sphere, tags included) fit between the nav and the story.
+  const NAV = 88, RING = 1.3;
+  const storyTop = v.h - v.storyH;
+  const gap = Math.max(storyTop - NAV - 16, 120);
+  const dB = wide ? Math.min(0.34 * v.w, 0.56 * v.h, 520) : Math.min(0.62 * v.w, gap / RING);
   const b = wide
     ? { x: Math.min(0.21 * v.w, 330), y: 0.03 * v.h, s: dB / d }
-    : { x: 0, y: -0.2 * v.h, s: dB / d };
+    : { x: 0, y: NAV + gap / 2 - v.h / 2, s: dB / d };
   return { S, a, b };
 }
 
@@ -82,7 +88,8 @@ export function EarthHero({ go, cta }: { go: string; cta: string }) {
   const velocity = useVelocity(scrollY);
   const boost = useTransform(velocity, (v) => Math.min(Math.abs(v) / 1500, 3));
   const copy = useRef<HTMLDivElement>(null);
-  const { S, a, b } = useStages(copy);
+  const story = useRef<HTMLDivElement>(null);
+  const { S, a, b } = useStages(copy, story);
 
   const move = [0, 0.55];
   const x = useTransform(p, move, [a.x, b.x], { ease: GLIDE });
@@ -171,7 +178,7 @@ export function EarthHero({ go, cta }: { go: string; cta: string }) {
           className={cn("absolute inset-x-0 bottom-0 z-10 md:inset-y-0 md:flex md:items-center", stage !== "story" && "pointer-events-none")}
           aria-hidden={stage !== "story"}
         >
-          <div className="mx-auto w-full max-w-6xl px-4 pb-10 md:px-8 md:pb-0">
+          <div ref={story} className="mx-auto w-full max-w-6xl px-4 pb-10 md:px-8 md:pb-0">
             <div className="max-w-lg md:max-w-[min(480px,42%)]">
               {/* Same pill as the first view's question. */}
               <p className="inline-flex items-center gap-2 rounded-full border border-signal/20 bg-signal-bg px-4 py-1.5 text-sm font-medium text-signal-ink sm:text-[15px]">

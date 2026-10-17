@@ -32,7 +32,11 @@ export function LandscapeFooter({ go, cta }: { go: string; cta: string }) {
 
   return (
     <footer className="relative" style={{ backgroundColor: GROUND }}>
-      <div className="bg-paper"><Landscape className="block h-[220px] w-full sm:h-[290px] lg:h-[360px]" /></div>
+      <div className="bg-paper">
+        <Landscape className="hidden h-[290px] w-full sm:block lg:h-[360px]" />
+        {/* Phones: the full width would shrink to a sliver, so frame the right-hand scene, farmhouse, tree and hill. */}
+        <Landscape className="block h-[250px] w-full sm:hidden" viewBox="780 60 660 360" />
+      </div>
       <div className="mx-auto max-w-6xl px-4 pb-10 pt-4 text-signal-on">
         <div className="grid gap-10 border-b border-signal-on/15 pb-10 sm:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1.3fr_1fr] lg:divide-x lg:divide-signal-on/15">
           <div className="lg:pr-8">

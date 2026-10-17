@@ -230,3 +230,5 @@ Every animation respects `prefers-reduced-motion`; `globals.css` collapses all d
 - Don't hand-roll focus traps, menus or OTP inputs; the primitives are chosen.
 - Don't animate layout properties, and don't animate anything the user triggers from the keyboard.
 - Don't change `letter-spacing` outside `eyebrow` and `display`.
+
+Phones. On the landing hero's second view the story is measured and the earth, with its orbit ring and tags, is sized to fit between the nav and the story's pill, so nothing sits on the globe. The features section pins a shorter frame on phones (70% of the screen over 1.5 screens of scroll), and the cards follow right under the headline. The footer landscape crops to its right-hand scene (farmhouse, big tree, hill) on phones instead of showing a thin middle strip. App pages pad their foot by 40px; only the Inventory step, with its fixed bottom bar, adds more. The inventory lines table drops to three columns on phones: the period with the energy under it, the quantity, and the tonnes with a data-quality dot. The energy and quality columns return from `sm` up, so an opened row never needs sideways scrolling.
