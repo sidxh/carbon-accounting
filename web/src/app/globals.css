@@ -33,6 +33,15 @@
   --secondary-tier: #4b5f8a;
   --secondary-tier-bg: #e8edf7;
 
+  /* The problem page reads on deep green: beige text, a light-teal accent, an amber wash for the phrases that matter. */
+  --deep: #0b3b36;
+  --deep-raised: #11504a;
+  --on-deep: #f3efe4;
+  --on-deep-soft: #d8d3c3;
+  --deep-accent: #8fd9c6;
+  --deep-mark: #f3d98b;
+  --deep-line: rgb(243 239 228 / 20%);
+
   --radius: 12px;
   --radius-sm: 8px;
   --radius-lg: 18px;
@@ -88,6 +97,13 @@
   --color-danger-bg: var(--danger-bg);
   --color-tier2: var(--secondary-tier);
   --color-tier2-bg: var(--secondary-tier-bg);
+  --color-deep: var(--deep);
+  --color-deep-raised: var(--deep-raised);
+  --color-on-deep: var(--on-deep);
+  --color-on-deep-soft: var(--on-deep-soft);
+  --color-deep-accent: var(--deep-accent);
+  --color-deep-mark: var(--deep-mark);
+  --color-deep-line: var(--deep-line);
   --font-sans: var(--font-figtree), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, "Noto Sans CJK JP", "Noto Sans JP", sans-serif;
   --font-display: var(--font-garamond), "Noto Serif", "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif CJK JP", "Noto Serif JP", Georgia, "Times New Roman", serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;

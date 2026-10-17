@@ -413,7 +413,6 @@
     "eyebrow": "Customer asking for your carbon emissions?",
     "h1a": "No sustainability team?",
     "h1b": "You won't need one.",
-    "sub": "Don't worry, we'll get it done. Upload your electricity, fuel and refrigerant bills; we read them, ask only what the bills can't tell us, and hand back your Scope 1 and 2 numbers, each traced to a bill and a published factor.",
     "cta": "Start with your bills",
     "steps": {
       "bills": {
@@ -476,7 +475,15 @@
     "scrollCue": "Scroll to see how it works",
     "story": {
       "eyebrow": "Scope 1 and 2, from your bills",
-      "title": "Every tonne, traced back to a bill."
+      "title": "Every tonne, traced back to a bill.",
+      "lede": "NetZero is the sustainability team you don't have. We run the whole job, from the first bill to your customer's answers, and never guess: every number comes from your documents and a published factor.",
+      "points": {
+        "customers": { "lead": "Every customer, one place.", "body": "Requests, deadlines and years together." },
+        "bills": { "lead": "Bills, read fast.", "body": "Any language, photo or PDF." },
+        "gaps": { "lead": "Only the real gaps.", "body": "We ask about the missing month, nothing more." },
+        "inventory": { "lead": "Open any number.", "body": "See the bill, the factor, the arithmetic." },
+        "cuts": { "lead": "Cuts and answers.", "body": "A solar plan, and your customer's form filled." }
+      }
     },
     "howTitle": "Five steps, one afternoon.",
     "flow": {
@@ -544,27 +551,27 @@
       "items": {
         "reads": {
           "title": "Reads any bill",
-          "body": "Photos, PDFs or spreadsheets, in any language."
+          "body": "Photos, scans, PDFs and hand-written slips, in any language."
         },
         "checks": {
-          "title": "Checks every bill",
-          "body": "Meter maths, price bands and odd months, caught before they count."
+          "title": "Catches the mistakes",
+          "body": "A misread digit or a doubled bill is flagged before it counts."
         },
         "asks": {
           "title": "Asks only what's missing",
-          "body": "One question at a time, in your language."
+          "body": "The exact month or bill, one question at a time, in your language."
         },
         "evidence": {
-          "title": "Shows you where",
-          "body": "Every number links to the spot on the bill it came from."
+          "title": "Open any number",
+          "body": "The bill with the figure highlighted, the factor and the arithmetic."
         },
         "outputs": {
-          "title": "Fills your buyer's Excel",
-          "body": "Answers in their own sheet, each one cited."
+          "title": "Answers every customer",
+          "body": "Their Excel filled in place, or CDP, EcoVadis, Higg and EU VSME packs."
         },
         "advisor": {
           "title": "Plans the cuts",
-          "body": "Rooftop solar sized to your use, with the payback."
+          "body": "Rooftop solar from Google Solar and cited levers, as a PDF."
         }
       }
     },

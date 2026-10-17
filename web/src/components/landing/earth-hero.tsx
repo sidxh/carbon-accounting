@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { cubicBezier, motion, useMotionValueEvent, useScroll, useTransform, useVelocity } from "motion/react";
 import { useEffect, useRef, useState } from "react";
-import { ArrowDown, ArrowRight } from "lucide-react";
+import { ArrowDown, ArrowRight, FileSearch, FileStack, MessageCircleQuestion, Sun, Users } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { HeroGlobe, Tag, TAGS, TICK } from "./hero-globe";
 
@@ -16,6 +16,14 @@ const FIRST = [
   { ...TAGS[0], pos: "left-[6%] top-[60%] md:left-[13%] md:top-[64%]" },
   { ...TAGS[1], pos: "right-[4%] top-[57%] md:right-[12%] md:top-[60%]" },
   { ...TAGS[2], pos: "left-[4%] bottom-[18%] md:left-[9%] md:bottom-[16%]" },
+] as const;
+// The five things the product does end to end, in the order a supplier meets them.
+const POINTS = [
+  { id: "customers", Icon: Users },
+  { id: "bills", Icon: FileStack },
+  { id: "gaps", Icon: MessageCircleQuestion },
+  { id: "inventory", Icon: FileSearch },
+  { id: "cuts", Icon: Sun },
 ] as const;
 const SCOPES = [
   { label: "Scope 1", values: [102.4, 103.1, 102.8, 104.0, 103.6, 102.9], dot: "bg-ink-soft", bob: "hg-bob-c", pos: "right-[6%] bottom-[20%] md:right-[9%] md:bottom-[22%]" },
@@ -164,13 +172,29 @@ export function EarthHero({ go, cta }: { go: string; cta: string }) {
           aria-hidden={stage !== "story"}
         >
           <div className="mx-auto w-full max-w-6xl px-4 pb-10 md:px-8 md:pb-0">
-            <div className="max-w-lg md:max-w-[min(520px,46%)]">
+            <div className="max-w-lg md:max-w-[min(480px,42%)]">
               {/* Same pill as the first view's question. */}
               <p className="inline-flex items-center gap-2 rounded-full border border-signal/20 bg-signal-bg px-4 py-1.5 text-sm font-medium text-signal-ink sm:text-[15px]">
                 <span className="size-2 rounded-full bg-attention-strong" aria-hidden />{t("story.eyebrow")}
               </p>
               <h2 className="font-display mt-5 text-4xl leading-[1.02] text-signal-ink text-balance sm:text-5xl">{t("story.title")}</h2>
-              <p className="mt-5 text-[16px] leading-relaxed text-ink-soft">{t("sub")}</p>
+              <p className="mt-5 text-[17px] leading-relaxed text-ink-soft">{t("story.lede")}</p>
+              {/* Wide screens: each point with its line. Narrow screens: just the lead words, so the earth above keeps its room. */}
+              <ul className="mt-6 hidden space-y-3.5 md:block">
+                {POINTS.map(({ id, Icon }) => (
+                  <li key={id} className="flex items-start gap-3">
+                    <span className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-full bg-signal-bg text-signal-ink"><Icon className="size-[18px]" aria-hidden /></span>
+                    <p className="text-base leading-snug text-ink-soft"><strong className="font-semibold text-ink">{t(`story.points.${id}.lead`)}</strong> {t(`story.points.${id}.body`)}</p>
+                  </li>
+                ))}
+              </ul>
+              <ul className="mt-4 flex flex-wrap gap-2 md:hidden">
+                {POINTS.map(({ id, Icon }) => (
+                  <li key={id} className="inline-flex items-center gap-1.5 rounded-full border border-signal/20 bg-signal-bg px-3 py-1.5 text-sm font-medium text-signal-ink">
+                    <Icon className="size-3.5" aria-hidden />{t(`story.points.${id}.lead`)}
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </motion.div>

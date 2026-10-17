@@ -413,7 +413,6 @@
     "eyebrow": "Khách hàng hỏi số liệu phát thải carbon của bạn?",
     "h1a": "Không có bộ phận phát triển bền vững?",
     "h1b": "Bạn không cần đến.",
-    "sub": "Đừng lo, chúng tôi sẽ làm giúp bạn. Tải lên hóa đơn điện, nhiên liệu và gas lạnh; chúng tôi đọc, chỉ hỏi những gì hóa đơn không nói được, và trả lại số liệu Phạm vi 1 và 2, mỗi con số truy về hóa đơn và hệ số đã công bố.",
     "cta": "Bắt đầu với hóa đơn",
     "steps": {
       "bills": {
@@ -476,7 +475,15 @@
     "scrollCue": "Cuộn xuống để xem cách hoạt động",
     "story": {
       "eyebrow": "Phạm vi 1 và 2, từ hóa đơn của bạn",
-      "title": "Mỗi tấn đều truy được về một hóa đơn."
+      "title": "Mỗi tấn đều truy được về một hóa đơn.",
+      "lede": "NetZero là bộ phận phát triển bền vững mà bạn chưa có. Chúng tôi làm trọn công việc, từ hóa đơn đầu tiên đến câu trả lời của khách hàng, và không bao giờ đoán: mỗi con số đến từ tài liệu của bạn và một hệ số đã công bố.",
+      "points": {
+        "customers": { "lead": "Mọi khách hàng, một nơi.", "body": "Yêu cầu, hạn chót và năm báo cáo cùng chỗ." },
+        "bills": { "lead": "Đọc hóa đơn nhanh.", "body": "Mọi ngôn ngữ, ảnh hay PDF." },
+        "gaps": { "lead": "Chỉ hỏi chỗ thật sự thiếu.", "body": "Chỉ hỏi tháng còn thiếu, không hơn." },
+        "inventory": { "lead": "Mở bất kỳ con số nào.", "body": "Xem hóa đơn, hệ số và phép tính." },
+        "cuts": { "lead": "Giảm phát thải và câu trả lời.", "body": "Kế hoạch điện mặt trời, và bảng câu hỏi của khách đã điền." }
+      }
     },
     "howTitle": "Năm bước, một buổi chiều.",
     "flow": {
@@ -544,27 +551,27 @@
       "items": {
         "reads": {
           "title": "Đọc mọi hóa đơn",
-          "body": "Ảnh, PDF hoặc bảng tính, ngôn ngữ nào cũng được."
+          "body": "Ảnh, bản quét, PDF và phiếu viết tay, bằng mọi ngôn ngữ."
         },
         "checks": {
-          "title": "Kiểm tra từng hóa đơn",
-          "body": "Chỉ số công tơ, khoảng giá và tháng bất thường đều được phát hiện trước khi tính."
+          "title": "Bắt lỗi sớm",
+          "body": "Số đọc sai hay hóa đơn trùng được đánh dấu trước khi tính."
         },
         "asks": {
           "title": "Chỉ hỏi phần còn thiếu",
-          "body": "Mỗi lần một câu hỏi, bằng ngôn ngữ của bạn."
+          "body": "Đúng tháng hoặc hóa đơn thiếu, từng câu một, bằng ngôn ngữ của bạn."
         },
         "evidence": {
-          "title": "Chỉ cho bạn nguồn số",
-          "body": "Mỗi con số dẫn tới đúng chỗ trên hóa đơn mà nó được đọc."
+          "title": "Mở bất kỳ con số nào",
+          "body": "Hóa đơn có đánh dấu con số, hệ số và phép tính."
         },
         "outputs": {
-          "title": "Điền Excel của khách hàng",
-          "body": "Trả lời ngay trong bảng của họ, có trích dẫn từng ô."
+          "title": "Trả lời mọi khách hàng",
+          "body": "Điền thẳng vào Excel của họ, hoặc gói CDP, EcoVadis, Higg, EU VSME."
         },
         "advisor": {
-          "title": "Lập kế hoạch giảm phát thải",
-          "body": "Điện mặt trời áp mái theo mức bạn dùng, kèm thời gian hoàn vốn."
+          "title": "Lập kế hoạch giảm",
+          "body": "Điện mặt trời từ Google Solar và các biện pháp có nguồn, dưới dạng PDF."
         }
       }
     },
