@@ -165,3 +165,88 @@ def test_editing_a_flagged_quantity_marks_its_failed_checks_confirmed(client):
     assert r.status_code == 200
     got = next(l for l in client.repo.list_activity_lines("sup-1", pid) if l.id == "a1")
     assert {c.id: c.status for c in got.checks} == {"index": "confirmed", "price": "pass"}
+
+
+# --- the misprinted bill: the question names the figure the readings give, and accepting it resolves ----------------
+
+def _misprinted():
+    """November's bill: the readings give 68,465 kWh and a stray 0 turned the printed total into 684,650."""
+    ln = month_line(11, 684_650, amount=1_737_991, currency="JPY", registers=[reg(100_000, 140_000), reg(50_000, 78_465)])
+    ln = with_check(ln, check_index(ln.registers, ln.quantity, "kWh"))
+    return with_check(ln, check_price(ln.amount, ln.currency, ln.quantity, "kWh", "electricity", "JP") or LineCheck(id="price", status="fail", detail="too cheap"))
+
+
+def test_a_failed_reading_check_carries_the_figure_the_readings_give():
+    (issue,) = check_issues([_misprinted()], set())
+    assert issue.kind == "index_mismatch"
+    assert issue.suggested_quantity == 68_465 and issue.printed_quantity == 684_650 and issue.unit == "kWh"
+
+
+def test_no_figure_is_suggested_when_there_are_no_readings_or_only_the_price_failed():
+    plain = with_check(month_line(3, 446_990), LineCheck(id="price", status="fail", detail="too cheap"))
+    (issue,) = check_issues([plain], set())
+    assert issue.suggested_quantity is None and issue.printed_quantity == 446_990
+
+
+def test_the_brief_names_both_figures_and_the_three_choices():
+    from app.agents.reconciler import _issue_brief
+    from .qhelpers import profile
+    (issue,) = check_issues([_misprinted()], set())
+    brief = _issue_brief(issue, profile(name="Takahashi", country="JP"))
+    assert "68,465 kWh" in brief and "684,650 kWh" in brief
+    assert "printed 684,650 kWh is right" in brief and "use the meter-reading figure of 68,465 kWh" in brief and "leave this bill out" in brief
+
+
+def _turn(line):
+    from unittest.mock import MagicMock
+
+    from app.agents.reconciler import _TurnContext
+    from .qhelpers import profile
+    from app.repo import ReconcileState
+    repo = MagicMock()
+    repo.list_activity_lines.return_value = [line]
+    (issue,) = check_issues([line], set())
+    return _TurnContext(repo, profile(name="Takahashi", country="JP"), "p1", ReconcileState(supplier_id="s"), issue,
+                        "question", "Use 68,465 kWh, the figure the meter readings give.")
+
+
+def test_accepting_the_offered_figure_corrects_the_bill_and_records_why():
+    from app.agents.reconciler import _build_agent
+    ln = _misprinted()
+    ctx = _turn(ln)
+    tool = next(t for t in _build_agent(ctx).tools if t.__name__ == "confirm_or_correct_tool")
+    tool(quantity=68_465)
+    fixed = next(l for l in ctx.lines if l.id == ln.id)
+    assert fixed.quantity == 68_465 and fixed.tier == "secondary" and ctx.issue.resolved
+    assert all(c.status != "fail" for c in fixed.checks)
+    assert ctx.recorded.method == "supplier corrected to 68465" and "68,465" in ctx.recorded.answer
+
+
+def test_not_sure_keeps_the_question_open_and_restates_the_choices(monkeypatch):
+    from types import SimpleNamespace
+    from unittest.mock import MagicMock
+
+    from app.agents import reconciler
+    from app.models import ReportingPeriod
+
+    from .qhelpers import profile
+    from app.repo import ReconcileState
+    ln = _misprinted()
+    (issue,) = check_issues([ln], set())
+    state = ReconcileState(supplier_id="s", period_id="p1", status="asking", pending_issue_id=issue.id)
+    state.set_issues([issue])
+    state.history.append(reconciler.ChatTurn(role="agent", text="Which figure is right?"))
+    repo = MagicMock()
+    repo.get_reconcile.return_value = state
+    repo.list_activity_lines.return_value = [ln]
+    reply_text = "That's fine. You can keep 684,650 kWh, use 68,465 kWh from the meter readings, or leave the bill out."
+
+    async def fake_agent(agent, text):
+        return reply_text            # the model called no tool
+    monkeypatch.setattr(reconciler, "_run_agent", fake_agent)
+    monkeypatch.setattr(reconciler, "get_gemini", lambda: SimpleNamespace(limiter=MagicMock()))
+    period = ReportingPeriod(id="p1", label="FY", start=date(2025, 1, 1), end=date(2025, 12, 31))
+    out = reconciler.reply(repo, profile(name="Takahashi", country="JP"), period, "not sure")
+    assert out.status == "asking" and out.pending_issue_id == issue.id
+    assert out.history[-1].text == reply_text and not out.issue_objects()[0].resolved
+    repo.add_assumption.assert_not_called()

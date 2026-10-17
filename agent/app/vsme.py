@@ -22,6 +22,7 @@ import io
 import re
 import warnings
 import zipfile
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from functools import lru_cache
 from typing import Any
@@ -153,8 +154,19 @@ def nace_entry(code: str, entries: list[str]) -> str | None:
 
 # --- patching a cell ------------------------------------------------------------------------------
 
-def _patch(xml: str, coord: str, value: str | float) -> str:
-    """Put a value in an empty input cell, keeping its style. Formula cells are never overwritten."""
+def _style_of(attrs: str) -> int:
+    m = re.search(r'\ss="(\d+)"', attrs)
+    return int(m.group(1)) if m else 0
+
+
+def _with_style(attrs: str, style: int) -> str:
+    if re.search(r'\ss="\d+"', attrs):
+        return re.sub(r'\ss="\d+"', f' s="{style}"', attrs)
+    return f'{attrs} s="{style}"'
+
+
+def _patch(xml: str, coord: str, value: str | float, restyle: Callable[[int], int] | None = None) -> str:
+    """Put a value in an empty input cell, keeping its style (or the `restyle` of it). Formula cells are never overwritten."""
     pat = re.compile(rf'<c r="{coord}"(?P<attrs>[^>]*?)(?:/>|>(?P<body>.*?)</c>)', re.DOTALL)
     m = pat.search(xml)
     if m is None:
@@ -162,6 +174,8 @@ def _patch(xml: str, coord: str, value: str | float) -> str:
     if m.group("body") and "<f" in m.group("body"):
         raise VsmeError(f"cell {coord} holds a formula")
     attrs = re.sub(r'\s+t="[^"]*"', "", m.group("attrs"))
+    if restyle is not None:
+        attrs = _with_style(attrs, restyle(_style_of(attrs)))
     if isinstance(value, str):
         new = f'<c r="{coord}"{attrs} t="inlineStr"><is><t xml:space="preserve">{escape(value)}</t></is></c>'
     else:
@@ -172,6 +186,81 @@ def _patch(xml: str, coord: str, value: str | float) -> str:
 def _is_formula(xml: str, coord: str) -> bool:
     m = re.search(rf'<c r="{coord}"[^>]*?(?:/>|>(.*?)</c>)', xml, re.DOTALL)
     return bool(m and m.group(1) and "<f" in m.group(1))
+
+
+def _restyle_cell(xml: str, coord: str, restyle: Callable[[int], int]) -> str:
+    """Change only the style of a cell that stays as it is (an input we leave for the supplier). A formula cell, or one
+    that the sheet does not carry, is left alone."""
+    m = re.search(rf'<c r="{coord}"(?P<attrs>[^>]*?)(?P<end>/>|>(?P<body>.*?)</c>)', xml, re.DOTALL)
+    if m is None or (m.group("body") and "<f" in m.group("body")):
+        return xml
+    attrs = _with_style(m.group("attrs"), restyle(_style_of(m.group("attrs"))))
+    tail = m.group("end")
+    return xml[:m.start()] + f'<c r="{coord}"{attrs}{tail}' + xml[m.end():]
+
+
+# --- colours: green = filled from the supplier's data, yellow = for the supplier -----------------------
+# The template's cells keep their borders, number formats and unlocked state: each coloured cell gets a copy of its
+# own cell format with only the fill replaced. Nothing else in styles.xml is touched.
+
+GREEN, YELLOW = "FFCDEBD5", "FFFFF0B3"
+
+
+class _Styler:
+    def __init__(self, xml: str):
+        self.xml = xml
+        fills = re.search(r'<fills count="(\d+)">', xml)
+        xfs = re.search(r'<cellXfs count="(\d+)">(.*?)</cellXfs>', xml, re.DOTALL)
+        if not fills or not xfs:
+            raise VsmeError("styles.xml is not the layout we know")
+        self.fill_base = int(fills.group(1))
+        self.xfs = re.findall(r"<xf\b[^>]*?(?:/>|>.*?</xf>)", xfs.group(2), re.DOTALL)
+        if len(self.xfs) != int(xfs.group(1)):
+            raise VsmeError("styles.xml cell formats could not be counted")
+        self.clones: list[str] = []
+        self.index: dict[tuple[int, str], int] = {}
+        self.fill_id = {GREEN: self.fill_base, YELLOW: self.fill_base + 1}
+
+    def _clone(self, base: int, color: str) -> int:
+        key = (base, color)
+        if key not in self.index:
+            xf = self.xfs[base]
+            end = xf.index(">")
+            head, close = (xf[:end - 1], "/>") if xf[:end].endswith("/") else (xf[:end], ">")
+            head = re.sub(r'\s(?:fillId|applyFill)="\d+"', "", head)
+            self.clones.append(f'{head} fillId="{self.fill_id[color]}" applyFill="1"{close}{xf[end + 1:]}')
+            self.index[key] = len(self.xfs) + len(self.clones) - 1
+        return self.index[key]
+
+    def to(self, color: str) -> Callable[[int], int]:
+        return lambda base: self._clone(base, color)
+
+    def render(self) -> str:
+        solid = '<fill><patternFill patternType="solid"><fgColor rgb="{}"/><bgColor indexed="64"/></patternFill></fill>'
+        xml = self.xml
+        xml = re.sub(r'<fills count="\d+">', f'<fills count="{self.fill_base + 2}">', xml, count=1)
+        xml = xml.replace("</fills>", solid.format(GREEN) + solid.format(YELLOW) + "</fills>", 1)
+        xml = re.sub(r'<cellXfs count="\d+">', f'<cellXfs count="{len(self.xfs) + len(self.clones)}">', xml, count=1)
+        return xml.replace("</cellXfs>", "".join(self.clones) + "</cellXfs>", 1)
+
+
+def _open_on(files: dict[str, bytes], parts: dict[str, str], sheet: str, cell: str) -> None:
+    """Make `sheet` the one Excel shows first, with `cell` selected. EFRAG's file opens on "Language Selection", a
+    nearly empty sheet, so a filled file looks as if nothing was written."""
+    order = [unescape(m.group(1), {"&apos;": "'", "&quot;": '"'}) for m in re.finditer(r'<sheet name="([^"]+)"', files["xl/workbook.xml"].decode("utf-8"))]
+    wb_xml = files["xl/workbook.xml"].decode("utf-8")
+    wb_xml = re.sub(r'\sactiveTab="\d+"', "", wb_xml)
+    files["xl/workbook.xml"] = re.sub(r"<workbookView ", f'<workbookView activeTab="{order.index(sheet)}" ', wb_xml, count=1).encode("utf-8")
+    for name, part in parts.items():
+        xml = files[part].decode("utf-8")
+        xml = re.sub(r'\stabSelected="1"', "", xml)
+        if name == sheet:
+            def view(m: re.Match) -> str:
+                attrs = re.sub(r'\s(?:tabSelected|topLeftCell)="[^"]*"', "", m.group(1))
+                body = re.sub(r"<selection\b[^>]*/>", "", m.group(3) or "")
+                return f'<sheetView{attrs} tabSelected="1">{body}<selection activeCell="{cell}" sqref="{cell}"/></sheetView>'
+            xml = re.sub(r"<sheetView\b([^>]*?)(/>|>(.*?)</sheetView>)", view, xml, count=1, flags=re.DOTALL)
+        files[part] = xml.encode("utf-8")
 
 
 # --- the fill ---------------------------------------------------------------------------------------
@@ -188,16 +277,23 @@ def fill_vsme(ctx: FactContext, template: bytes | None = None) -> VsmeResult:
     lists = _lists(str(path))
     p = ctx.profile
     result = VsmeResult(b"")
+    styler = _Styler(files["xl/styles.xml"].decode("utf-8"))
 
     def put(ref: str, label: str, name: str, value: str | float, source: str, dx: int = 0, dy: int = 0) -> None:
         sheet, coord = _cell_of(names[name])
         col, row = _split(coord)
         coord = f"{get_column_letter(column_index_from_string(col) + dx)}{row + dy}"
-        sheets[sheet] = _patch(sheets[sheet], coord, value)
+        sheets[sheet] = _patch(sheets[sheet], coord, value, styler.to(GREEN))
         result.filled.append(Filled(ref, label, f"'{sheet}'!{coord}", value, source))
 
-    def open_item(ref: str, label: str, reason: str) -> None:
+    def open_item(ref: str, label: str, reason: str, *ranges: str) -> None:
+        """Report what is left, and colour the input cell(s) the supplier has to fill (first cell of each named range)."""
         result.open_items.append(OpenItem(ref, label, reason))
+        for rng in ranges:
+            if rng in names:
+                sheet, coord = _cell_of(names[rng])
+                if sheet in sheets:
+                    sheets[sheet] = _restyle_cell(sheets[sheet], coord, styler.to(YELLOW))
 
     for q in bank.questions:
         name = q.named_range
@@ -207,7 +303,7 @@ def fill_vsme(ctx: FactContext, template: bytes | None = None) -> VsmeResult:
         if f == "ghg_intensity_turnover":
             continue                                  # a formula in the template, computed when the file opens
         if f is None:
-            open_item(q.ref, q.text, q.note or "Only the supplier can answer this.")
+            open_item(q.ref, q.text, q.note or "Only the supplier can answer this.", name)
             continue
         if f == "reporting_period":
             sheet, coord = _cell_of(names[START_DATE_RANGE])
@@ -220,24 +316,24 @@ def fill_vsme(ctx: FactContext, template: bytes | None = None) -> VsmeResult:
             continue
         fact = compute_fact(f, ctx)
         if fact.flagged or fact.value is None:
-            open_item(q.ref, q.text, fact.reason or "No value in the supplier's data.")
+            open_item(q.ref, q.text, fact.reason or "No value in the supplier's data.", name)
             continue
         value = fact.value
         if f == "currency":
             if str(value).upper() not in lists["currencies"]:
-                open_item(q.ref, q.text, f"{value!r} is not in the template's currency list.")
+                open_item(q.ref, q.text, f"{value!r} is not in the template's currency list.", name)
                 continue
             value = str(value).upper()
         elif f == "sector_code":
             entry = nace_entry(str(value), lists["nace"])
             if entry is None:
-                open_item(q.ref, q.text, f"NACE code {value!r} is not in the template's list. Pick it from the dropdown.")
+                open_item(q.ref, q.text, f"NACE code {value!r} is not in the template's list. Pick it from the dropdown.", name)
                 continue
             value = entry
         elif f == "country":
             name_ = lists["countries"].get(str(value).upper())
             if name_ is None:
-                open_item(q.ref, q.text, f"Country code {value!r} is not in the template's list.")
+                open_item(q.ref, q.text, f"Country code {value!r} is not in the template's list.", name)
                 continue
             value = name_
         elif f == "employees":
@@ -245,13 +341,16 @@ def fill_vsme(ctx: FactContext, template: bytes | None = None) -> VsmeResult:
             put("B1 24(e)(v)", "Employee counting: headcount", name, "Headcount", "supplier profile (headcount)", dy=2)
         put(q.ref, q.text, name, value, fact.source)
 
-    open_item("B1 basis", BASIS_LABEL, "Choose Option A (Basic Module only) or B in the template. Its checks stay silent until you do.")
-    open_item("B1 4", IDENTIFIER_LABEL, "The entity identifier (a LEI or registration number and its scheme) is the supplier's to enter.")
+    open_item("B1 basis", BASIS_LABEL, "Choose Option A (Basic Module only) or B in the template. Its checks stay silent until you do.", "BasisForPreparation")
+    open_item("B1 4", IDENTIFIER_LABEL, "The entity identifier (a LEI or registration number and its scheme) is the supplier's to enter.",
+              "template_reporting_entity_identifier_scheme", "template_reporting_entity_identifier")
     if any(f.label.startswith("Employee counting") for f in result.filled):
-        open_item("B1 24(e)(v)", COUNTING_LABEL, "Choose whether the headcount is taken at the end of the period or as an average.")
+        open_item("B1 24(e)(v)", COUNTING_LABEL, "Choose whether the headcount is taken at the end of the period or as an average.", "EmployeeCountingMethodology")
 
     for sheet, xml in sheets.items():
         files[parts[sheet]] = xml.encode("utf-8")
+    files["xl/styles.xml"] = styler.render().encode("utf-8")
+    _open_on(files, parts, "General Information", "D3")
     wb_xml = files["xl/workbook.xml"].decode("utf-8")
     if "fullCalcOnLoad" not in wb_xml:
         wb_xml, n = re.subn(r"<calcPr ", '<calcPr fullCalcOnLoad="1" ', wb_xml, count=1)

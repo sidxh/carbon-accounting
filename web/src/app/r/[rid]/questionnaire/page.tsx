@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { motion } from "motion/react";
-import { ArrowRight, ChevronDown, Download, FileSpreadsheet, FileText, Globe, Lock, Pencil, ScanSearch, UploadCloud } from "lucide-react";
+import { ArrowRight, Check, ChevronDown, Download, FileSpreadsheet, FileText, Globe, Lock, Pencil, ScanSearch, UploadCloud } from "lucide-react";
 import { cn as clsx } from "@/lib/cn";
 import { useRequest } from "@/components/request-context";
 import { SkeletonList } from "@/components/ui/bits";
@@ -120,6 +120,7 @@ function PortalOptions({ uid, rid, periodId }: { uid: string; rid: string; perio
   const [packs, setPacks] = useState<PackSummary[]>([]);
   const [vsme, setVsme] = useState<VsmeResult | null>(null);
   const [busy, setBusy] = useState(false);
+  const [showLeft, setShowLeft] = useState(false);
 
   useEffect(() => { api.packs(uid).then((r) => setPacks(r.packs)).catch(() => setPacks([])); }, [uid]);
 
@@ -142,7 +143,7 @@ function PortalOptions({ uid, rid, periodId }: { uid: string; rid: string; perio
         <h2 id="portal-h" className="font-mono text-xs text-signal-ink">↳ {t("title")}</h2>
         <p className="mt-1 text-sm text-muted">{t("lede")}</p>
       </div>
-      <ul className="grid gap-3 md:grid-cols-2">
+      <ul className="grid items-start gap-3 md:grid-cols-2">
         {packs.map((p) => (
           <li key={p.id} className="flex flex-col justify-between gap-4 rounded-[20px] border border-signal/15 bg-raised p-5 text-sm shadow-[var(--shadow-raised)]">
             <div className="flex items-start gap-3">
@@ -167,13 +168,38 @@ function PortalOptions({ uid, rid, periodId }: { uid: string; rid: string; perio
             <button className="btn btn-secondary btn-sm rounded-full" onClick={buildVsme} disabled={busy}><Download className="size-4" aria-hidden />{busy ? t("vsmeBusy") : t("vsmeDownload")}</button>
           </div>
           {vsme && (
-            <div className="space-y-2 rounded-[14px] bg-sunken p-3 text-xs" role="status">
-              <p className="font-medium">{t("vsmeFilled", { n: vsme.filled.length })}</p>
-              <p className="font-medium">{t("vsmeOpen")}</p>
-              <ul className="list-disc space-y-0.5 pl-4 text-muted">
-                {vsme.open_items.map((o) => <li key={o.ref}><span className="font-mono">{o.ref}</span> {o.label}. {o.reason}</li>)}
-              </ul>
-              <p className="text-muted">{t("vsmeExcel")}</p>
+            <div className="space-y-2.5 border-t hairline pt-3 text-xs" role="status">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-signal-bg px-2.5 py-1 font-medium text-signal-ink">
+                  <Check className="size-3.5" aria-hidden />{t("vsmeFilled", { n: vsme.filled.length })}
+                </span>
+                {vsme.open_items.length > 0 && (
+                  <button
+                    type="button"
+                    className="inline-flex min-h-7 items-center gap-1 rounded-full bg-attention-bg px-2.5 py-1 font-medium text-ink transition-colors hover:bg-attention-bg/70"
+                    aria-expanded={showLeft}
+                    aria-controls="vsme-left"
+                    onClick={() => setShowLeft((v) => !v)}
+                  >
+                    {t("vsmeLeft", { n: vsme.open_items.length })}
+                    <ChevronDown className={clsx("size-3.5 transition-transform", showLeft && "rotate-180")} aria-hidden />
+                  </button>
+                )}
+              </div>
+              {showLeft && (
+                <ul id="vsme-left" className="max-h-52 divide-y divide-line overflow-y-auto rounded-[12px] border border-line bg-sunken/60">
+                  {vsme.open_items.map((o) => (
+                    <li key={o.ref} className="px-3 py-2">
+                      <div className="flex items-baseline gap-2">
+                        <span className="shrink-0 rounded bg-raised px-1.5 py-0.5 font-mono text-[10px] text-signal-ink">{o.ref}</span>
+                        <span className="font-medium leading-snug text-ink">{o.label}</span>
+                      </div>
+                      <p className="mt-0.5 leading-snug text-muted">{o.reason}</p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <p className="leading-relaxed text-muted">{t("vsmeExcel")}</p>
             </div>
           )}
         </li>

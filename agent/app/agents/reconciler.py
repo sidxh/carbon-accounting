@@ -61,6 +61,10 @@ CHECK_KINDS = ("index_mismatch", "price_implausible", "outlier")
 
 # --- question phrasing -----------------------------------------------------------
 
+def _qty(x: float) -> str:
+    return f"{x:,.0f}" if abs(x) >= 100 else f"{x:,.2f}".rstrip("0").rstrip(".")
+
+
 def _issue_brief(issue: Issue, profile: SupplierProfile) -> str:
     if issue.kind == "gap":
         months = ", ".join(issue.months)
@@ -74,8 +78,14 @@ def _issue_brief(issue: Issue, profile: SupplierProfile) -> str:
     if issue.kind == "low_confidence":
         return (f"One value was hard to read: {issue.detail}. We need the supplier to confirm or correct the quantity.")
     if issue.kind in CHECK_KINDS:
-        return (f"One bill does not add up when checked against itself: {issue.detail}. Ask the owner to look at the bill "
-                "again and either confirm the quantity is right (some bills really are unusual) or give the correct quantity.")
+        brief = f"One bill does not add up when checked against itself: {issue.detail}. "
+        s, p, u = issue.suggested_quantity, issue.printed_quantity, issue.unit
+        if s is not None and p is not None and abs(s - p) > 0.5:
+            return (brief + f"The meter readings printed on the bill add up to {_qty(s)} {u}, but {_qty(p)} {u} is the quantity printed. "
+                    f"In the question, name both figures, then give three choices in plain words: the printed {_qty(p)} {u} is right "
+                    f"(some bills really are unusual), use the meter-reading figure of {_qty(s)} {u}, or leave this bill out.")
+        return (brief + "Ask the owner to look at the bill again and choose: the quantity is right (some bills really are unusual), "
+                "here is the correct quantity, or leave this bill out.")
     if issue.kind == "site_unknown":
         return "A document does not say which site it belongs to."
     return issue.detail
@@ -156,8 +166,8 @@ def _build_agent(ctx: _TurnContext) -> LlmAgent:
         return {"recorded": True, "excluded": len(ctx.issue.line_ids)}
 
     def confirm_or_correct_tool(quantity: float | None = None) -> dict:
-        """For a hard-to-read or doubtful value: pass the corrected quantity, or omit it to
-        confirm the value as read."""
+        """For a hard-to-read or doubtful value: pass the corrected quantity (also a figure the question offered and
+        the owner accepted, such as the meter-reading figure), or omit it to confirm the value as read."""
         asm = Assumption(id=f"asm_{uuid.uuid4().hex[:8]}", supplier_id=sid, question=ctx.question, answer=ctx.answer,
                          applied_to=list(ctx.issue.line_ids),
                          method="supplier confirmed value" if quantity is None else f"supplier corrected to {quantity:g}")
@@ -184,7 +194,12 @@ def _build_agent(ctx: _TurnContext) -> LlmAgent:
         f"What it is about: {_issue_brief(ctx.issue, ctx.profile)}\n\n"
         "If the answer resolves it, call exactly one tool to record the resolution, then reply with one short "
         "sentence confirming what you recorded. If the answer is unclear or does not address the question, do not "
-        "call any tool; ask a brief clarifying question instead. Never invent numbers the owner did not give."
+        "call any tool; ask a brief clarifying question instead. Never invent numbers the owner did not give. "
+        "A figure stated in the open question counts as given once the owner accepts it (for example 'use that one', "
+        "'the meter reading figure', 'yes'): pass that figure to the tool. If the owner says they are not sure or do "
+        "not have the information, do not call a tool and do not repeat the question: briefly restate the choices "
+        "from the open question (keep the printed figure, use the meter-reading figure, or leave the bill out) and say "
+        "that the bill itself can settle it. If the owner wants a bill left out, use the exclude tool."
     )
     tools = {
         "gap": [resolve_gap_tool, exclude_tool],

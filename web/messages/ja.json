@@ -152,6 +152,10 @@
     "start": "請求書を確認",
     "checking": "確認中…",
     "placeholder": "回答を入力",
+    "quickLabel": "かんたん返信",
+    "quickReadings": "メーターの検針値から求めた {qty} {unit} を使ってください。",
+    "quickPrinted": "請求書に印字された {qty} {unit} が正しいです。",
+    "quickLeaveOut": "この請求書は除外してください。",
     "send": "送信",
     "done": "記録はすべて揃いました。",
     "computed": "算定しました。",
@@ -389,9 +393,9 @@
       "vsmeBody": "VSME基準で報告するEUの取引先向け。EFRAGのExcelテンプレートのB1とB3を入力し、他はEFRAG配布のままにします。",
       "vsmeDownload": "入力済みテンプレートをダウンロード",
       "vsmeBusy": "入力中…",
-      "vsmeFilled": "プロフィールとインベントリから{n}セルを入力しました。",
-      "vsmeOpen": "テンプレートに残した項目:",
-      "vsmeExcel": "変換する前にExcelで一度開いてください。テンプレートは開いたときに自身のチェックを計算します。"
+      "vsmeFilled": "{n}セル入力済み",
+      "vsmeLeft": "あなたの入力が必要: {n}件",
+      "vsmeExcel": "変換する前にExcelで一度開いてください。開くとテンプレートが自身のチェックを行います。緑のセルは自動入力、黄色はご自身で入力する項目です。"
     }
   },
   "common": {

@@ -152,6 +152,10 @@
     "start": "Check my bills",
     "checking": "Checking…",
     "placeholder": "Type your answer",
+    "quickLabel": "Quick replies",
+    "quickReadings": "Use {qty} {unit}, the figure the meter readings give.",
+    "quickPrinted": "The printed {qty} {unit} is correct.",
+    "quickLeaveOut": "Leave this bill out.",
     "send": "Send",
     "done": "All records are complete.",
     "computed": "Figures calculated.",
@@ -389,9 +393,9 @@
       "vsmeBody": "For an EU customer that reports under the VSME standard. We fill EFRAG's Excel template, modules B1 and B3, and leave the rest as EFRAG shipped it.",
       "vsmeDownload": "Download the filled template",
       "vsmeBusy": "Filling…",
-      "vsmeFilled": "{n} cells filled from your profile and inventory.",
-      "vsmeOpen": "Left for you in the template:",
-      "vsmeExcel": "Open the file in Excel once before converting it: the template works out its own checks when it opens."
+      "vsmeFilled": "{n} cells filled",
+      "vsmeLeft": "{n} left for you",
+      "vsmeExcel": "Best opened in Excel, once, before converting: the template runs its own checks when it opens. Green cells are ours, yellow are yours to complete."
     }
   },
   "common": {

@@ -30,16 +30,28 @@ def _fmt(x: float) -> str:
 
 # --- index arithmetic ----------------------------------------------------------------
 
-def check_index(registers: list[MeterRegister], quantity: float, unit: str = "") -> LineCheck | None:
-    """(current - previous) x multiplier, summed over registers, must equal the quantity."""
+def _index_parts(registers: list[MeterRegister]) -> list[float] | None:
+    """Per-register consumption from the readings, or None when a reading cannot be trusted (rollover, misread)."""
     parts: list[float] = []
     for r in registers:
         if r.previous is None or r.current is None:
             continue
-        if r.current < r.previous:       # rollover or a misread reading: undecidable here
+        if r.current < r.previous:
             return None
         parts.append((r.current - r.previous) * (r.multiplier or 1.0))
-    if not parts:
+    return parts or None
+
+
+def index_total(registers: list[MeterRegister]) -> float | None:
+    """What the meter readings add up to: the figure to offer when the printed quantity disagrees with them."""
+    parts = _index_parts(registers)
+    return round(sum(parts), 2) if parts else None
+
+
+def check_index(registers: list[MeterRegister], quantity: float, unit: str = "") -> LineCheck | None:
+    """(current - previous) x multiplier, summed over registers, must equal the quantity."""
+    parts = _index_parts(registers)
+    if parts is None:       # nothing to compare, or a rollover / misread reading: undecidable here
         return None
     total = sum(parts)
     tol = max(INDEX_REL_TOL * abs(quantity), INDEX_ABS_TOL)

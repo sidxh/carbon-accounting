@@ -81,11 +81,50 @@ def test_the_rest_of_the_package_is_untouched(filled):
         assert [i.filename for i in a.infolist()] == [i.filename for i in b.infolist()]
         changed = {n for n in a.namelist() if a.read(n) != b.read(n)}
         sheet_gi = "xl/worksheets/sheet4.xml"
-        assert changed <= {"xl/workbook.xml", sheet_gi, "xl/worksheets/sheet5.xml"}, changed
+        assert changed <= {"xl/workbook.xml", "xl/styles.xml", "xl/worksheets/sheet1.xml", sheet_gi, "xl/worksheets/sheet5.xml"}, changed
         # the dropdown extensions openpyxl would have dropped are all still there
         assert b.read(sheet_gi).count(b"<x14:dataValidation ") == a.read(sheet_gi).count(b"<x14:dataValidation ") > 0
         assert b.read(sheet_gi).count(b"<f>") == a.read(sheet_gi).count(b"<f>")      # no formula was overwritten
         assert b"fullCalcOnLoad" in b.read("xl/workbook.xml")
+
+
+def _fill_rgb(wb, sheet: str, coord: str) -> str | None:
+    f = wb[sheet][coord].fill
+    return f.fgColor.rgb if f.fill_type == "solid" else None
+
+
+def test_the_file_opens_on_the_sheet_that_holds_the_answers(filled):
+    wb = _open(filled.xlsx)
+    assert wb.active.title == "General Information"
+    assert wb.active.sheet_view.selection[0].activeCell == "D3"
+    with zipfile.ZipFile(io.BytesIO(filled.xlsx)) as z:
+        selected = [n for n in z.namelist() if n.startswith("xl/worksheets/sheet") and b'tabSelected="1"' in z.read(n)]
+    assert selected == ["xl/worksheets/sheet4.xml"]               # exactly one tab is selected, or Excel groups sheets
+
+
+def test_filled_cells_are_green_and_the_inputs_left_for_the_supplier_are_yellow(filled):
+    from app.vsme import GREEN, YELLOW
+    wb = _open(filled.xlsx)
+    gi, env = "General Information", "Environmental Disclosures"
+    for coord in ("D3", "D5", "D6", "D12", "E283", "E284", "E287", "E182"):
+        assert _fill_rgb(wb, gi, coord) == GREEN, coord
+    for coord in ("D22", "G5"):
+        assert _fill_rgb(wb, env, coord) == GREEN, coord
+    for coord in ("E4", "D4", "E125", "E285"):
+        assert _fill_rgb(wb, gi, coord) == YELLOW, coord
+    assert _fill_rgb(wb, env, "G12") == YELLOW
+    assert _fill_rgb(wb, gi, "F3") != GREEN                        # the template's own status cells keep their look
+
+
+def test_a_coloured_cell_keeps_its_borders_number_format_and_unlocked_state(filled):
+    original = _open(TEMPLATE.read_bytes())
+    wb = _open(filled.xlsx)
+    for sheet, coord in (("General Information", "D3"), ("General Information", "E283"), ("Environmental Disclosures", "G5"),
+                         ("General Information", "E4")):
+        a, b = original[sheet][coord], wb[sheet][coord]
+        assert (a.border.left.style, a.border.bottom.style) == (b.border.left.style, b.border.bottom.style)
+        assert a.number_format == b.number_format and a.protection.locked == b.protection.locked
+        assert a.font.b == b.font.b and a.alignment.wrap_text == b.alignment.wrap_text
 
 
 def test_what_it_could_not_fill_is_reported_not_guessed(filled):

@@ -423,10 +423,14 @@ Checks:
   calculation lines, the evidence to attach and the sources.
 - Open the Higg FEM pack: Q1 quantity lists electricity in kWh and LPG in kg,
   the units the bills use. Q2 (owned vehicles) is "Answer in the portal".
-- Click "Download the filled template" on the EU VSME card. The list below it
-  says what was filled and what is left for you (entity identifier, basis for
-  preparation, how employees are counted, the energy breakdown). Open the file
-  in Excel once: the dropdowns are intact (the country list, for one). Choose
+- Click "Download the filled template" on the EU VSME card. Below it sits one line: a
+  green "N cells filled" chip and an amber "N left for you" button that opens a
+  scrollable list (entity identifier, basis for preparation, how employees are
+  counted, the energy breakdown); the card keeps its height and the EcoVadis card
+  beside it is not stretched. The file opens on General Information with D3
+  selected; cells we filled are green and the inputs left for you are yellow. Open
+  the file in Excel once (Numbers drops the template's protection and named
+  ranges): the dropdowns are intact (the country list, for one). Choose
   the basis for preparation and the template's own check cells (column F) report
   on the rows we filled. We have no spreadsheet engine in CI, so the tests check
   that every cell we fill is one its check formula reads, not the recalculated

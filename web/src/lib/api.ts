@@ -122,7 +122,11 @@ export interface ReconcileSummary {
   resolved_issues: number;
 }
 
-export interface Issue { id: string; kind: string; energy_type?: string | null; months: string[]; detail: string; resolved: boolean }
+export interface Issue {
+  id: string; kind: string; energy_type?: string | null; months: string[]; detail: string; resolved: boolean;
+  /** For a bill that disagrees with its own meter readings: what the readings add up to, what was printed, and the unit. */
+  suggested_quantity?: number | null; printed_quantity?: number | null; unit?: string;
+}
 
 export interface ReconcileState {
   supplier_id: string;

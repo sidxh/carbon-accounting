@@ -13,7 +13,7 @@ import uuid
 from dataclasses import dataclass, field
 from datetime import date, timedelta
 
-from .checks import failed, with_check
+from .checks import failed, index_total, with_check
 from .models import ActivityLine, Assumption, EnergyType, LineCheck, Unit
 from .units import ConversionError, convert
 
@@ -38,6 +38,11 @@ class Issue:
     months: list[str] = field(default_factory=list)  # YYYY-MM
     detail: str = ""
     resolved: bool = False
+    # For a bill whose printed quantity disagrees with its own meter readings: what the readings add up to, what was
+    # printed, and the unit. They let the question name the figure and the chat offer it as a one-tap reply.
+    suggested_quantity: float | None = None
+    printed_quantity: float | None = None
+    unit: str = ""
 
 
 def _new_id(prefix: str) -> str:
@@ -262,8 +267,11 @@ def check_issues(lines: list[ActivityLine], skip_line_ids: set[str]) -> list[Iss
         if not bad or l.id in skip_line_ids:
             continue
         first = sorted(bad, key=lambda c: list(kinds).index(c.id))[0]
-        out.append(Issue(_new_id("iss"), kinds[first.id], l.energy_type, [l.id],
-                         detail="; ".join(c.detail for c in bad)))
+        issue = Issue(_new_id("iss"), kinds[first.id], l.energy_type, [l.id], detail="; ".join(c.detail for c in bad),
+                      printed_quantity=l.quantity, unit=l.unit.value)
+        if any(c.id == "index" for c in bad):
+            issue.suggested_quantity = index_total(l.registers)
+        out.append(issue)
     return out
 
 

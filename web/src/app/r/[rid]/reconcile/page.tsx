@@ -14,6 +14,7 @@ import { useToast } from "@/components/ui/toast";
 import { api, type Issue, type ReconcileState } from "@/lib/api";
 import { energyLabel, shortMonth } from "@/lib/coverage";
 
+const CHECK_KINDS = new Set(["index_mismatch", "price_implausible", "outlier"]);
 const ASKABLE = new Set(["gap", "unit_hours", "low_confidence", "index_mismatch", "price_implausible", "outlier"]);
 
 function issueLabel(i: Issue, t: ReturnType<typeof useTranslations>, locale: string): string {
@@ -128,6 +129,7 @@ function Chat() {
   const { uid, period, request, view, reload } = useRequest();
   const pid = period.id;
   const t = useTranslations("reconcile");
+  const locale = useLocale();
   const toast = useToast();
   const [state, setState] = useState<ReconcileState | null>(null);
   const [text, setText] = useState("");
@@ -208,6 +210,18 @@ function Chat() {
   const started = state.status !== "idle";
   const askable = state.issues.filter((i) => ASKABLE.has(i.kind)).length;
 
+  // A doubtful bill: offer the answers the question put to the owner. A chip only fills the box; the owner still sends it.
+  const pending = state.issues.find((i) => i.id === state.pending_issue_id);
+  const quick: string[] = [];
+  if (state.status === "asking" && pending && CHECK_KINDS.has(pending.kind)) {
+    const qn = (n: number) => n.toLocaleString(locale, { maximumFractionDigits: n >= 100 ? 0 : 2 });
+    const unit = pending.unit ?? "";
+    const s = pending.suggested_quantity, p = pending.printed_quantity;
+    if (s != null && p != null && Math.abs(s - p) > 0.5) quick.push(t("quickReadings", { qty: qn(s), unit }));
+    if (p != null) quick.push(t("quickPrinted", { qty: qn(p), unit }));
+    quick.push(t("quickLeaveOut"));
+  }
+
   return (
     <div className="space-y-5">
       <PageTitle title={t("title")} lede={t("lede")} />
@@ -262,8 +276,24 @@ function Chat() {
               <div ref={bottom} />
             </div>
 
+            {quick.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2 border-t hairline px-3 pt-3" role="group" aria-label={t("quickLabel")}>
+                {quick.map((q) => (
+                  <button
+                    key={q}
+                    type="button"
+                    className="rounded-full border border-line bg-raised px-3 py-1.5 text-left text-xs leading-snug text-ink transition-colors hover:border-signal hover:bg-signal-bg disabled:opacity-50"
+                    disabled={busy}
+                    onClick={() => { setText(q); input.current?.focus(); }}
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
+            )}
+
             {state.status === "asking" && (
-              <form onSubmit={send} className="flex gap-2 border-t hairline p-3">
+              <form onSubmit={send} className={clsx("flex gap-2 p-3", quick.length > 0 ? "pt-2" : "border-t hairline")}>
                 <input ref={input} className="input" value={text} onChange={(e) => setText(e.target.value)} placeholder={t("placeholder")} aria-label={t("placeholder")} autoFocus disabled={busy} />
                 <button className="btn btn-icon shrink-0 !min-h-11 !min-w-11" disabled={busy || !text.trim()} aria-label={t("send")}>
                   <Send className="size-4" aria-hidden />

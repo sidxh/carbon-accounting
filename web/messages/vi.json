@@ -152,6 +152,10 @@
     "start": "Kiểm tra hóa đơn",
     "checking": "Đang kiểm tra…",
     "placeholder": "Nhập câu trả lời",
+    "quickLabel": "Trả lời nhanh",
+    "quickReadings": "Dùng {qty} {unit}, con số theo chỉ số công tơ.",
+    "quickPrinted": "Con số in trên hóa đơn, {qty} {unit}, là đúng.",
+    "quickLeaveOut": "Bỏ hóa đơn này ra.",
     "send": "Gửi",
     "done": "Hồ sơ đã đầy đủ.",
     "computed": "Đã tính xong.",
@@ -389,9 +393,9 @@
       "vsmeBody": "Dành cho khách hàng EU báo cáo theo chuẩn VSME. Chúng tôi điền mẫu Excel của EFRAG, các mô-đun B1 và B3, phần còn lại giữ nguyên như EFRAG phát hành.",
       "vsmeDownload": "Tải mẫu đã điền",
       "vsmeBusy": "Đang điền…",
-      "vsmeFilled": "Đã điền {n} ô từ hồ sơ và kiểm kê của bạn.",
-      "vsmeOpen": "Để lại cho bạn trong mẫu:",
-      "vsmeExcel": "Hãy mở file bằng Excel một lần trước khi chuyển đổi: mẫu tự tính các kiểm tra khi mở."
+      "vsmeFilled": "Đã điền {n} ô",
+      "vsmeLeft": "{n} ô dành cho bạn",
+      "vsmeExcel": "Nên mở bằng Excel một lần trước khi chuyển đổi: mẫu tự chạy các kiểm tra khi mở. Ô xanh do chúng tôi điền, ô vàng là phần bạn hoàn thiện."
     }
   },
   "common": {
