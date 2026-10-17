@@ -384,21 +384,23 @@
     "billsBehind": "この数字の根拠となる請求書",
     "noBills": "この数字の根拠となる請求書はありません。",
     "portal": {
-      "title": "Excelがない場合: ポータル用の回答、またはEUのテンプレート",
-      "lede": "CDP、Higg、EcoVadisは各プラットフォーム上で回答します。回答、計算方法、添付すべき書類をまとめてお渡しします。",
+      "title": "ポータルで回答しますか？",
+      "lede": "CDP・Higg・EcoVadis向けのコピーできる回答、またはEUの取引先向けに入力済みのEFRAG VSMEテンプレート。",
       "questions": "{n}問",
-      "openPack": "回答パックを開く",
+      "openPack": "開く",
       "needInventory": "先にインベントリを計算してください。",
-      "vsmeTitle": "EU VSME: EFRAG公式のデジタルテンプレート",
-      "vsmeBody": "VSME基準で報告するEUの取引先向け。EFRAGのExcelテンプレートのB1とB3を入力し、他はEFRAG配布のままにします。",
-      "vsmeDownload": "入力済みテンプレートをダウンロード",
+      "vsmeTitle": "EU VSME",
+      "vsmeBody": "EFRAGのExcelテンプレート(B1・B3)",
+      "vsmeDownload": "ダウンロード",
       "vsmeBusy": "入力中…",
       "vsmeFilled": "{n}セル入力済み",
       "vsmeLeft": "あなたの入力が必要: {n}件",
-      "vsmeExcel": "変換する前にExcelで一度開いてください。開くとテンプレートが自身のチェックを行います。緑のセルは自動入力、黄色はご自身で入力する項目です。"
+      "vsmeExcel": "変換する前にExcelで一度開いてください。開くとテンプレートが自身のチェックを行います。緑のセルは自動入力、黄色はご自身で入力する項目です。",
+      "openPackAria": "回答パックを開く",
+      "vsmeDownloadAria": "入力済みテンプレートをダウンロード"
     },
-    "sampleDownload": "取引先の質問票サンプルをダウンロード",
-    "sampleHint": "日本の取引先による排出量調査票(2025年4月〜2026年3月、日英併記)。サンプル請求書に対応しています。記入して結果を開いてみてください。"
+    "sampleDownload": "サンプル質問票",
+    "sampleHint": "日本の取引先・2025年度。サンプル請求書に対応。"
   },
   "common": {
     "loading": "読み込み中…",
