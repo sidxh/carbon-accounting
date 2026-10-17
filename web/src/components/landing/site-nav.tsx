@@ -72,7 +72,7 @@ export function SiteNav({ signedIn, onLanding = true, page }: { signedIn: boolea
         aria-label={t("navLabel")}
         className="pointer-events-auto relative flex w-full max-w-5xl items-center justify-between gap-3 overflow-hidden rounded-full border border-signal/15 bg-raised/95 py-1.5 pl-4 pr-1.5 shadow-[var(--shadow-float)]"
       >
-        <Link href="/" className="shrink-0 rounded-full" aria-label="Supplier Carbon"><Wordmark /></Link>
+        <Link href="/" className="shrink-0 rounded-full" aria-label="NetZero"><Wordmark /></Link>
 
         {/* Sections, with a green pill sliding behind the current one. */}
         <ul className="hidden items-center gap-0.5 md:flex">

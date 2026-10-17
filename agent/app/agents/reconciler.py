@@ -218,7 +218,7 @@ def _build_agent(ctx: _TurnContext) -> LlmAgent:
 
 async def _run_agent(agent: LlmAgent, user_text: str) -> str:
     _export_genai_env()
-    runner = Runner(app_name="supplier-carbon", agent=agent, session_service=InMemorySessionService(), auto_create_session=True)
+    runner = Runner(app_name="netzero", agent=agent, session_service=InMemorySessionService(), auto_create_session=True)
     session_id = f"turn-{uuid.uuid4().hex[:8]}"
     msg = types.Content(role="user", parts=[types.Part(text=user_text)])
     final = ""

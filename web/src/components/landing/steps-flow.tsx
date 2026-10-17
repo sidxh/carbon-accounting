@@ -43,7 +43,7 @@ function Switch({ on, pressed }: { on: boolean; pressed: boolean }) {
  * by itself when that step comes up (bills dropped into a folder, a bill scanned
  * and a gap asked about, the inventory built, a reduction plan drawn, the
  * questionnaire filled) and then
- * holds its last frame. Arriving at the top, a "Supplier Carbon" switch is first
+ * holds its last frame. Arriving at the top, a "NetZero" switch is first
  * pressed on by itself. Scenes slide up when scrolling down and back when
  * scrolling up; clicking a step scrolls to it. Under reduced motion the switch is
  * skipped and each step shows finished.
@@ -132,7 +132,7 @@ export function StepsFlow({ title }: { title: string }) {
                 transition={{ duration: 0.35, ease: EASE }}
                 className="absolute inset-0 flex flex-col items-center justify-center gap-6 sm:flex-row sm:gap-10"
               >
-                <span className="font-display text-5xl text-ink sm:text-7xl">Supplier <em className="text-signal-ink">Carbon</em></span>
+                <span className="font-display text-5xl text-ink sm:text-7xl">Net<strong className="font-semibold text-signal-ink">Zero</strong></span>
                 <span className="relative" aria-hidden>
                   <Switch on={on} pressed={introBeat === 1} />
                   {/* The hand that flips it. */}

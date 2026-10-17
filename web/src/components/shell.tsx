@@ -175,11 +175,11 @@ export function RequestHeader({ customer, periodLabel, sharedWith }: { customer:
 }
 
 export function Shell({ children, header, sub, showAccount = true, wide = false }: { children: React.ReactNode; header?: React.ReactNode; sub?: React.ReactNode; showAccount?: boolean; wide?: boolean }) {
-  const { user } = useAuth();
   return (
     <div className={cn("mx-auto flex min-h-dvh w-full flex-col px-4 pb-24 pt-4 sm:px-6", wide ? "max-w-5xl" : "max-w-3xl")}>
       <header className="flex items-center justify-between gap-3">
-        <Link href={user ? "/home" : "/"} className="rounded-lg"><Wordmark /></Link>
+        {/* The logo opens the landing page, signed in or not; there "Go to your dashboard" leads back. */}
+        <Link href="/" className="rounded-lg"><Wordmark /></Link>
         <div className="flex items-center gap-2">
           {showAccount ? <AccountMenu /> : <LanguageSwitcher />}
         </div>

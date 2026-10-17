@@ -21,7 +21,7 @@ const garamond = EB_Garamond({
 });
 
 export const metadata: Metadata = {
-  title: "Supplier Carbon — answer your customer's emissions questionnaire from your bills",
+  title: "NetZero — answer your customer's emissions questionnaire from your bills",
   description:
     "Photograph your electricity, fuel and refrigerant bills. Get back a Scope 1 and 2 inventory with cited factors and your customer's questionnaire filled in.",
 };

@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "Supplier Carbon",
+    "name": "NetZero",
     "tagline": "Chuyển tiếp email. Chụp ảnh hóa đơn. Nhận lại bảng câu hỏi đã điền.",
     "signOut": "Đăng xuất",
     "language": "Ngôn ngữ",
@@ -368,7 +368,7 @@
     "expandAll": "Mở tất cả",
     "collapseAll": "Thu gọn tất cả",
     "emptyTitle": "Chưa điền bảng câu hỏi nào",
-    "emptyBody": "Tải lên file Excel khách hàng gửi. data/templates/cdp_sme_questionnaire.xlsx là mẫu bố cục giống bảng CDP ngoại tuyến mà người mua thường lưu hành.",
+    "emptyBody": "Tải lên file Excel khách hàng gửi, hoặc thử bảng câu hỏi mẫu bên trái.",
     "ring": {
       "auto": "Từ dữ liệu",
       "yours": "Bạn trả lời",
@@ -396,7 +396,9 @@
       "vsmeFilled": "Đã điền {n} ô",
       "vsmeLeft": "{n} ô dành cho bạn",
       "vsmeExcel": "Nên mở bằng Excel một lần trước khi chuyển đổi: mẫu tự chạy các kiểm tra khi mở. Ô xanh do chúng tôi điền, ô vàng là phần bạn hoàn thiện."
-    }
+    },
+    "sampleDownload": "Tải bảng câu hỏi mẫu của khách hàng",
+    "sampleHint": "Phiếu khảo sát phát thải của một bên mua Nhật Bản cho tháng 4/2025 đến tháng 3/2026, bằng tiếng Nhật và tiếng Anh. Khớp với bộ hóa đơn mẫu: điền vào rồi mở kết quả."
   },
   "common": {
     "loading": "Đang tải…",
@@ -407,9 +409,9 @@
     "navLabel": "Chính",
     "continue": "Tiếp tục",
     "eyebrow": "Khách hàng hỏi số liệu phát thải carbon của bạn?",
-    "h1a": "Tải hóa đơn lên.",
-    "h1b": "Nhận lại bảng câu hỏi đã điền sẵn.",
-    "sub": "Khách hàng gửi cho bạn bảng câu hỏi phát thải. Tải lên hóa đơn điện, nhiên liệu và gas lạnh; chúng tôi đọc, chỉ hỏi những gì hóa đơn không nói được, và trả lại bảng kiểm kê Phạm vi 1 và 2 với từng con số truy về tài liệu và hệ số đã công bố.",
+    "h1a": "Không có bộ phận phát triển bền vững?",
+    "h1b": "Bạn không cần đến.",
+    "sub": "Đừng lo, chúng tôi sẽ làm giúp bạn. Tải lên hóa đơn điện, nhiên liệu và gas lạnh; chúng tôi đọc, chỉ hỏi những gì hóa đơn không nói được, và trả lại số liệu Phạm vi 1 và 2, mỗi con số truy về hóa đơn và hệ số đã công bố.",
     "cta": "Bắt đầu với hóa đơn",
     "steps": {
       "bills": {
@@ -476,8 +478,8 @@
     },
     "howTitle": "Năm bước, một buổi chiều.",
     "flow": {
-      "on": "Supplier Carbon đã bật.",
-      "aria": "Supplier Carbon hoạt động: hóa đơn được tải lên và đọc, một hóa đơn được quét và hỏi về tháng còn thiếu, bảng kiểm kê Phạm vi 1 và 2 được lập, kế hoạch giảm phát thải đặt điện mặt trời lên mái và xếp hạng các biện pháp, và bảng câu hỏi của khách hàng được điền.",
+      "on": "NetZero đã bật.",
+      "aria": "NetZero hoạt động: hóa đơn được tải lên và đọc, một hóa đơn được quét và hỏi về tháng còn thiếu, bảng kiểm kê Phạm vi 1 và 2 được lập, kế hoạch giảm phát thải đặt điện mặt trời lên mái và xếp hạng các biện pháp, và bảng câu hỏi của khách hàng được điền.",
       "words": {
         "bills": "Đọc hóa đơn",
         "questions": "Hỏi phần còn thiếu",

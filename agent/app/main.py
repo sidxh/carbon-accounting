@@ -58,7 +58,7 @@ from .storage import get_storage
 from .vsme import VsmeError, fill_vsme
 
 settings = get_settings()
-app = FastAPI(title="Supplier carbon reporting agent", version="0.2.0")
+app = FastAPI(title="NetZero carbon reporting agent", version="0.2.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origin_list,
