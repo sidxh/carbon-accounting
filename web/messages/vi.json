@@ -438,7 +438,6 @@
     "finalTitle": "Hóa đơn của bạn đã có câu trả lời.",
     "finalBody": "Đăng nhập bằng email và tải lên hóa đơn đầu tiên.",
     "footerNote": "Bản demo. Hóa đơn là dữ liệu tổng hợp; hệ số phát thải là thật và có trích dẫn.",
-    "footerLangs": "Ngôn ngữ",
     "dashboard": "Vào bảng điều khiển",
     "demo": {
       "aria": "Bản demo động: hóa đơn được tải lên và đọc, quý LPG còn thiếu được bổ sung sau một câu hỏi, tổng Phạm vi 1 và Phạm vi 2 tăng dần với phép tính truy vết được, và bảng câu hỏi của khách hàng được điền sẵn để tải về.",
@@ -481,11 +480,26 @@
       "title": "Mỗi tấn đều truy được về một hóa đơn.",
       "lede": "NetZero là bộ phận phát triển bền vững mà bạn chưa có. Chúng tôi làm trọn công việc, từ hóa đơn đầu tiên đến câu trả lời của khách hàng, và không bao giờ đoán: mỗi con số đến từ tài liệu của bạn và một hệ số đã công bố.",
       "points": {
-        "customers": { "lead": "Mọi khách hàng, một nơi.", "body": "Yêu cầu, hạn chót và năm báo cáo cùng chỗ." },
-        "bills": { "lead": "Đọc hóa đơn nhanh.", "body": "Mọi ngôn ngữ, ảnh hay PDF." },
-        "gaps": { "lead": "Chỉ hỏi chỗ thật sự thiếu.", "body": "Chỉ hỏi tháng còn thiếu, không hơn." },
-        "inventory": { "lead": "Mở bất kỳ con số nào.", "body": "Xem hóa đơn, hệ số và phép tính." },
-        "cuts": { "lead": "Giảm phát thải và câu trả lời.", "body": "Kế hoạch điện mặt trời, và bảng câu hỏi của khách đã điền." }
+        "customers": {
+          "lead": "Mọi khách hàng, một nơi.",
+          "body": "Yêu cầu, hạn chót và năm báo cáo cùng chỗ."
+        },
+        "bills": {
+          "lead": "Đọc hóa đơn nhanh.",
+          "body": "Mọi ngôn ngữ, ảnh hay PDF."
+        },
+        "gaps": {
+          "lead": "Chỉ hỏi chỗ thật sự thiếu.",
+          "body": "Chỉ hỏi tháng còn thiếu, không hơn."
+        },
+        "inventory": {
+          "lead": "Mở bất kỳ con số nào.",
+          "body": "Xem hóa đơn, hệ số và phép tính."
+        },
+        "cuts": {
+          "lead": "Giảm phát thải và câu trả lời.",
+          "body": "Kế hoạch điện mặt trời, và bảng câu hỏi của khách đã điền."
+        }
       }
     },
     "howTitle": "Năm bước, một buổi chiều.",
@@ -601,7 +615,8 @@
       "product": "Sản phẩm",
       "how": "Cách hoạt động",
       "features": "Tính năng",
-      "standards": "Chuẩn mực được trích dẫn"
+      "standards": "Chuẩn mực được trích dẫn",
+      "factors": "Hệ số phát thải"
     },
     "home": "Trang chủ",
     "problem": "Vấn đề",

@@ -87,7 +87,8 @@ export function Landscape({
   return (
     <svg viewBox={viewBox} preserveAspectRatio={preserve} className={className} aria-hidden>
       {/* Far ridges, fading into the paper. */}
-      <path d="M0 200 Q160 110 320 160 T640 130 T980 150 T1260 105 T1440 140 V420 H0Z" fill={MIST[0]} />
+      {/* The last rise is an explicit curve peaking near y 76, so it stays inside every crop (the viewBox starts at 60). */}
+      <path d="M0 200 Q160 110 320 160 T640 130 T980 150 T1260 105 Q1370 30 1440 140 V420 H0Z" fill={MIST[0]} />
       <path d="M0 235 Q200 165 380 205 T760 180 T1100 200 T1440 170 V420 H0Z" fill={MIST[1]} />
       {/* The lake in the valley. */}
       <path d="M560 268 Q760 252 980 266 Q780 282 560 268Z" fill="#eef5f2" opacity={0.9} />
