@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowRight, Check, CircleDashed, MessageSquareText, RotateCcw, ScanSearch, Send } from "lucide-react";
+import { ArrowRight, Check, CircleDashed, MessageSquareText, RotateCcw, ScanSearch, Send, Zap } from "lucide-react";
 import { cn as clsx } from "@/lib/cn";
 import { useRequest } from "@/components/request-context";
 import { SharedNotice } from "@/components/shared-notice";
@@ -252,7 +252,9 @@ function Chat() {
         </div>
       ) : (
         <>
-          <OpenItems state={state} />
+          {/* Wide screens: the checklist stays in view on the left while the conversation takes the room on the right. */}
+          <div className={clsx("grid items-start gap-5", askable > 0 && "lg:grid-cols-[minmax(0,300px)_minmax(0,1fr)]")}>
+          <div className="lg:sticky lg:top-24 lg:max-h-[calc(100dvh-8rem)] lg:overflow-y-auto"><OpenItems state={state} /></div>
 
           <section className="card overflow-hidden" aria-labelledby="chat-h">
             <div className="flex items-center justify-between gap-2 border-b hairline px-4 py-3">
@@ -265,7 +267,7 @@ function Chat() {
               </span>
             </div>
 
-            <div className="max-h-[52vh] space-y-3 overflow-y-auto p-4" role="log" aria-live="polite">
+            <div className="max-h-[58vh] min-h-[16rem] space-y-3 overflow-y-auto p-4 sm:p-5" role="log" aria-live="polite">
               <div className="mx-auto max-w-[90%] rounded-xl bg-sunken px-4 py-2.5 text-center text-xs text-muted">
                 {t("systemCard", { docs: state.summary.documents, n: askable })}
               </div>
@@ -276,7 +278,7 @@ function Chat() {
                     initial={{ opacity: 0, transform: "translateY(6px)" }}
                     animate={{ opacity: 1, transform: "translateY(0px)" }}
                     transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
-                    className={clsx("max-w-[85%] rounded-2xl px-4 py-2.5 text-[15px] leading-relaxed", h.role === "agent" ? "bg-sunken text-ink" : "ml-auto bg-signal text-signal-on")}
+                    className={clsx("w-fit rounded-2xl px-4 py-2.5 text-[15px] leading-relaxed", h.role === "agent" ? "max-w-[min(32rem,88%)] rounded-tl-md bg-sunken text-ink" : "ml-auto max-w-[min(24rem,80%)] rounded-tr-md bg-signal text-signal-on")}
                   >
                     {h.text}
                   </motion.div>
@@ -291,23 +293,28 @@ function Chat() {
             </div>
 
             {quick.length > 0 && (
-              <div className="flex flex-wrap items-center gap-2 border-t hairline px-3 pt-3" role="group" aria-label={t("quickLabel")}>
-                {quick.map((q) => (
-                  <button
-                    key={q}
-                    type="button"
-                    className="rounded-full border border-line bg-raised px-3 py-1.5 text-left text-xs leading-snug text-ink transition-colors hover:border-signal hover:bg-signal-bg disabled:opacity-50"
-                    disabled={busy}
-                    onClick={() => void submit(q)}
-                  >
-                    {q}
-                  </button>
-                ))}
+              <div className="border-t hairline px-3 pb-1 pt-3 sm:px-4" role="group" aria-label={t("quickLabel")}>
+                <p className="mb-2 flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.12em] text-muted">
+                  <Zap className="size-3 text-signal" aria-hidden />{t("quickLabel")}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {quick.map((q) => (
+                    <button
+                      key={q}
+                      type="button"
+                      className="rounded-full border border-signal/25 bg-signal-bg px-3.5 py-1.5 text-left text-[13px] font-medium leading-snug text-signal-ink transition-[background-color,color,scale] duration-150 hover:bg-signal hover:text-signal-on active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50"
+                      disabled={busy}
+                      onClick={() => void submit(q)}
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 
             {state.status === "asking" && (
-              <form onSubmit={send} className={clsx("flex gap-2 p-3", quick.length > 0 ? "pt-2" : "border-t hairline")}>
+              <form onSubmit={send} className={clsx("flex gap-2 p-3 sm:px-4", quick.length > 0 ? "pt-2.5" : "border-t hairline")}>
                 <input ref={input} className="input" value={text} onChange={(e) => setText(e.target.value)} placeholder={t("placeholder")} aria-label={t("placeholder")} autoFocus disabled={busy} />
                 <button className="btn btn-icon shrink-0 !min-h-11 !min-w-11" disabled={busy || !text.trim()} aria-label={t("send")}>
                   <Send className="size-4" aria-hidden />
@@ -315,6 +322,7 @@ function Chat() {
               </form>
             )}
           </section>
+          </div>
 
           <div className="flex flex-wrap items-center gap-2">
             {state.status === "done" && (
