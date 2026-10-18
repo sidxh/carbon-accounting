@@ -103,7 +103,7 @@ Where the seconds go, and what we did about each:
 | **Cached Solar, Geocoding and PVGIS responses**; API keys added to the request only, never to a cache key or log | Repeat advisor views are free and fast | [`solar.py`](agent/app/solar.py) |
 | **Evidence rendered on demand**, one page at a time, as an image | "Show bill" does not wait for a whole PDF | [`evidence.py`](agent/app/evidence.py) |
 
-Measured (details in [EVALUATION.md](EVALUATION.md)): the 41-bill end-to-end run takes about 26 s; one Vertex call
+Measured (details in [EVALUATION.md](EVALUATION.md)): the 31-bill Japanese pack reads in 6 to 7 s on the live app (timed by hand, drop to last file); one Vertex call
 about 2.6 s. Cloud Run is scaled to zero between uses (`--min-instances 0`, [`infra/deploy.sh`](infra/deploy.sh)), so
 the first request after a quiet period pays a cold start; that is a cost decision, not a design limit.
 

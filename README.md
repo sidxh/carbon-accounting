@@ -91,7 +91,7 @@ scripts/dev.sh seed        # create the evaluator accounts in the emulator
 Tests and checks:
 
 ```bash
-cd agent && .venv/bin/pytest                                   # 211 tests, no network, no model
+cd agent && .venv/bin/pytest                                   # 213 tests, no network, no model
 cd agent && PYTHONPATH=. .venv/bin/python -m scripts.eval_extraction            # reader accuracy on the golden set
 cd agent && PYTHONPATH=. .venv/bin/python -m scripts.eval_questionnaires        # questionnaire fill accuracy
 cd web && npx tsc --noEmit && pnpm lint

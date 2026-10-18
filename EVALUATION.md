@@ -12,7 +12,7 @@ behind what you see. Nothing here is hidden behind "the AI decided": where a mod
 | # | Do this | Expect |
 |---|---|---|
 | 1 | Sign in, set up: company, country **Japan**, fiscal year April 2025 to March 2026, one site | Lands on the dashboard. A request is one customer's questionnaire; a year can hold several requests, and a supplier can hold several years |
-| 2 | **Bills** page: "Download sample bills to upload", then drop the zip on the page as it is | 31 files read four at a time, in tens of seconds. Each shows type, period, quantity and unit |
+| 2 | **Bills** page: "Download sample bills to upload", then drop the zip on the page as it is | 31 files read four at a time, in about 6 to 7 seconds on the live app. Each shows type, period, quantity and unit |
 | 3 | Look at what the pack contains (its `README.txt` lists every file) | A duplicate photo counted once; a PDF; a sideways scan; a fax; hand-written slips (one dated 令和8年); a misprinted total; a missing January |
 | 4 | **Questions** (the reconciler) | Asks only about the real gaps: the missing January and the misprinted November bill, one at a time, in your language. Answer in your own words |
 | 5 | **Inventory** | Scope 1 and Scope 2 (location and market) by month and fuel. Open any row: the bill with the figure highlighted ("show bill"), the factor with its source and vintage, and `quantity x factor`. Edit a reading and the totals follow |
@@ -186,13 +186,13 @@ All reproducible from the repo (commands in [README.md](README.md)); figures fro
 
 | Measure | Result |
 |---|---|
-| Automated tests | 211, none need a network or a model |
+| Automated tests | 213, none need a network or a model |
 | Pack bills read correctly (the 31 Japanese sample files) | 31 of 31 |
 | Golden-set core field accuracy (energy type, quantity, unit, period) | 100 % (target at least 90 %) |
 | Quantity box overlap with the labelled box | IoU of 0.5 or better on 86.7 % of images, mean 0.71 |
 | Self-checks on clean bills | No false alarm on 30 of 30; the planted misread is caught |
 | Questionnaire cells filled | 41 of 41 correct offline and with the live model; 0 wrong numbers, 0 unsafe fills |
-| End-to-end run of 41 bills | About 26 s |
+| The 31-bill Japanese pack, dropped on the Bills page until the last file is read (live app, timed by hand) | 6 to 7 s |
 | One Vertex AI call | About 2.6 s |
 
 The golden set is synthetic and drawn by [`data/golden/render.py`](data/golden/render.py), with its ground truth in
