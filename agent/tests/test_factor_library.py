@@ -103,3 +103,32 @@ def test_biogenic_factor_lookup(lib):
 def test_missing_factor_raises_not_silently_zero(lib):
     with pytest.raises(FactorNotFound):
         lib.select(energy_type=EnergyType.ELECTRICITY, year=2024, country="ZZ", unit=Unit.KWH)
+
+
+def test_source_links_are_https_and_not_on_retired_hosts(lib):
+    # Every factor is cited with a link a user can click. Plain http and hosts known to have
+    # been retired (Japan's MOE moved to policies.env.go.jp) must not creep back in.
+    retired = ("ghg-santeikohyo.env.go.jp",)
+    for f in lib.factors:
+        assert f.source_url.startswith("https://"), f"{f.id}: {f.source_url}"
+        assert not any(h in f.source_url for h in retired), f"{f.id}: {f.source_url}"
+        assert f.source_url == f.source_url.strip() and " " not in f.source_url
+
+
+def test_stored_lines_are_pointed_at_the_current_source_link(lib):
+    from app.repo import current_factor_links
+    from tests.qhelpers import inv
+
+    jp = lib.by_id["JP-lpg-2024"]
+    old = "https://ghg-santeikohyo.env.go.jp/calc"
+    stale = inv(EnergyType.LPG, 500, Unit.KG, 1500.0, scope=1).model_copy(update={
+        "factor_id": jp.id, "factor_source_url": old, "factor_citation": f"{jp.source_name}; {old}",
+    })
+    unknown = inv(EnergyType.LPG, 1, Unit.KG, 3.0, scope=1)   # factor_id "f" is not in the library
+
+    out = current_factor_links([stale, unknown])
+
+    assert out[0].factor_source_url == jp.source_url and old not in out[0].factor_citation
+    assert jp.source_url in out[0].factor_citation
+    assert out[0].kg_co2e == 1500.0 and out[0].factor_value == stale.factor_value   # figures untouched
+    assert out[1].factor_source_url == ""                                            # unknown ids are left alone

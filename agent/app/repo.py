@@ -103,6 +103,26 @@ class QuestionnaireRecord(BaseModel):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
+def current_factor_links(lines: list[InventoryLine]) -> list[InventoryLine]:
+    """Point stored lines at the factor library's current source link.
+
+    A line keeps the link it was calculated with, so a publisher moving a page would leave old
+    reports pointing at a dead address. Only the link (and its copy in the citation text) is
+    refreshed, looked up by factor id; the factor value and every figure are left untouched.
+    """
+    from .factor_library import get_library  # lazy: the library reads CSVs from disk
+
+    by_id = get_library().by_id
+    for ln in lines:
+        f = by_id.get(ln.factor_id)
+        if f is None or not f.source_url or f.source_url == ln.factor_source_url:
+            continue
+        if ln.factor_source_url:
+            ln.factor_citation = ln.factor_citation.replace(ln.factor_source_url, f.source_url)
+        ln.factor_source_url = f.source_url
+    return lines
+
+
 class Repo(ABC):
     # suppliers
     @abstractmethod
@@ -338,7 +358,9 @@ class FirestoreRepo(Repo):
 
     def list_inventory(self, uid, pid):
         per = self._per(uid, pid)
-        lines = [InventoryLine.model_validate(s.to_dict()) for s in per.collection("inventoryLines").stream()]
+        lines = current_factor_links(
+            [InventoryLine.model_validate(s.to_dict()) for s in per.collection("inventoryLines").stream()]
+        )
         snap = per.collection("inventory").document("snapshot").get()
         return lines, (InventorySnapshot.model_validate(snap.to_dict()) if snap.exists else None)
 

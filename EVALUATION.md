@@ -87,13 +87,13 @@ Every row in [`data/factors/`](data/factors) carries `source_name`, `source_url`
 
 | Factor set | Publisher | Link |
 |---|---|---|
-| Australia | DCCEEW, National Greenhouse Accounts Factors 2024 | https://www.dcceew.gov.au/climate-change/publications/national-greenhouse-accounts-factors |
-| Japan | Ministry of the Environment, GHG emissions calculation, reporting and publication system | https://ghg-santeikohyo.env.go.jp/calc |
-| Vietnam | MONRE Department of Climate Change | https://dcc.gov.vn/ |
+| Australia | DCCEEW, National Greenhouse Accounts Factors 2024 | https://www.dcceew.gov.au/climate-change/publications/national-greenhouse-accounts-factors-2024 |
+| Japan | Ministry of the Environment, GHG emissions calculation, reporting and publication system | https://policies.env.go.jp/earth/ghg-santeikohyo/calc.html |
+| Vietnam | MONRE Department of Climate Change (2022 notice; 2023 letter 1726/BĐKH-PTCBT) | https://dcc.mae.gov.vn/Pages/chi-tiet-tin-DCC.aspx?ItemID=3505 |
 | Singapore | Energy Market Authority | https://www.ema.gov.sg/resources/singapore-energy-statistics/chapter2 |
-| Thailand | Thailand Greenhouse Gas Management Organization | http://thaicarbonlabel.tgo.or.th/ |
+| Thailand | Thailand Greenhouse Gas Management Organization | https://thaicarbonlabel.tgo.or.th/ |
 | Indonesia | Ministry of Energy and Mineral Resources | https://gatrik.esdm.go.id |
-| India | Central Electricity Authority | https://cea.nic.in/cdm-co2-baseline-database/ |
+| India | Central Electricity Authority | https://cea.nic.in/cdm-co2-baseline-database/?lang=en |
 | Global fuels and GWPs | UK Government GHG Conversion Factors 2024 (IPCC AR5 GWP-100) | https://www.gov.uk/government/collections/government-conversion-factors-for-company-reporting |
 | Global fuels | IPCC 2006 Guidelines, Vol. 2 | https://www.ipcc-nggip.iges.or.jp/public/2006gl/vol2.html |
 | Energy content for fuels (kWh, MJ answers) | EFRAG VSME Digital Template 1.3.0, Fuel Conversion Parameters | https://xbrl.efrag.org/downloads/vsme/VSME-Digital-Template-1.3.0.xlsx |
@@ -146,8 +146,8 @@ something for it to act on:
 
 | Lever | Acts on | Source |
 |---|---|---|
-| LED lighting retrofit | Electricity | US DOE, LED lighting |
-| Compressed-air leak repair | Electricity | US DOE, Compressed air systems |
+| LED lighting retrofit | Electricity | US DOE, Consumer guide to energy-efficient lighting |
+| Compressed-air leak repair | Electricity | US DOE, Minimize compressed air leaks (tip sheet) |
 | Refrigerant leak checks and repair | Refrigerant Scope 1 | US EPA, Stationary refrigeration leak repair |
 | Switch LPG heating to electric | LPG Scope 1, **net of the extra electricity at your grid factor**; shown as not beneficial where the grid is too carbon-heavy | Analyst estimate, calculation shown |
 | Renewable certificates | Market-based Scope 2 only | I-REC Standard |

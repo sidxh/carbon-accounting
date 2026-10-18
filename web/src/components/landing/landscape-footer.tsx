@@ -18,11 +18,11 @@ const STANDARDS = [
 ];
 const FACTORS = [
   { name: "UK Government (DEFRA)", href: "https://www.gov.uk/government/collections/government-conversion-factors-for-company-reporting" },
-  { name: "Japan, Ministry of the Environment", href: "https://ghg-santeikohyo.env.go.jp/calc" },
+  { name: "Japan, Ministry of the Environment", href: "https://policies.env.go.jp/earth/ghg-santeikohyo/calc.html" },
   { name: "Australia, DCCEEW", href: "https://www.dcceew.gov.au/climate-change/publications/national-greenhouse-accounts-factors" },
   { name: "Vietnam, MONRE", href: "https://dcc.gov.vn/" },
   { name: "Singapore, Energy Market Authority", href: "https://www.ema.gov.sg/resources/singapore-energy-statistics/chapter2" },
-  { name: "Thailand, TGO", href: "http://thaicarbonlabel.tgo.or.th/" },
+  { name: "Thailand, TGO", href: "https://thaicarbonlabel.tgo.or.th/" },
 ];
 
 /** A column of external sources, each opening in a new tab. */
