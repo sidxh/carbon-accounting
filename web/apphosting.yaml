@@ -25,3 +25,6 @@ env:
   - variable: NEXT_PUBLIC_FIREBASE_APP_ID
     value: 1:532444884362:web:2528de737b30e08a052c73
     availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+    value: G-R95RL8LF6K
+    availability: [BUILD, RUNTIME]
