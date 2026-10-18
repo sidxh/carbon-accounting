@@ -6,6 +6,7 @@ plan to cut the bill. Every number traces to a document the supplier gave us and
 is guessed.
 
 - **Live app:** https://supplier-carbon-web--fir-testing-f96b1.asia-southeast1.hosted.app
+- **Evaluator login:** email `evaluator1@siddhantxh.com`, password `evaluator1` (sign-up is off; all bills are synthetic)
 - **The problem, with sources:** https://supplier-carbon-web--fir-testing-f96b1.asia-southeast1.hosted.app/problem
 
 ## Where to go next

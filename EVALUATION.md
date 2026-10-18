@@ -4,7 +4,7 @@ How to walk the product in about fifteen minutes, what to expect at each step, a
 behind what you see. Nothing here is hidden behind "the AI decided": where a model is involved the doc says so.
 
 - **App:** https://supplier-carbon-web--fir-testing-f96b1.asia-southeast1.hosted.app
-- **Accounts:** evaluator accounts are supplied with the submission. Sign-in is email and password; sign-up is off.
+- **Account:** `evaluator1@siddhantxh.com`, password `evaluator1` (also at the top of the [README](README.md)). Sign-in is email and password; sign-up is off.
 - **Sample data:** all bills are synthetic. The product offers its own sample pack and sample customer sheet.
 
 ## 1. The walk
